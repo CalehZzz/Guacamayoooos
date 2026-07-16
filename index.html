@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Guacamayos 🌿 Separa y pesa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FBF7EE;
+    --cream-2:#F3EEDF;
+    --forest:#1F3B2D;
+    --forest-soft:#3E5A48;
+    --leaf:#5FAE7E;
+    --leaf-dark:#3E8B5E;
+    --sky:#5AA9E6;
+    --kraft:#C68958;
+    --silver:#9AA6C4;
+    --sun:#F2B705;
+    --coral:#FF8B67;
+    --card:#FFFFFF;
+    --shadow: 0 8px 24px rgba(31,59,45,0.10);
+    --shadow-sm: 0 4px 10px rgba(31,59,45,0.08);
+    --radius: 22px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:var(--cream);
+    color:var(--forest);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.display{font-family:'Fredoka',sans-serif; margin:0;}
+  .mono{font-family:'JetBrains Mono',monospace;}
+  button{font-family:'Nunito',sans-serif; cursor:pointer;}
+  a{color:inherit;}
+
+  /* ---------- Fondo decorativo con hojas ---------- */
+  .bg-blob{
+    position:fixed; border-radius:50%; filter:blur(2px); opacity:.35; z-index:0; pointer-events:none;
+  }
+  .bg-blob.b1{width:280px; height:280px; background:var(--leaf); top:-100px; left:-100px;}
+  .bg-blob.b2{width:220px; height:220px; background:var(--sun); bottom:-90px; right:-80px; opacity:.2;}
+  .leaf-float{position:fixed; font-size:22px; opacity:.5; animation:float 9s ease-in-out infinite; z-index:0; pointer-events:none;}
+  @keyframes float{
+    0%,100%{transform:translateY(0) rotate(0deg);}
+    50%{transform:translateY(-22px) rotate(12deg);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .leaf-float{animation:none;}
+  }
+
+  #app{position:relative; z-index:1; max-width:520px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 18px 10px;
+  }
+  .brand{display:flex; align-items:center; gap:8px;}
+  .brand .logo{font-size:26px;}
+  .brand span{font-family:'Fredoka'; font-weight:600; font-size:19px; color:var(--forest);}
+  .navpills{display:flex; gap:6px;}
+  .pill{
+    border:none; background:var(--cream-2); color:var(--forest-soft);
+    padding:9px 13px; border-radius:999px; font-weight:700; font-size:13px;
+    display:flex; align-items:center; gap:6px; transition:.15s;
+  }
+  .pill.active{background:var(--leaf); color:white;}
+  .pill:active{transform:scale(.94);}
+
+  main{flex:1; padding:6px 18px 90px;}
+
+  .hidden{display:none !important;}
+
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--card); border-radius:var(--radius); padding:20px;
+    box-shadow:var(--shadow); margin-bottom:16px;
+  }
+  .greeting{margin-bottom:14px;}
+  .greeting h2{font-size:24px; color:var(--forest);}
+  .greeting p{margin:4px 0 0; color:var(--forest-soft); font-size:14.5px;}
+
+  /* ---------- Login ---------- */
+  .auth-wrap{
+    min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+    align-items:center; padding:32px 26px; position:relative; z-index:1; text-align:center;
+  }
+  .auth-logo{font-size:58px; margin-bottom:6px;}
+  .auth-wrap h1{font-size:30px; color:var(--forest); margin-bottom:2px;}
+  .auth-wrap .tagline{color:var(--forest-soft); font-size:15px; margin-bottom:26px; max-width:320px;}
+  .auth-card{width:100%; max-width:340px; background:var(--card); border-radius:var(--radius); padding:24px 22px; box-shadow:var(--shadow); text-align:left;}
+  .field{margin-bottom:14px;}
+  .field label{display:block; font-size:12.5px; font-weight:700; color:var(--forest-soft); margin-bottom:5px; text-transform:uppercase; letter-spacing:.04em;}
+  .field input{
+    width:100%; padding:12px 14px; border-radius:14px; border:2px solid var(--cream-2);
+    font-size:15px; font-family:'Nunito'; background:var(--cream); color:var(--forest);
+  }
+  .field input:focus{outline:none; border-color:var(--leaf);}
+  .btn{
+    width:100%; padding:13px 16px; border:none; border-radius:16px; font-weight:800;
+    font-size:15.5px; display:flex; align-items:center; justify-content:center; gap:8px;
+    transition:.15s;
+  }
+  .btn:active{transform:scale(.97);}
+  .btn-primary{background:var(--leaf); color:white; box-shadow:0 6px 16px rgba(95,174,126,.4);}
+  .btn-primary:hover{background:var(--leaf-dark);}
+  .btn-outline{background:white; color:var(--forest); border:2px solid var(--cream-2);}
+  .btn-google{background:white; color:#444; border:2px solid var(--cream-2); margin-top:8px;}
+  .btn-ghost{background:transparent; color:var(--forest-soft); font-weight:700; font-size:14px; padding:10px;}
+  .btn-danger{background:#fff; color:var(--coral); border:2px solid #ffe1d5;}
+  .switcher{margin-top:16px; text-align:center; font-size:14px; color:var(--forest-soft);}
+  .switcher b{color:var(--leaf-dark); cursor:pointer;}
+  .error-msg{background:#FFF0EC; color:#B94B2D; padding:10px 12px; border-radius:12px; font-size:13.5px; margin-bottom:12px; display:none;}
+
+  /* ---------- Estaciones ---------- */
+  .station-card{
+    background:var(--card); border-radius:20px; padding:16px 18px; margin-bottom:12px;
+    box-shadow:var(--shadow-sm); display:flex; align-items:center; gap:14px;
+    border:2px solid transparent;
+  }
+  .station-card.inactiva{opacity:.5;}
+  .station-emoji{font-size:32px;}
+  .station-info{flex:1;}
+  .station-info h3{font-size:16.5px; color:var(--forest);}
+  .station-info p{margin:2px 0 0; font-size:13px; color:var(--forest-soft);}
+  .badge{font-size:11px; font-weight:800; padding:3px 9px; border-radius:999px;}
+  .badge.on{background:#E6F5EA; color:var(--leaf-dark);}
+  .badge.off{background:#F3EEDF; color:#A79A7E;}
+  .btn-mini{
+    background:var(--leaf); color:white; border:none; border-radius:12px; padding:9px 14px;
+    font-weight:800; font-size:13px; white-space:nowrap;
+  }
+  .btn-mini:disabled{background:#DDD5C0; cursor:not-allowed;}
+
+  /* ---------- Pesaje en vivo: frascos ---------- */
+  .live-title{text-align:center; margin-bottom:6px;}
+  .live-title h2{font-size:20px;}
+  .live-title p{color:var(--forest-soft); font-size:13.5px; margin-top:2px;}
+  .jars-row{display:flex; gap:12px; justify-content:center; margin:22px 0 8px;}
+  .jar-wrap{flex:1; text-align:center; max-width:130px;}
+  .jar{
+    position:relative; width:100%; aspect-ratio:3/4; border-radius:18px 18px 26px 26px;
+    background:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.15));
+    border:3px solid rgba(31,59,45,.15); overflow:hidden; box-shadow: inset 0 2px 8px rgba(0,0,0,.06);
+  }
+  .jar-fill{
+    position:absolute; bottom:0; left:0; right:0; height:0%;
+    transition:height .5s cubic-bezier(.4,1.4,.6,1);
+    border-radius:8px 8px 0 0;
+  }
+  .jar-fill::after{
+    content:''; position:absolute; top:-6px; left:0; right:0; height:12px;
+    background:inherit; border-radius:50%; opacity:.7;
+  }
+  .jar-emoji{position:absolute; top:6px; left:0; right:0; text-align:center; font-size:20px; z-index:2;}
+  .jar-label{margin-top:8px; font-weight:800; font-size:13.5px; color:var(--forest);}
+  .jar-count{font-size:12px; color:var(--forest-soft);}
+  .jar-stats{
+    margin-top:6px; background:var(--cream-2); border-radius:12px; padding:6px 4px; font-size:11.5px;
+  }
+  .jar-stats .val{font-family:'JetBrains Mono'; font-weight:700; color:var(--forest);}
+
+  .total-readout{
+    background:var(--forest); color:var(--cream); border-radius:20px; padding:18px 20px;
+    text-align:center; margin:18px 0 6px; box-shadow:var(--shadow);
+  }
+  .total-readout .lbl{font-size:12px; letter-spacing:.08em; text-transform:uppercase; opacity:.75; margin-bottom:4px;}
+  .total-readout .amt{font-family:'JetBrains Mono'; font-size:34px; font-weight:700; color:var(--sun);}
+  .total-readout .sub{font-size:12px; opacity:.7; margin-top:4px;}
+
+  .btn-row{display:flex; gap:10px; margin-top:16px;}
+
+  /* ---------- Resumen ---------- */
+  .summary-emoji{font-size:56px; text-align:center; margin-bottom:6px;}
+  .summary-item{
+    display:flex; justify-content:space-between; align-items:center; padding:10px 0;
+    border-bottom:1px solid var(--cream-2); font-size:14.5px;
+  }
+  .summary-item:last-child{border-bottom:none;}
+  .summary-item .m-name{display:flex; align-items:center; gap:8px; font-weight:700;}
+
+  /* ---------- Historial ---------- */
+  .hist-card{background:var(--card); border-radius:18px; padding:14px 16px; margin-bottom:10px; box-shadow:var(--shadow-sm);}
+  .hist-top{display:flex; justify-content:space-between; align-items:center;}
+  .hist-top h3{font-size:15px;}
+  .hist-top .amt{font-family:'JetBrains Mono'; font-weight:700; color:var(--leaf-dark);}
+  .hist-date{font-size:12px; color:var(--forest-soft); margin:2px 0 8px;}
+  .chips{display:flex; gap:6px; flex-wrap:wrap;}
+  .chip{background:var(--cream-2); border-radius:999px; padding:4px 10px; font-size:11.5px; font-weight:700; color:var(--forest-soft);}
+  .empty-state{text-align:center; padding:40px 20px; color:var(--forest-soft);}
+  .empty-state .e{font-size:44px; margin-bottom:10px;}
+
+  /* ---------- Admin ---------- */
+  .admin-tabs{display:flex; gap:8px; margin-bottom:14px;}
+  .admin-tab{flex:1; padding:10px; border-radius:14px; border:2px solid var(--cream-2); background:white; font-weight:800; font-size:13.5px; color:var(--forest-soft);}
+  .admin-tab.active{background:var(--forest); color:var(--cream); border-color:var(--forest);}
+  .price-row{display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--cream-2);}
+  .price-row:last-child{border-bottom:none;}
+  .price-emoji{font-size:26px;}
+  .price-name{flex:1; font-weight:800; font-size:14.5px;}
+  .price-input-wrap{display:flex; align-items:center; gap:4px; background:var(--cream); border-radius:12px; padding:6px 10px; border:2px solid var(--cream-2);}
+  .price-input-wrap span{color:var(--forest-soft); font-weight:700;}
+  .price-input-wrap input{width:64px; border:none; background:transparent; font-family:'JetBrains Mono'; font-weight:700; font-size:15px; color:var(--forest);}
+  .price-input-wrap input:focus{outline:none;}
+  .save-mini{background:var(--sun); color:var(--forest); border:none; border-radius:10px; padding:7px 12px; font-weight:800; font-size:12px;}
+  .toast{
+    position:fixed; bottom:26px; left:50%; transform:translateX(-50%);
+    background:var(--forest); color:var(--cream); padding:12px 22px; border-radius:999px;
+    font-weight:700; font-size:14px; box-shadow:var(--shadow); z-index:50; opacity:0; transition:.25s;
+    pointer-events:none;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,-6px);}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(31,59,45,.45); z-index:60;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .modal-card{
+    background:var(--card); border-radius:var(--radius); padding:26px 22px; max-width:360px;
+    width:100%; text-align:center; box-shadow:var(--shadow);
+  }
+  .modal-emoji{font-size:42px; margin-bottom:8px;}
+  .modal-card h3{font-size:19px; color:var(--forest); margin-bottom:8px;}
+  .modal-card p{font-size:14px; color:var(--forest-soft); line-height:1.5;}
+
+  .add-station-form{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+  .add-station-form input{padding:10px 12px; border-radius:12px; border:2px solid var(--cream-2); font-family:'Nunito'; font-size:14px;}
+
+  .section-title{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--forest-soft); font-weight:800; margin:6px 0 10px;}
+
+  .spinner{
+    width:34px; height:34px; border:4px solid var(--cream-2); border-top-color:var(--leaf);
+    border-radius:50%; animation:spin 1s linear infinite; margin:30px auto;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="bg-blob b1"></div>
+<div class="bg-blob b2"></div>
+<span class="leaf-float" style="top:14%; left:8%;">🍃</span>
+<span class="leaf-float" style="top:60%; right:6%; animation-delay:3s;">🌿</span>
+
+<div id="app">
+
+  <!-- ============ VISTA: CARGANDO ============ -->
+  <div id="view-loading" class="auth-wrap">
+    <div class="spinner"></div>
+    <p style="color:var(--forest-soft); font-size:14px;">Cargando Guacamayos...</p>
+  </div>
+
+  <!-- ============ VISTA: LOGIN ============ -->
+  <div id="view-login" class="auth-wrap hidden">
+    <div class="auth-logo">🌿♻️</div>
+    <h1>Guacamayos</h1>
+    <p class="tagline">Separa, pesa y recicla en la estación más cercana. Fácil, rápido y bueno para el planeta.</p>
+    <div class="auth-card">
+      <div id="login-error" class="error-msg"></div>
+      <div class="field">
+        <label>Correo</label>
+        <input type="email" id="login-email" placeholder="tucorreo@ejemplo.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" id="btn-login">🔓 Iniciar sesión</button>
+      <button class="btn btn-google" id="btn-google">🔵 Continuar con Google</button>
+      <div class="switcher">¿Primera vez aquí? <b id="go-register">Crear cuenta</b></div>
+      <div class="switcher"><b id="go-guest">Continuar sin cuenta</b></div>
+    </div>
+  </div>
+
+  <!-- ============ VISTA: REGISTRO ============ -->
+  <div id="view-register" class="auth-wrap hidden">
+    <div class="auth-logo">🌱</div>
+    <h1>Crea tu cuenta</h1>
+    <p class="tagline">Solo toma un momento. Así guardamos tu historial de reciclaje.</p>
+    <div class="auth-card">
+      <div id="register-error" class="error-msg"></div>
+      <div class="field">
+        <label>Nombre</label>
+        <input type="text" id="reg-nombre" placeholder="¿Cómo te llamas?">
+      </div>
+      <div class="field">
+        <label>Correo</label>
+        <input type="email" id="reg-email" placeholder="tucorreo@ejemplo.com">
+      </div>
+      <div class="field">
+        <label>Contraseña</label>
+        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres">
+      </div>
+      <button class="btn btn-primary" id="btn-register">🌿 Crear cuenta</button>
+      <div class="switcher">¿Ya tienes cuenta? <b id="go-login">Inicia sesión</b></div>
+      <div class="switcher"><b id="go-guest-2">Continuar sin cuenta</b></div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: RECOMENDACIÓN DE REGISTRO ============ -->
+  <div id="modal-register-overlay" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-emoji">💾</div>
+      <h3>Guarda tu historial de pesajes</h3>
+      <p>Estás usando Guacamayos sin cuenta. Puedes seguir pesando libremente, pero si creas una cuenta gratis podemos guardar tus registros de pesaje y mostrarte tu historial más adelante.</p>
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-outline" id="modal-continue-guest">Continuar sin guardar</button>
+        <button class="btn btn-primary" id="modal-go-register">Crear cuenta</button>
+      </div>
+      <div class="switcher" style="margin-top:10px;"><b id="modal-go-login">Ya tengo cuenta</b></div>
+    </div>
+  </div>
+
+  <!-- ============ APP (con topbar) ============ -->
+  <div id="app-shell" class="hidden">
+    <div class="topbar">
+      <div class="brand"><span class="logo">🌿</span><span>Guacamayos</span></div>
+      <div class="navpills">
+        <button class="pill" data-view="stations">🏠</button>
+        <button class="pill" data-view="history">📜</button>
+        <button class="pill hidden" id="nav-admin" data-view="admin">⚙️</button>
+        <button class="pill hidden" id="btn-account">👤 Ingresar</button>
+        <button class="pill hidden" id="btn-logout">🚪</button>
+      </div>
+    </div>
+
+    <main>
+      <!-- ---------- ESTACIONES ---------- -->
+      <section id="view-stations" class="hidden">
+        <div class="greeting">
+          <h2 id="greet-name">Hola 👋</h2>
+          <p>Elige la estación donde vas a reciclar hoy.</p>
+        </div>
+        <div id="stations-list"></div>
+      </section>
+
+      <!-- ---------- PESAJE EN VIVO ---------- -->
+      <section id="view-live" class="hidden">
+        <div class="live-title">
+          <h2 id="live-station-name">Separando en...</h2>
+          <p>Coloca el material — el conteo se actualiza en vivo (simulado)</p>
+        </div>
+        <div class="jars-row" id="jars-row"></div>
+        <div class="total-readout">
+          <div class="lbl">Total acumulado</div>
+          <div class="amt mono" id="live-total">$0.00</div>
+          <div class="sub" id="live-peso">0.00 kg en total</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-danger" id="btn-cancel-session">Cancelar</button>
+          <button class="btn btn-primary" id="btn-finish-session">✅ Finalizar y guardar</button>
+        </div>
+      </section>
+
+      <!-- ---------- RESUMEN ---------- -->
+      <section id="view-summary" class="hidden">
+        <div class="card">
+          <div class="summary-emoji">🎉</div>
+          <h2 style="text-align:center; margin-bottom:4px;">¡Buen trabajo reciclando!</h2>
+          <p style="text-align:center; color:var(--forest-soft); font-size:14px; margin-bottom:16px;" id="summary-station"></p>
+          <div id="summary-breakdown"></div>
+          <div class="total-readout" style="margin-top:14px;">
+            <div class="lbl">Total ganado</div>
+            <div class="amt mono" id="summary-total">$0.00</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline" id="btn-summary-history">Ver historial</button>
+          <button class="btn btn-primary" id="btn-summary-back">Otra estación</button>
+        </div>
+      </section>
+
+      <!-- ---------- HISTORIAL ---------- -->
+      <section id="view-history" class="hidden">
+        <div class="greeting"><h2>Tu historial 📜</h2><p>Todo lo que has reciclado con Guacamayos.</p></div>
+        <div id="history-list"></div>
+      </section>
+
+      <!-- ---------- ADMIN ---------- -->
+      <section id="view-admin" class="hidden">
+        <div class="greeting"><h2>Panel admin ⚙️</h2><p>Gestiona precios y estaciones.</p></div>
+        <div class="admin-tabs">
+          <button class="admin-tab active" data-tab="precios">💲 Precios</button>
+          <button class="admin-tab" data-tab="estaciones">📍 Estaciones</button>
+        </div>
+
+        <div id="admin-precios" class="card">
+          <div class="section-title">Precio por kilogramo</div>
+          <div id="precios-list"></div>
+        </div>
+
+        <div id="admin-estaciones" class="card hidden">
+          <div class="section-title">Estaciones activas</div>
+          <div id="admin-stations-list"></div>
+          <div class="section-title" style="margin-top:18px;">Agregar nueva estación</div>
+          <div class="add-station-form">
+            <input type="text" id="new-station-nombre" placeholder="Nombre (ej. Parque Central)">
+            <input type="text" id="new-station-zona" placeholder="Zona / referencia">
+            <button class="btn btn-primary" id="btn-add-station">➕ Agregar estación</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+/* =========================================================================
+   GUACAMAYOS — App de separado y pesaje de material reciclado
+   Fase actual: la app escucha en tiempo real (onSnapshot) el documento
+   `sesiones_activas/{estacionId}` en Firestore. Un script de Python (que
+   luego leerá el PLC real vía snap7, y hoy simula esos datos) es quien
+   escribe ese documento; la app solo refleja lo que llega.
+   ========================================================================= */
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, updateProfile, GoogleAuthProvider, signInWithPopup
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, query,
+  where, orderBy, serverTimestamp, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* -------------------------------------------------------------------------
+   1. CONFIGURACIÓN DE FIREBASE
+   Reemplaza esto con la config de tu proyecto (Firebase console >
+   Configuración del proyecto > tus apps > SDK setup and configuration).
+   Puedes reutilizar el mismo proyecto de PICO o crear uno nuevo.
+   ------------------------------------------------------------------------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyDgUEGHAVZhW5RJ7-ts467lL_r8Yyg3Q7M",
+  authDomain: "guacamayos-aefd7.firebaseapp.com",
+  projectId: "guacamayos-aefd7",
+  storageBucket: "guacamayos-aefd7.firebasestorage.app",
+  messagingSenderId: "304473943001",
+  appId: "1:304473943001:web:21193c986dba72596107c8",
+  measurementId: "G-HXL97BS3ZH"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider();
+
+/* -------------------------------------------------------------------------
+   2. CONFIGURACIÓN DE MATERIALES (para la simulación)
+   ------------------------------------------------------------------------- */
+const MATERIALES = {
+  plastico: { nombre: "Plástico", emoji: "🥤", color: "#5AA9E6", pesoMin: 0.02, pesoMax: 0.06, cap: 3 },
+  carton:   { nombre: "Cartón",   emoji: "📦", color: "#C68958", pesoMin: 0.05, pesoMax: 0.18, cap: 5 },
+  aluminio: { nombre: "Aluminio", emoji: "🥫", color: "#9AA6C4", pesoMin: 0.01, pesoMax: 0.03, cap: 1.5 }
+};
+const PRECIOS_POR_DEFECTO = { plastico: 0.45, carton: 0.15, aluminio: 1.20 };
+
+/* -------------------------------------------------------------------------
+   3. ESTADO GLOBAL
+   ------------------------------------------------------------------------- */
+let currentUser = null;
+let isAdmin = false;
+let precios = { ...PRECIOS_POR_DEFECTO };
+let estaciones = [];
+let sesion = null;        // sesión de pesaje activa
+let unsubSesion = null;    // función para dejar de escuchar la sesión en Firestore
+
+const FALLBACK_ESTACIONES = [
+  { id: "parque-central",  nombre: "Parque Central",        zona: "Frente a la plaza principal", activa: true },
+  { id: "parque-robles",   nombre: "Parque Los Robles",     zona: "Zona norte, cancha techada",   activa: true },
+  { id: "plaza-americas",  nombre: "Plaza Las Américas",    zona: "Junto a la fuente",            activa: true }
+];
+
+/* -------------------------------------------------------------------------
+   4. HELPERS DE NAVEGACIÓN Y UI
+   ------------------------------------------------------------------------- */
+const $ = (id) => document.getElementById(id);
+
+function showOnly(id){
+  ["view-loading","view-login","view-register"].forEach(v => $(v)?.classList.add("hidden"));
+  $(id)?.classList.remove("hidden");
+}
+
+function showAppView(viewName){
+  ["stations","live","summary","history","admin"].forEach(v => {
+    $("view-" + v).classList.toggle("hidden", v !== viewName);
+  });
+  document.querySelectorAll(".navpills .pill[data-view]").forEach(p => {
+    p.classList.toggle("active", p.dataset.view === viewName);
+  });
+}
+
+function toast(msg){
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+function money(n){ return "$" + n.toFixed(2); }
+
+/* -------------------------------------------------------------------------
+   5. AUTENTICACIÓN
+   ------------------------------------------------------------------------- */
+$("go-register").onclick = () => showOnly("view-register");
+$("go-login").onclick = () => showOnly("view-login");
+$("go-guest").onclick = () => enterAsGuest();
+$("go-guest-2").onclick = () => enterAsGuest();
+$("btn-account").onclick = () => { $("app-shell").classList.add("hidden"); showOnly("view-login"); };
+
+function enterAsGuest(){
+  currentUser = null;
+  isAdmin = false;
+  $("view-loading").classList.add("hidden");
+  $("view-login").classList.add("hidden");
+  $("view-register").classList.add("hidden");
+  $("nav-admin").classList.add("hidden");
+  $("btn-account").classList.remove("hidden");
+  $("btn-logout").classList.add("hidden");
+  $("greet-name").textContent = "Hola 👋";
+  Promise.all([cargarPrecios(), cargarEstaciones()]).then(() => {
+    $("app-shell").classList.remove("hidden");
+    showAppView("stations");
+  });
+}
+
+$("btn-login").onclick = async () => {
+  const email = $("login-email").value.trim();
+  const pass = $("login-password").value;
+  $("login-error").style.display = "none";
+  if(!email || !pass){ return showAuthError("login-error", "Completa correo y contraseña."); }
+  try{
+    await signInWithEmailAndPassword(auth, email, pass);
+  }catch(e){
+    showAuthError("login-error", traducirErrorAuth(e));
+  }
+};
+
+$("btn-register").onclick = async () => {
+  const nombre = $("reg-nombre").value.trim();
+  const email = $("reg-email").value.trim();
+  const pass = $("reg-password").value;
+  $("register-error").style.display = "none";
+  if(!nombre || !email || !pass){ return showAuthError("register-error", "Completa todos los campos."); }
+  if(pass.length < 6){ return showAuthError("register-error", "La contraseña debe tener al menos 6 caracteres."); }
+  try{
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    await updateProfile(cred.user, { displayName: nombre });
+    await setDoc(doc(db, "usuarios", cred.user.uid), {
+      nombre, email, creado: serverTimestamp()
+    });
+  }catch(e){
+    showAuthError("register-error", traducirErrorAuth(e));
+  }
+};
+
+$("btn-google").onclick = async () => {
+  try{
+    const cred = await signInWithPopup(auth, googleProvider);
+    const uSnap = await getDoc(doc(db, "usuarios", cred.user.uid));
+    if(!uSnap.exists()){
+      await setDoc(doc(db, "usuarios", cred.user.uid), {
+        nombre: cred.user.displayName || "Reciclador",
+        email: cred.user.email,
+        creado: serverTimestamp()
+      });
+    }
+  }catch(e){
+    showAuthError("login-error", "No se pudo iniciar con Google. Si estás abriendo el archivo directo (file://), súbelo a un servidor local o a GitHub Pages para que el login con Google funcione.");
+  }
+};
+
+$("btn-logout").onclick = () => signOut(auth);
+
+function showAuthError(id, msg){
+  const el = $(id);
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+function traducirErrorAuth(e){
+  const code = e.code || "";
+  if(code.includes("user-not-found") || code.includes("invalid-credential")) return "Correo o contraseña incorrectos.";
+  if(code.includes("wrong-password")) return "Contraseña incorrecta.";
+  if(code.includes("email-already-in-use")) return "Ese correo ya tiene una cuenta.";
+  if(code.includes("invalid-email")) return "El correo no es válido.";
+  if(code.includes("weak-password")) return "La contraseña es muy débil (mínimo 6 caracteres).";
+  return "Ocurrió un error. Intenta de nuevo.";
+}
+
+/* -------------------------------------------------------------------------
+   6. LISTENER PRINCIPAL DE AUTENTICACIÓN
+   ------------------------------------------------------------------------- */
+onAuthStateChanged(auth, async (user) => {
+  if(user){
+    currentUser = user;
+    const tokenResult = await user.getIdTokenResult(true);
+    isAdmin = tokenResult.claims.admin === true;
+    $("nav-admin").classList.toggle("hidden", !isAdmin);
+    $("btn-account").classList.add("hidden");
+    $("btn-logout").classList.remove("hidden");
+
+    let nombre = user.displayName;
+    if(!nombre){
+      const uSnap = await getDoc(doc(db, "usuarios", user.uid));
+      nombre = uSnap.exists() ? uSnap.data().nombre : "Reciclador";
+    }
+    $("greet-name").textContent = `Hola, ${nombre.split(" ")[0]} 👋`;
+
+    await Promise.all([cargarPrecios(), cargarEstaciones()]);
+
+    $("app-shell").classList.remove("hidden");
+    ["view-loading","view-login","view-register"].forEach(v => $(v)?.classList.add("hidden"));
+    showAppView("stations");
+  } else {
+    // Sin sesión: no forzamos login, la app queda disponible como invitado.
+    currentUser = null; isAdmin = false;
+    $("nav-admin").classList.add("hidden");
+    $("btn-account").classList.remove("hidden");
+    $("btn-logout").classList.add("hidden");
+    $("greet-name").textContent = "Hola 👋";
+    await Promise.all([cargarPrecios(), cargarEstaciones()]);
+    $("app-shell").classList.remove("hidden");
+    ["view-loading","view-login","view-register"].forEach(v => $(v)?.classList.add("hidden"));
+    showAppView("stations");
+  }
+});
+
+/* -------------------------------------------------------------------------
+   7. NAVEGACIÓN ENTRE VISTAS DE LA APP
+   ------------------------------------------------------------------------- */
+document.querySelectorAll(".navpills .pill[data-view]").forEach(btn => {
+  btn.onclick = () => {
+    const v = btn.dataset.view;
+    if(v === "history") renderHistorial();
+    if(v === "admin") renderAdmin();
+    showAppView(v);
+  };
+});
+
+/* -------------------------------------------------------------------------
+   8. PRECIOS (Firestore: colección "precios")
+   ------------------------------------------------------------------------- */
+async function cargarPrecios(){
+  try{
+    const snap = await getDocs(collection(db, "precios"));
+    if(snap.empty){
+      precios = { ...PRECIOS_POR_DEFECTO };
+    } else {
+      const nuevos = {};
+      snap.forEach(d => { nuevos[d.id] = d.data().precioPorKg; });
+      precios = { ...PRECIOS_POR_DEFECTO, ...nuevos };
+    }
+  }catch(e){
+    console.warn("No se pudieron cargar precios, usando valores por defecto.", e);
+    precios = { ...PRECIOS_POR_DEFECTO };
+  }
+}
+
+/* -------------------------------------------------------------------------
+   9. ESTACIONES (Firestore: colección "estaciones")
+   ------------------------------------------------------------------------- */
+async function cargarEstaciones(){
+  try{
+    const snap = await getDocs(collection(db, "estaciones"));
+    if(snap.empty){
+      estaciones = FALLBACK_ESTACIONES;
+    } else {
+      estaciones = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+  }catch(e){
+    console.warn("No se pudieron cargar estaciones, usando lista de respaldo.", e);
+    estaciones = FALLBACK_ESTACIONES;
+  }
+  renderEstaciones();
+}
+
+function renderEstaciones(){
+  const cont = $("stations-list");
+  cont.innerHTML = "";
+  estaciones.forEach(est => {
+    const card = document.createElement("div");
+    card.className = "station-card" + (est.activa === false ? " inactiva" : "");
+    card.innerHTML = `
+      <div class="station-emoji">📍</div>
+      <div class="station-info">
+        <h3>${est.nombre}</h3>
+        <p>${est.zona || ""}</p>
+      </div>
+      <button class="btn-mini" ${est.activa === false ? "disabled" : ""}>${est.activa === false ? "Inactiva" : "Iniciar"}</button>
+    `;
+    if(est.activa !== false){
+      card.querySelector("button").onclick = () => iniciarSesion(est);
+    }
+    cont.appendChild(card);
+  });
+}
+
+/* -------------------------------------------------------------------------
+   10. SESIÓN DE PESAJE (SIMULADA)
+   ------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------
+   10. SESIÓN DE PESAJE (EN TIEMPO REAL, vía Firestore)
+   El documento sesiones_activas/{estacionId} es escrito por el script de
+   Python (hoy: simulador; luego: lector real del PLC vía snap7). La app
+   solo escucha los cambios y los refleja en pantalla.
+   ------------------------------------------------------------------------- */
+async function iniciarSesion(estacion){
+  sesion = {
+    estacionId: estacion.id,
+    estacionNombre: estacion.nombre,
+    materiales: {
+      plastico: { piezas: 0, pesoKg: 0 },
+      carton:   { piezas: 0, pesoKg: 0 },
+      aluminio: { piezas: 0, pesoKg: 0 }
+    }
+  };
+  $("live-station-name").textContent = "Separando en " + estacion.nombre;
+  buildJars();
+  renderLive();
+  showAppView("live");
+
+  const sesionRef = doc(db, "sesiones_activas", estacion.id);
+  // Reinicia el documento para que el script de Python empiece a acumular
+  // desde cero en esta nueva sesión.
+  try{
+    await setDoc(sesionRef, {
+      materiales: sesion.materiales,
+      finalizada: false,
+      actualizado: serverTimestamp()
+    });
+  }catch(e){
+    console.error(e);
+    toast("⚠️ No se pudo iniciar la sesión en Firestore.");
+  }
+
+  detenerEscuchaSesion();
+  unsubSesion = onSnapshot(sesionRef, (snap) => {
+    if(!snap.exists() || !sesion) return;
+    const data = snap.data();
+    if(data.materiales){
+      Object.keys(MATERIALES).forEach(key => {
+        if(data.materiales[key]) sesion.materiales[key] = data.materiales[key];
+      });
+    }
+    renderLive();
+    if(data.finalizada === true) onSesionFinalizadaPorPLC();
+  });
+}
+
+function detenerEscuchaSesion(){
+  if(unsubSesion){ unsubSesion(); unsubSesion = null; }
+}
+
+async function borrarSesionActiva(estacionId){
+  try{ await deleteDoc(doc(db, "sesiones_activas", estacionId)); }catch(e){ /* no crítico */ }
+}
+
+async function onSesionFinalizadaPorPLC(){
+  // El script de Python (o el PLC) marcó finalizada:true, ej. al presionar
+  // el botón físico/virtual de "fin de sesión".
+  detenerEscuchaSesion();
+  if(!sesion) return;
+  if(!currentUser){
+    $("modal-register-overlay").classList.remove("hidden");
+    return;
+  }
+  await finalizarYGuardar();
+}
+
+function buildJars(){
+  const row = $("jars-row");
+  row.innerHTML = "";
+  Object.keys(MATERIALES).forEach(key => {
+    const mat = MATERIALES[key];
+    const wrap = document.createElement("div");
+    wrap.className = "jar-wrap";
+    wrap.innerHTML = `
+      <div class="jar">
+        <span class="jar-emoji">${mat.emoji}</span>
+        <div class="jar-fill" id="fill-${key}" style="background:${mat.color};"></div>
+      </div>
+      <div class="jar-label">${mat.nombre}</div>
+      <div class="jar-count" id="count-${key}">0 piezas</div>
+      <div class="jar-stats">
+        <div><span class="val" id="peso-${key}">0.00</span> kg</div>
+        <div><span class="val" id="sub-${key}">$0.00</span></div>
+      </div>
+    `;
+    row.appendChild(wrap);
+  });
+}
+
+function renderLive(){
+  let total = 0, pesoTotal = 0;
+  Object.keys(MATERIALES).forEach(key => {
+    const mat = MATERIALES[key];
+    const datos = sesion.materiales[key];
+    const precioKg = precios[key] ?? PRECIOS_POR_DEFECTO[key];
+    const subtotal = datos.pesoKg * precioKg;
+    total += subtotal;
+    pesoTotal += datos.pesoKg;
+
+    const fillPct = Math.min(100, (datos.pesoKg / mat.cap) * 100);
+    $(`fill-${key}`).style.height = fillPct + "%";
+    $(`count-${key}`).textContent = `${datos.piezas} piezas`;
+    $(`peso-${key}`).textContent = datos.pesoKg.toFixed(2);
+    $(`sub-${key}`).textContent = money(subtotal);
+  });
+  $("live-total").textContent = money(total);
+  $("live-peso").textContent = pesoTotal.toFixed(2) + " kg en total";
+}
+
+$("btn-cancel-session").onclick = async () => {
+  detenerEscuchaSesion();
+  if(sesion) await borrarSesionActiva(sesion.estacionId);
+  sesion = null;
+  showAppView("stations");
+};
+
+$("btn-finish-session").onclick = async () => {
+  detenerEscuchaSesion();
+  if(!currentUser){
+    $("modal-register-overlay").classList.remove("hidden");
+    return;
+  }
+  await finalizarYGuardar();
+};
+
+$("modal-continue-guest").onclick = async () => {
+  $("modal-register-overlay").classList.add("hidden");
+  await finalizarYGuardar();
+};
+$("modal-go-register").onclick = async () => {
+  $("modal-register-overlay").classList.add("hidden");
+  if(sesion) await borrarSesionActiva(sesion.estacionId);
+  sesion = null;
+  $("app-shell").classList.add("hidden");
+  showOnly("view-register");
+};
+$("modal-go-login").onclick = async () => {
+  $("modal-register-overlay").classList.add("hidden");
+  if(sesion) await borrarSesionActiva(sesion.estacionId);
+  sesion = null;
+  $("app-shell").classList.add("hidden");
+  showOnly("view-login");
+};
+
+async function finalizarYGuardar(){
+  let total = 0;
+  const materialesFinal = {};
+  Object.keys(MATERIALES).forEach(key => {
+    const datos = sesion.materiales[key];
+    const precioKg = precios[key] ?? PRECIOS_POR_DEFECTO[key];
+    const subtotal = datos.pesoKg * precioKg;
+    total += subtotal;
+    materialesFinal[key] = {
+      piezas: datos.piezas,
+      pesoKg: Number(datos.pesoKg.toFixed(3)),
+      precioKg: precioKg,
+      subtotal: Number(subtotal.toFixed(2))
+    };
+  });
+
+  const registro = {
+    uid: currentUser ? currentUser.uid : null,
+    nombreUsuario: currentUser ? (currentUser.displayName || "Reciclador") : "Invitado",
+    estacionId: sesion.estacionId,
+    estacionNombre: sesion.estacionNombre,
+    materiales: materialesFinal,
+    total: Number(total.toFixed(2)),
+    fecha: serverTimestamp()
+  };
+
+  if(currentUser){
+    try{
+      await addDoc(collection(db, "registros"), registro);
+    }catch(e){
+      console.error(e);
+      toast("⚠️ No se pudo guardar el registro, revisa tu conexión.");
+    }
+  } else {
+    toast("ℹ️ Pesaje calculado sin guardar (modo invitado).");
+  }
+
+  renderSummary(registro);
+  if(sesion) await borrarSesionActiva(sesion.estacionId);
+  sesion = null;
+  showAppView("summary");
+}
+
+function renderSummary(registro){
+  $("summary-station").textContent = registro.estacionNombre;
+  const cont = $("summary-breakdown");
+  cont.innerHTML = "";
+  Object.keys(MATERIALES).forEach(key => {
+    const mat = MATERIALES[key];
+    const d = registro.materiales[key];
+    const row = document.createElement("div");
+    row.className = "summary-item";
+    row.innerHTML = `
+      <span class="m-name">${mat.emoji} ${mat.nombre}</span>
+      <span>${d.piezas} pzs · ${d.pesoKg.toFixed(2)} kg</span>
+      <span class="mono">${money(d.subtotal)}</span>
+    `;
+    cont.appendChild(row);
+  });
+  $("summary-total").textContent = money(registro.total);
+}
+
+$("btn-summary-back").onclick = () => showAppView("stations");
+$("btn-summary-history").onclick = () => { renderHistorial(); showAppView("history"); };
+
+/* -------------------------------------------------------------------------
+   11. HISTORIAL
+   ------------------------------------------------------------------------- */
+async function renderHistorial(){
+  const cont = $("history-list");
+  if(!currentUser){
+    cont.innerHTML = `<div class="empty-state"><div class="e">🔒</div>Crea una cuenta gratis para guardar y ver tu historial de pesajes.<br><br><button class="btn btn-primary" id="btn-history-register" style="max-width:220px; margin:0 auto;">Crear cuenta</button></div>`;
+    $("btn-history-register").onclick = () => {
+      $("app-shell").classList.add("hidden");
+      showOnly("view-register");
+    };
+    return;
+  }
+  cont.innerHTML = `<div class="spinner"></div>`;
+  try{
+    const q = query(collection(db, "registros"), where("uid", "==", currentUser.uid), orderBy("fecha", "desc"));
+    const snap = await getDocs(q);
+    if(snap.empty){
+      cont.innerHTML = `<div class="empty-state"><div class="e">🌱</div>Todavía no tienes reciclaje registrado.<br>¡Anímate a separar en tu primera estación!</div>`;
+      return;
+    }
+    cont.innerHTML = "";
+    snap.forEach(d => {
+      const r = d.data();
+      const fecha = r.fecha?.toDate ? r.fecha.toDate() : new Date();
+      const card = document.createElement("div");
+      card.className = "hist-card";
+      const chips = Object.keys(MATERIALES).map(key => {
+        const dm = r.materiales?.[key];
+        if(!dm || dm.piezas === 0) return "";
+        return `<span class="chip">${MATERIALES[key].emoji} ${dm.piezas}</span>`;
+      }).join("");
+      card.innerHTML = `
+        <div class="hist-top"><h3>${r.estacionNombre}</h3><span class="amt">${money(r.total)}</span></div>
+        <div class="hist-date">${fecha.toLocaleDateString()} · ${fecha.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="chips">${chips}</div>
+      `;
+      cont.appendChild(card);
+    });
+  }catch(e){
+    console.error(e);
+    cont.innerHTML = `<div class="empty-state"><div class="e">⚠️</div>No se pudo cargar tu historial.</div>`;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   12. PANEL ADMIN
+   ------------------------------------------------------------------------- */
+document.querySelectorAll(".admin-tab").forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll(".admin-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    const target = tab.dataset.tab;
+    $("admin-precios").classList.toggle("hidden", target !== "precios");
+    $("admin-estaciones").classList.toggle("hidden", target !== "estaciones");
+  };
+});
+
+async function renderAdmin(){
+  if(!isAdmin) return;
+  renderPreciosAdmin();
+  renderEstacionesAdmin();
+}
+
+function renderPreciosAdmin(){
+  const cont = $("precios-list");
+  cont.innerHTML = "";
+  Object.keys(MATERIALES).forEach(key => {
+    const mat = MATERIALES[key];
+    const row = document.createElement("div");
+    row.className = "price-row";
+    row.innerHTML = `
+      <span class="price-emoji">${mat.emoji}</span>
+      <span class="price-name">${mat.nombre}</span>
+      <div class="price-input-wrap">
+        <span>$</span>
+        <input type="number" step="0.01" min="0" id="price-input-${key}" value="${(precios[key] ?? PRECIOS_POR_DEFECTO[key]).toFixed(2)}">
+        <span>/kg</span>
+      </div>
+      <button class="save-mini" id="save-price-${key}">Guardar</button>
+    `;
+    cont.appendChild(row);
+    $(`save-price-${key}`).onclick = () => guardarPrecio(key);
+  });
+}
+
+async function guardarPrecio(key){
+  const input = $(`price-input-${key}`);
+  const valor = parseFloat(input.value);
+  if(isNaN(valor) || valor < 0){ toast("Ingresa un precio válido."); return; }
+  try{
+    await setDoc(doc(db, "precios", key), {
+      nombre: MATERIALES[key].nombre,
+      precioPorKg: valor,
+      actualizado: serverTimestamp()
+    }, { merge: true });
+    precios[key] = valor;
+    toast(`✅ Precio de ${MATERIALES[key].nombre} actualizado`);
+  }catch(e){
+    console.error(e);
+    toast("⚠️ No se pudo guardar. ¿Tienes permisos de admin?");
+  }
+}
+
+function renderEstacionesAdmin(){
+  const cont = $("admin-stations-list");
+  cont.innerHTML = "";
+  estaciones.forEach(est => {
+    const row = document.createElement("div");
+    row.className = "price-row";
+    row.innerHTML = `
+      <span class="price-emoji">📍</span>
+      <span class="price-name">${est.nombre}<br><small style="font-weight:400; color:var(--forest-soft);">${est.zona || ""}</small></span>
+      <button class="save-mini" style="background:${est.activa === false ? '#E6F5EA' : '#FFE8E0'}; color:${est.activa === false ? 'var(--leaf-dark)' : 'var(--coral)'};">
+        ${est.activa === false ? "Activar" : "Desactivar"}
+      </button>
+    `;
+    row.querySelector("button").onclick = () => toggleEstacion(est);
+    cont.appendChild(row);
+  });
+}
+
+async function toggleEstacion(est){
+  try{
+    await setDoc(doc(db, "estaciones", est.id), { ...est, activa: !(est.activa !== false) }, { merge: true });
+    await cargarEstaciones();
+    renderEstacionesAdmin();
+    toast("✅ Estación actualizada");
+  }catch(e){
+    console.error(e);
+    toast("⚠️ No se pudo actualizar. ¿Tienes permisos de admin?");
+  }
+}
+
+$("btn-add-station").onclick = async () => {
+  const nombre = $("new-station-nombre").value.trim();
+  const zona = $("new-station-zona").value.trim();
+  if(!nombre){ toast("Ponle un nombre a la estación."); return; }
+  const id = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  try{
+    await setDoc(doc(db, "estaciones", id || Date.now().toString()), {
+      nombre, zona, activa: true
+    });
+    $("new-station-nombre").value = ""; $("new-station-zona").value = "";
+    await cargarEstaciones();
+    renderEstacionesAdmin();
+    toast("✅ Estación agregada");
+  }catch(e){
+    console.error(e);
+    toast("⚠️ No se pudo agregar. ¿Tienes permisos de admin?");
+  }
+};
+
+</script>
+</body>
+</html>
