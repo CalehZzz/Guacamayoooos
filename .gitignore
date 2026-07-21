@@ -1,0 +1,8 @@
+# Claves privadas — NUNCA subir a git
+serviceAccountKey.json
+**/serviceAccountKey*.json
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env

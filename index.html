@@ -142,8 +142,41 @@
   .live-title{text-align:center; margin-bottom:6px;}
   .live-title h2{font-size:20px;}
   .live-title p{color:var(--forest-soft); font-size:13.5px; margin-top:2px;}
-  .jars-row{display:flex; gap:12px; justify-content:center; margin:22px 0 8px;}
-  .jar-wrap{flex:1; text-align:center; max-width:130px;}
+
+  /* ---------- Panel estado PLC ---------- */
+  .plc-panel{
+    background:var(--card); border-radius:18px; padding:14px 14px 12px;
+    box-shadow:var(--shadow-sm); margin:14px 0 4px;
+    border:2px solid var(--cream-2);
+  }
+  .plc-panel-head{
+    display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;
+  }
+  .plc-panel-head h3{font-size:14px; color:var(--forest);}
+  .plc-dot{
+    width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px;
+    background:#DDD5C0;
+  }
+  .plc-dot.on{background:var(--leaf); box-shadow:0 0 0 3px rgba(95,174,126,.25);}
+  .plc-dot.off{background:#C9BFA8;}
+  .plc-dot.alarm{background:var(--coral); box-shadow:0 0 0 3px rgba(255,139,103,.25);}
+  .plc-link{
+    font-size:12px; font-weight:800; color:var(--forest-soft);
+    display:flex; align-items:center;
+  }
+  .plc-grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:8px;
+  }
+  .plc-chip{
+    background:var(--cream); border-radius:12px; padding:8px 10px;
+    font-size:12px; color:var(--forest-soft); font-weight:700;
+  }
+  .plc-chip b{display:block; color:var(--forest); font-size:13px; margin-top:2px; font-weight:800;}
+  .plc-chip.warn b{color:#B94B2D;}
+  .plc-chip.ok b{color:var(--leaf-dark);}
+
+  .jars-row{display:flex; gap:16px; justify-content:center; margin:22px 0 8px;}
+  .jar-wrap{flex:1; text-align:center; max-width:150px;}
   .jar{
     position:relative; width:100%; aspect-ratio:3/4; border-radius:18px 18px 26px 26px;
     background:linear-gradient(180deg, rgba(255,255,255,.5), rgba(255,255,255,.15));
@@ -261,7 +294,7 @@
   <div id="view-login" class="auth-wrap hidden">
     <div class="auth-logo">🌿♻️</div>
     <h1>Guacamayos</h1>
-    <p class="tagline">Separa, pesa y recicla en la estación más cercana. Fácil, rápido y bueno para el planeta.</p>
+    <p class="tagline">Conéctate a la estación, separa botellas y latas, y mira tu acumulado en vivo desde el PLC.</p>
     <div class="auth-card">
       <div id="login-error" class="error-msg"></div>
       <div class="field">
@@ -336,7 +369,7 @@
       <section id="view-stations" class="hidden">
         <div class="greeting">
           <h2 id="greet-name">Hola 👋</h2>
-          <p>Elige la estación donde vas a reciclar hoy.</p>
+          <p>Elige la estación y conéctate a la máquina. Solo botellas plásticas y latas de aluminio.</p>
         </div>
         <div id="stations-list"></div>
       </section>
@@ -345,16 +378,34 @@
       <section id="view-live" class="hidden">
         <div class="live-title">
           <h2 id="live-station-name">Separando en...</h2>
-          <p>Coloca el material — el conteo se actualiza en vivo (simulado)</p>
+          <p>La báscula pesa · el sensor clasifica · el pistón separa. Todo llega desde el PLC.</p>
         </div>
+
+        <div class="plc-panel" id="plc-panel">
+          <div class="plc-panel-head">
+            <h3>Estado de la máquina</h3>
+            <div class="plc-link" id="plc-link-status"><span class="plc-dot off" id="plc-dot"></span><span id="plc-link-text">Esperando PLC…</span></div>
+          </div>
+          <div class="plc-grid">
+            <div class="plc-chip">Sistema <b id="plc-sistema">—</b></div>
+            <div class="plc-chip">Modo <b id="plc-modo">—</b></div>
+            <div class="plc-chip">Banda <b id="plc-banda">—</b></div>
+            <div class="plc-chip">Pistón <b id="plc-piston">—</b></div>
+            <div class="plc-chip">Último material <b id="plc-ultimo">—</b></div>
+            <div class="plc-chip">Peso actual <b id="plc-peso-actual">—</b></div>
+            <div class="plc-chip" id="plc-chip-alarma">Alarma <b id="plc-alarma">—</b></div>
+            <div class="plc-chip" id="plc-chip-emergencia">Emergencia <b id="plc-emergencia">—</b></div>
+          </div>
+        </div>
+
         <div class="jars-row" id="jars-row"></div>
         <div class="total-readout">
-          <div class="lbl">Total acumulado</div>
+          <div class="lbl">Total acumulado en esta sesión</div>
           <div class="amt mono" id="live-total">$0.00</div>
           <div class="sub" id="live-peso">0.00 kg en total</div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-danger" id="btn-cancel-session">Cancelar</button>
+          <button class="btn btn-danger" id="btn-cancel-session">Desconectar</button>
           <button class="btn btn-primary" id="btn-finish-session">✅ Finalizar y guardar</button>
         </div>
       </section>
@@ -415,11 +466,12 @@
 
 <script type="module">
 /* =========================================================================
-   GUACAMAYOS — App de separado y pesaje de material reciclado
-   Fase actual: la app escucha en tiempo real (onSnapshot) el documento
-   `sesiones_activas/{estacionId}` en Firestore. Un script de Python (que
-   luego leerá el PLC real vía snap7, y hoy simula esos datos) es quien
-   escribe ese documento; la app solo refleja lo que llega.
+   GUACAMAYOS — App de clasificación + pesaje (innovación del reto Siemens)
+   La app escucha `sesiones_activas/{estacionId}` en Firestore.
+   Quien escribe ese documento es:
+     - plc_bridge.py  → lee el PLC virtual (PLCSIM) con snap7
+     - plc_simulador.py → mismos datos sin PLC (para demos)
+   Materiales soportados: botellas plásticas + latas de aluminio.
    ========================================================================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -454,14 +506,27 @@ const db = getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 
 /* -------------------------------------------------------------------------
-   2. CONFIGURACIÓN DE MATERIALES (para la simulación)
+   2. CONFIGURACIÓN DE MATERIALES (estación: solo botellas y latas)
    ------------------------------------------------------------------------- */
 const MATERIALES = {
   plastico: { nombre: "Plástico", emoji: "🥤", color: "#5AA9E6", pesoMin: 0.02, pesoMax: 0.06, cap: 3 },
-  carton:   { nombre: "Cartón",   emoji: "📦", color: "#C68958", pesoMin: 0.05, pesoMax: 0.18, cap: 5 },
   aluminio: { nombre: "Aluminio", emoji: "🥫", color: "#9AA6C4", pesoMin: 0.01, pesoMax: 0.03, cap: 1.5 }
 };
-const PRECIOS_POR_DEFECTO = { plastico: 0.45, carton: 0.15, aluminio: 1.20 };
+const PRECIOS_POR_DEFECTO = { plastico: 0.45, aluminio: 1.20 };
+
+const PLC_DEFAULT = {
+  conectado: false,
+  sistemaOn: false,
+  modoAuto: false,
+  emergencia: false,
+  alarma: false,
+  banda: false,
+  piston: false,
+  estado: "idle",
+  ultimoMaterial: null,
+  pesoActualKg: 0,
+  sesionActiva: false
+};
 
 /* -------------------------------------------------------------------------
    3. ESTADO GLOBAL
@@ -474,7 +539,7 @@ let sesion = null;        // sesión de pesaje activa
 let unsubSesion = null;    // función para dejar de escuchar la sesión en Firestore
 
 const FALLBACK_ESTACIONES = [
-  { id: "parque-central",  nombre: "Parque Central",        zona: "Frente a la plaza principal", activa: true },
+  { id: "parque-central",  nombre: "Estación Guacamayos Demo", zona: "Báscula + sensor + pistón (PLC virtual)", activa: true },
   { id: "parque-robles",   nombre: "Parque Los Robles",     zona: "Zona norte, cancha techada",   activa: true },
   { id: "plaza-americas",  nombre: "Plaza Las Américas",    zona: "Junto a la fuente",            activa: true }
 ];
@@ -690,12 +755,12 @@ function renderEstaciones(){
     const card = document.createElement("div");
     card.className = "station-card" + (est.activa === false ? " inactiva" : "");
     card.innerHTML = `
-      <div class="station-emoji">📍</div>
+      <div class="station-emoji">📡</div>
       <div class="station-info">
         <h3>${est.nombre}</h3>
         <p>${est.zona || ""}</p>
       </div>
-      <button class="btn-mini" ${est.activa === false ? "disabled" : ""}>${est.activa === false ? "Inactiva" : "Iniciar"}</button>
+      <button class="btn-mini" ${est.activa === false ? "disabled" : ""}>${est.activa === false ? "Inactiva" : "Conectar"}</button>
     `;
     if(est.activa !== false){
       card.querySelector("button").onclick = () => iniciarSesion(est);
@@ -705,13 +770,7 @@ function renderEstaciones(){
 }
 
 /* -------------------------------------------------------------------------
-   10. SESIÓN DE PESAJE (SIMULADA)
-   ------------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------
-   10. SESIÓN DE PESAJE (EN TIEMPO REAL, vía Firestore)
-   El documento sesiones_activas/{estacionId} es escrito por el script de
-   Python (hoy: simulador; luego: lector real del PLC vía snap7). La app
-   solo escucha los cambios y los refleja en pantalla.
+   10. SESIÓN CONECTADA AL PLC (vía Firestore ← bridge/simulador)
    ------------------------------------------------------------------------- */
 async function iniciarSesion(estacion){
   sesion = {
@@ -719,27 +778,27 @@ async function iniciarSesion(estacion){
     estacionNombre: estacion.nombre,
     materiales: {
       plastico: { piezas: 0, pesoKg: 0 },
-      carton:   { piezas: 0, pesoKg: 0 },
       aluminio: { piezas: 0, pesoKg: 0 }
-    }
+    },
+    plc: { ...PLC_DEFAULT }
   };
-  $("live-station-name").textContent = "Separando en " + estacion.nombre;
+  $("live-station-name").textContent = "Conectado a " + estacion.nombre;
   buildJars();
   renderLive();
+  renderPlcPanel(sesion.plc);
   showAppView("live");
 
   const sesionRef = doc(db, "sesiones_activas", estacion.id);
-  // Reinicia el documento para que el script de Python empiece a acumular
-  // desde cero en esta nueva sesión.
   try{
     await setDoc(sesionRef, {
       materiales: sesion.materiales,
       finalizada: false,
+      plc: { ...PLC_DEFAULT, sesionActiva: true },
       actualizado: serverTimestamp()
     });
   }catch(e){
     console.error(e);
-    toast("⚠️ No se pudo iniciar la sesión en Firestore.");
+    toast("⚠️ No se pudo abrir la sesión en Firestore.");
   }
 
   detenerEscuchaSesion();
@@ -751,7 +810,11 @@ async function iniciarSesion(estacion){
         if(data.materiales[key]) sesion.materiales[key] = data.materiales[key];
       });
     }
+    if(data.plc){
+      sesion.plc = { ...PLC_DEFAULT, ...data.plc };
+    }
     renderLive();
+    renderPlcPanel(sesion.plc);
     if(data.finalizada === true) onSesionFinalizadaPorPLC();
   });
 }
@@ -765,8 +828,6 @@ async function borrarSesionActiva(estacionId){
 }
 
 async function onSesionFinalizadaPorPLC(){
-  // El script de Python (o el PLC) marcó finalizada:true, ej. al presionar
-  // el botón físico/virtual de "fin de sesión".
   detenerEscuchaSesion();
   if(!sesion) return;
   if(!currentUser){
@@ -774,6 +835,38 @@ async function onSesionFinalizadaPorPLC(){
     return;
   }
   await finalizarYGuardar();
+}
+
+function renderPlcPanel(plc){
+  const p = plc || PLC_DEFAULT;
+  const connected = !!p.conectado;
+  const dot = $("plc-dot");
+  const linkText = $("plc-link-text");
+  dot.className = "plc-dot " + (p.emergencia || p.alarma ? "alarm" : (connected ? "on" : "off"));
+  linkText.textContent = connected
+    ? (p.estado === "clasificando" ? "PLC · clasificando" : (p.sistemaOn ? "PLC conectado" : "PLC en espera"))
+    : "Esperando bridge / PLC…";
+
+  $("plc-sistema").textContent = p.sistemaOn ? "ON" : "OFF";
+  $("plc-modo").textContent = p.modoAuto ? "Automático" : "Manual";
+  $("plc-banda").textContent = p.banda ? "Marcha" : "Parada";
+  $("plc-piston").textContent = p.piston ? "Extendido" : "Retráctil";
+  const ultimo = p.ultimoMaterial && MATERIALES[p.ultimoMaterial]
+    ? `${MATERIALES[p.ultimoMaterial].emoji} ${MATERIALES[p.ultimoMaterial].nombre}`
+    : "—";
+  $("plc-ultimo").textContent = ultimo;
+  $("plc-peso-actual").textContent = (typeof p.pesoActualKg === "number")
+    ? `${p.pesoActualKg.toFixed(3)} kg`
+    : "—";
+
+  const alarmaChip = $("plc-chip-alarma");
+  const emergChip = $("plc-chip-emergencia");
+  $("plc-alarma").textContent = p.alarma ? "ACTIVA" : "OK";
+  $("plc-emergencia").textContent = p.emergencia ? "ACTIVA" : "OK";
+  alarmaChip.classList.toggle("warn", !!p.alarma);
+  alarmaChip.classList.toggle("ok", !p.alarma);
+  emergChip.classList.toggle("warn", !!p.emergencia);
+  emergChip.classList.toggle("ok", !p.emergencia);
 }
 
 function buildJars(){
@@ -800,19 +893,22 @@ function buildJars(){
 }
 
 function renderLive(){
+  if(!sesion) return;
   let total = 0, pesoTotal = 0;
   Object.keys(MATERIALES).forEach(key => {
     const mat = MATERIALES[key];
-    const datos = sesion.materiales[key];
+    const datos = sesion.materiales[key] || { piezas: 0, pesoKg: 0 };
     const precioKg = precios[key] ?? PRECIOS_POR_DEFECTO[key];
-    const subtotal = datos.pesoKg * precioKg;
+    const subtotal = (datos.pesoKg || 0) * precioKg;
     total += subtotal;
-    pesoTotal += datos.pesoKg;
+    pesoTotal += datos.pesoKg || 0;
 
-    const fillPct = Math.min(100, (datos.pesoKg / mat.cap) * 100);
-    $(`fill-${key}`).style.height = fillPct + "%";
-    $(`count-${key}`).textContent = `${datos.piezas} piezas`;
-    $(`peso-${key}`).textContent = datos.pesoKg.toFixed(2);
+    const fillPct = Math.min(100, ((datos.pesoKg || 0) / mat.cap) * 100);
+    const fill = $(`fill-${key}`);
+    if(!fill) return;
+    fill.style.height = fillPct + "%";
+    $(`count-${key}`).textContent = `${datos.piezas || 0} piezas`;
+    $(`peso-${key}`).textContent = (datos.pesoKg || 0).toFixed(2);
     $(`sub-${key}`).textContent = money(subtotal);
   });
   $("live-total").textContent = money(total);
