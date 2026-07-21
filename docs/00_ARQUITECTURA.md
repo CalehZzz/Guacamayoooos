@@ -1,0 +1,105 @@
+# Guacamayos — Arquitectura del sistema (reto Siemens 2026)
+
+## Qué estás construyendo
+
+Una **estación automatizada de clasificación y pesaje** de botellas plásticas y latas de aluminio, con:
+
+| Pieza del reto | Herramienta | Rol |
+|---|---|---|
+| PLC Siemens | **TIA Portal V20** + PLCSIM | Cerebro: arranque/paro, modos, secuencia, contadores, alarmas |
+| Electroneumática | **Automation Studio** | Simula banda, sensores, cilindro (pistón) y electroválvulas |
+| HMI | **WinCC** dentro de TIA Portal | Pantalla industrial: ON/OFF, manual/auto, contadores, alarmas |
+| Innovación | **App web Guacamayos** | Cualquier persona se conecta y ve lo acumulado en vivo |
+
+## Flujo físico (lo que imaginas en la mesa)
+
+```
+  [Entrada] → [Báscula] → [Banda] → [Sensor material + pistón] → [Contenedores]
+                              │
+                              ├─ Plástico  → contenedor A (pistón NO empuja / o empuja a A)
+                              └─ Aluminio  → contenedor B (pistón empuja)
+```
+
+1. La pieza cae / se coloca sobre la **báscula** → el PLC lee el peso.
+2. La **banda** avanza la pieza.
+3. Arriba, el **sensor** identifica si es plástico o aluminio.
+4. El **pistón** (cilindro neumático) empuja o no según el material.
+5. Se incrementan **contadores y peso acumulado** de la sesión.
+6. La **app web** muestra eso en tiempo real a quien esté en la estación.
+
+## Cómo se conecta TODO (importante)
+
+El navegador **no puede hablar S7** directamente con el PLC. Por eso hay un puente:
+
+```
+  Automation Studio  ←→  (simulación física / I/O)
+         │
+         │  (en el reto: demuestras el circuito; el PLC se prueba en PLCSIM)
+         ▼
+  TIA Portal / PLCSIM (PLC virtual)
+         │
+         │  protocolo S7 (snap7)
+         ▼
+  plc_bridge.py  (Python en tu PC)
+         │
+         │  escribe Firestore
+         ▼
+  App web Guacamayos (index.html)
+         │
+         ▼
+  Celular / laptop del usuario en la estación
+```
+
+### Contrato de datos (lo que la web espera)
+
+Documento Firestore: `sesiones_activas/{estacionId}`
+
+```json
+{
+  "materiales": {
+    "plastico": { "piezas": 0, "pesoKg": 0.0 },
+    "aluminio": { "piezas": 0, "pesoKg": 0.0 }
+  },
+  "finalizada": false,
+  "plc": {
+    "conectado": true,
+    "sistemaOn": true,
+    "modoAuto": true,
+    "emergencia": false,
+    "alarma": false,
+    "estado": "running",
+    "ultimoMaterial": "plastico",
+    "banda": true,
+    "piston": false,
+    "pesoActualKg": 0.0
+  },
+  "actualizado": "<timestamp>"
+}
+```
+
+- La **web crea** el documento en ceros al pulsar **Conectar**.
+- El **bridge / simulador** lo actualiza leyendo el PLC (o simulando).
+- Si `finalizada: true`, la web cierra la sesión y guarda el registro.
+
+## Orden recomendado de trabajo
+
+1. Leer esta arquitectura.
+2. Seguir `01_GUIA_TIA_PORTAL.md` (crear proyecto → tags → programa → HMI → PLCSIM).
+3. Seguir `02_GUIA_AUTOMATION_STUDIO.md` (circuito electroneumático).
+4. Seguir `03_CONEXION_WEB_PLC.md` (bridge + app).
+5. Usar `tia/MAPA_IO_Y_DB.md` como hoja de referencia mientras programas.
+
+## Mapeo al enunciado del reto
+
+| Requisito del PDF | Dónde lo cumples |
+|---|---|
+| Encendido / apagado | HMI + `M_SistemaOn` en PLC |
+| Banda transportadora | `Q_Banda` + AS |
+| Detección con sensores | `I_SensorPlastico`, `I_SensorAluminio`, `I_BasculaOK` |
+| Clasificación neumática | `Q_Piston` + cilindro en AS |
+| Conteo de piezas | Contadores `ContPlastico` / `ContAluminio` en DB |
+| Modo manual / automático | HMI + lógica en FC |
+| Paro de emergencia | `I_Emergencia` corta todo |
+| HMI | Pantalla WinCC en TIA |
+| Alarmas | `M_Alarma` + mensajes HMI |
+| **Innovación** | App Guacamayos conectada al PLC vía bridge |
