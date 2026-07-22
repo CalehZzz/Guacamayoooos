@@ -52,12 +52,16 @@ Los `%M` concretos (M0.0, M0.6…) **no tienen que ser iguales a los de nadie**.
 | `M_ResetContadores` | Bool | `%M0.5` | Reset pedido desde HMI |
 | `M_PulsePlastico` | Bool | `%M0.6` | Flanco: se contó una botella |
 | `M_ResetAlarma` | Bool | `%M0.7` | Botón HMI para borrar alarma |
+| `M_CmdBanda` | Bool | `%M1.0` | Pedido interno de banda (auto/manual) |
+| `M_CmdPiston` | Bool | `%M1.1` | Pedido interno de pistón (auto/manual) |
 | `T_RetardoPiston` | Instancia TON (IEC) | DB de instancia auto | Espera con pistón extendido antes de contar |
 | `T_TimeoutPiston` | Instancia TON (IEC) | DB de instancia auto | Alarma si el pistón no llega a tiempo |
 
 > En S7-1200 **no uses** un tag `%T0` de la tag table para esto.  
 > Inserta el bloque **TON**, y en el `???` de arriba escribe `T_RetardoPiston` para que TIA cree su DB.  
 > Para contactos usa `T_RetardoPiston.Q` (ver `docs/06_COMO_USAR_TON.md`).
+
+> Orden completo de networks: `tia/LOGICA_LAD.md`.
 
 ---
 

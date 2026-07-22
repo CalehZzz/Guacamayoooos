@@ -37,3 +37,13 @@ Normal en S7-1200. El TON IEC pide una **instancia nueva** arriba del bloque (ej
 Para “¿ya cumplió el tiempo?” usa el contacto con **`T_RetardoPiston.Q`**.
 
 Paso a paso: [`06_COMO_USAR_TON.md`](06_COMO_USAR_TON.md).
+
+## 5) Me salieron DB con nombres random que no uso
+
+**No pasa nada** si están ahí sin usarse. Puedes borrarlos:
+
+1. Program blocks → clic derecho en el DB → **Delete**
+2. No borres `DatosEstacion` ni los DB que aparecen **arriba** de tus TON buenos
+3. Compila después
+
+La lista ordenada de networks está en [`../tia/LOGICA_LAD.md`](../tia/LOGICA_LAD.md).
