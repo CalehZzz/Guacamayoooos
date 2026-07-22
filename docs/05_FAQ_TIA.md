@@ -38,7 +38,19 @@ Para “¿ya cumplió el tiempo?” usa el contacto con **`T_RetardoPiston.Q`**.
 
 Paso a paso: [`06_COMO_USAR_TON.md`](06_COMO_USAR_TON.md).
 
-## 5) Me salieron DB con nombres random que no uso
+### Bobina P pide dos tags (arriba y abajo)
+
+Normal. Son **dos Bool distintos**:
+
+1. `M_PulsePlastico` → el pulso que usas en el programa  
+2. `M_EdgePlastico` → memoria de flanco (créalo, no lo uses en ninguna otra network)
+
+Si pones el mismo en ambos, el flanco falla o se comporta raro.
+
+### ¿Unir línea de arriba con la de abajo?
+
+- **Sí (paralelo):** Stop//Emergencia, banda auto//manual, pistón auto//manual  
+- **No (serie):** pulso plástico y detectar aluminio → todos los contactos en **una** línea
 
 **No pasa nada** si están ahí sin usarse. Puedes borrarlos:
 
