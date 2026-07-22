@@ -1,6 +1,31 @@
 # Lógica LAD — redes sugeridas (cópialas en TIA)
 
-No es un archivo importable: son las redes que debes dibujar en lenguaje de contactos (LAD). Usa los nombres simbólicos del mapa I/O.
+No es un archivo importable: son las redes que debes **dibujar** en lenguaje de contactos (LAD). Usa los nombres simbólicos del mapa I/O.
+
+## Cómo leer estos dibujos (muy importante)
+
+El texto tipo:
+
+```
+--| I_Start |----|/| I_Stop |----( S  M_SistemaOn )---
+```
+
+**NO se escribe en TIA.** Es solo un croquis. En el editor LAD haces esto:
+
+| Dibujo en esta guía | Qué insertar en TIA |
+|---|---|
+| `\| I_Start \|` | Contacto **normalmente abierto** → operand = tag `I_Start` |
+| `\|/\|\ I_Stop \|` | Contacto **normalmente cerrado** → operand = tag `I_Stop` |
+| `(   M_xxx )` | Bobina normal → tag `M_xxx` |
+| `( S  M_xxx )` | Bobina **Set** → tag `M_xxx` |
+| `( R  M_xxx )` | Bobina **Reset** → tag `M_xxx` |
+| `[TON T_RetardoPiston …]` | Instrucción **TON** desde la paleta (no escribas la palabra TON a mano en un contacto) |
+
+Sobre las letras del nombre (`I_`, `Q_`, `M_`, `T_`):
+
+- Son parte del **nombre del tag** que tú creaste (`I_Start`, `M_SistemaOn`…).
+- En el contacto/bobina escribes **solo el nombre completo del tag**, o arrastras el tag desde la lista.
+- **No** escribas `%I I_Start` ni `I I_Start`. Si el tag existe, TIA acepta `I_Start` o su dirección `%I0.0`.
 
 ---
 
@@ -74,21 +99,39 @@ END_IF;
 --| M_Clasificando |----|/| I_PistonExtendido |----(   Q_Piston )---
 ```
 
-### Network 6 — Al llegar extendido: contar y pedir retraer
+### Network 6 — Al llegar extendido: TON de retardo
+En S7-1200 el TON es un **bloque IEC**, no un tag `%T0` en un contacto.
+Guía detallada: `docs/06_COMO_USAR_TON.md`
+
+1. Contactos: `M_Clasificando` + `I_PistonExtendido` → entrada **IN** del TON  
+2. Arriba del TON (???): escribe **`T_RetardoPiston`** y acepta crear su DB de instancia  
+   (**no** elijas `DatosEstacion`)  
+3. **PT** = `T#500ms`
+
+### Network 6b — Cuando el timer cumple (usa `.Q`)
+En un contacto normalmente abierto el operand debe ser:
+
+```text
+T_RetardoPiston.Q
 ```
---| M_Clasificando |----| I_PistonExtendido |----[TON T_RetardoPiston, PT=T#0.5s]
+
+(no solo `T_RetardoPiston`)
+
 ```
-Cuando `T_RetardoPiston.Q`:
+--| T_RetardoPiston.Q |----( R  M_Clasificando )
+```
+
+Y con esa misma condición (SCL o ADD):
 ```
   DatosEstacion.ContAluminio := DatosEstacion.ContAluminio + 1;
   DatosEstacion.PesoAluminioKg := DatosEstacion.PesoAluminioKg + DatosEstacion.PesoActualKg;
   DatosEstacion.UltimoMaterial := 2;
-  RESET M_Clasificando;  // Q_Piston cae → cilindro retorna por muelle / válvula
 ```
 
 ### Network 7 — Timeout pistón (alarma)
+Otro TON, instancia nueva `T_TimeoutPiston`, PT=`T#3s`, IN=`M_Clasificando`.
+
 ```
---| M_Clasificando |----[TON T_TimeoutPiston, PT=T#3s]
 --| T_TimeoutPiston.Q |----|/| I_PistonExtendido |----( S  M_Alarma )---
 ```
 

@@ -38,16 +38,26 @@ Copia estos nombres **exactamente** en TIA Portal (PLC tags + DB). Así el bridg
 
 ---
 
-## 3. Memorias internas (`%M`) recomendadas
+## 3. Memorias internas (`%M`) y temporizadores
 
-| Nombre | Tipo | Uso |
-|---|---|---|
-| `M_SistemaOn` | Bool | Latch de sistema energizado |
-| `M_ModoAuto` | Bool | Copia del modo (HMI o selector) |
-| `M_Alarma` | Bool | Alarma activa |
-| `M_Clasificando` | Bool | Secuencia en curso |
-| `M_PulsePieza` | Bool | Flanco: pieza nueva clasificada |
-| `M_ResetContadores` | Bool | Reset pedido desde HMI |
+Los `%M` concretos (M0.0, M0.6…) **no tienen que ser iguales a los de nadie**. Lo importante es que **no se repitan** y que el **nombre** coincida con el programa.
+
+| Nombre | Tipo | Ejemplo OK | Uso |
+|---|---|---|---|
+| `M_SistemaOn` | Bool | `%M0.0` | Latch de sistema energizado |
+| `M_ModoAuto` | Bool | `%M0.1` | Copia del modo (HMI o selector) |
+| `M_Alarma` | Bool | `%M0.2` | Alarma activa |
+| `M_Clasificando` | Bool | `%M0.3` | Secuencia aluminio en curso |
+| `M_PulsePieza` | Bool | `%M0.4` | Flanco genérico (opcional) |
+| `M_ResetContadores` | Bool | `%M0.5` | Reset pedido desde HMI |
+| `M_PulsePlastico` | Bool | `%M0.6` | Flanco: se contó una botella |
+| `M_ResetAlarma` | Bool | `%M0.7` | Botón HMI para borrar alarma |
+| `T_RetardoPiston` | Instancia TON (IEC) | DB de instancia auto | Espera con pistón extendido antes de contar |
+| `T_TimeoutPiston` | Instancia TON (IEC) | DB de instancia auto | Alarma si el pistón no llega a tiempo |
+
+> En S7-1200 **no uses** un tag `%T0` de la tag table para esto.  
+> Inserta el bloque **TON**, y en el `???` de arriba escribe `T_RetardoPiston` para que TIA cree su DB.  
+> Para contactos usa `T_RetardoPiston.Q` (ver `docs/06_COMO_USAR_TON.md`).
 
 ---
 
@@ -72,16 +82,28 @@ Crea un **Data Block** global llamado `DatosEstacion` (número DB1).
 | 16.5 | `Alarma` | Bool | Espejo alarma |
 | 16.6 | `BandaOn` | Bool | Espejo salida banda |
 | 16.7 | `PistonOn` | Bool | Espejo salida pistón |
-| 18.0 | `EstadoMaquina` | Int | 0 idle, 1 running, 2 clasificando, 3 alarma, 4 emergencia |
-| 20.0 | `UltimoMaterial` | Int | 0 ninguno, 1 plástico, 2 aluminio |
+| 18.0 | `EstadoMaquina` | **Int** | 0 idle, 1 running, 2 clasificando, 3 alarma, 4 emergencia |
+| 20.0 | `UltimoMaterial` | **Int** | 0 ninguno, 1 plástico, 2 aluminio |
+
+### Offsets que NO sirven para la web
+
+Si al compilar ves algo como:
+
+- `EstadoMaquina` → **17.0**
+- `UltimoMaterial` → **17.1**
+
+eso casi siempre significa que quedaron como **Bool** (bits), no como **Int**.  
+El bridge Python espera **Int en 18 y 20**. Corrige el tipo a `Int`, recompila y verifica que digan **18.0** y **20.0**.
+
+También confirma: clic derecho en el DB → Properties → Attributes → **Optimized block access = OFF**.
 
 ### Cómo crear el DB en TIA (resumen)
 
 1. Project tree → PLC → Program blocks → Add new block → **Data block**.
 2. Name: `DatosEstacion`, Type: Global DB, Language: DB.
 3. En Attributes del DB: **desactiva Optimized block access** (importante para snap7).
-4. Agrega los campos de la tabla en el mismo orden.
-5. Compile.
+4. Agrega los campos de la tabla en el mismo orden y con el **tipo exacto** (Int / Real / Bool).
+5. Compile y revisa la columna Offset.
 
 ---
 
