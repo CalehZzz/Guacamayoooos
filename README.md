@@ -9,7 +9,9 @@ App web + puente al PLC Siemens (TIA Portal / PLCSIM) + guías para Automation S
 3. [`docs/02_GUIA_AUTOMATION_STUDIO.md`](docs/02_GUIA_AUTOMATION_STUDIO.md) — electroneumática  
 4. [`docs/03_CONEXION_WEB_PLC.md`](docs/03_CONEXION_WEB_PLC.md) — conectar la página al PLC  
 5. [`tia/MAPA_IO_Y_DB.md`](tia/MAPA_IO_Y_DB.md) — tags y DB1  
-6. [`tia/LOGICA_LAD.md`](tia/LOGICA_LAD.md) — redes LAD a copiar  
+6. [`tia/LOGICA_LAD.md`](tia/LOGICA_LAD.md) — **orden final de networks LAD** (usa esta para programar)  
+7. [`docs/06_COMO_USAR_TON.md`](docs/06_COMO_USAR_TON.md) — TON IEC  
+8. [`docs/05_FAQ_TIA.md`](docs/05_FAQ_TIA.md) — dudas frecuentes  
 
 ## App
 
