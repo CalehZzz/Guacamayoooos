@@ -29,7 +29,7 @@ OB1
  └─ Network 4 → Call FC_EspejoWeb
 
 FC_Modos        → 5 networks   (arranque / paro / emergencia / modo)
-FC_Secuencia    → 10 networks  (banda, clasificar, TON, manual)
+FC_Secuencia    → networks  (banda, clasificar, TON, manual)
 FC_Alarmas      → 3 networks
 FC_EspejoWeb    → 1 network SCL (copia al DB para la web)
 
@@ -105,48 +105,34 @@ Cómo hacerlo en TIA: un contacto `I_Stop` hacia la bobina Reset; debajo, otro r
 
 ## 3) FC_Secuencia
 
-### NW1 — Pedido de banda (guarda en memoria, evita pelear la salida)
-**Objetivo:** calcular si la banda debe ir ON (auto **o** manual).
-
-Primero crea estos tags Bool si no existen:
-- `M_CmdBanda`
-- `M_CmdPiston`
-
+### NW1 — Banda automática
 ```
-        (rama AUTO)
----| M_SistemaOn |---| M_ModoAuto |---|/ I_Emergencia |---|/ M_Alarma |---|/ M_Clasificando |--+
-                                                                                              |
-        (rama MANUAL)                                                                         +----( M_CmdBanda )
----| M_SistemaOn |---|/ M_ModoAuto |---| I_ManualBanda |--------------------------------------+
+---| M_SistemaOn |---| M_ModoAuto |---|/ I_Emergencia |---|/ M_Alarma |---|/ M_Clasificando |-----( Q_Banda )
 ```
-
-En TIA: dos ramas en paralelo que terminan en **una sola** bobina `M_CmdBanda`.
 
 ---
 
-### NW2 — Salida física banda
+### NW2 — Banda manual (misma bobina, rama en paralelo o network aparte)
+Si TIA se queja por usar `Q_Banda` dos veces, une NW1 y NW2 en **una sola network** con dos ramas en paralelo hacia la misma bobina `( Q_Banda )`.
+
 ```
----| M_CmdBanda |-----( Q_Banda )
+---| M_SistemaOn |---|/ M_ModoAuto |---| I_ManualBanda |-----( Q_Banda )
 ```
 
 ---
 
 ### NW3 — Detectar plástico (flanco → pulso)
-**Objetivo:** marcar un pulso cuando hay botella válida.
-
 ```
 ---| M_SistemaOn |---| M_ModoAuto |---| I_SensorPieza |---| I_BasculaLista |
 ---| I_SensorPlastico |---|/ I_SensorAluminio |-----(P M_PulsePlastico)
 ```
 
-`(P …)` = bobina de **flanco positivo** (Positive edge coil) en TIA.  
-Si no la encuentras: Instructions → Bit logic → **P coil** / Positive edge.
+`(P …)` = bobina de **flanco positivo** (Positive edge coil).  
+Instructions → Bit logic → **P coil**.
 
 ---
 
 ### NW4 — Contar plástico + sumar peso (SCL)
-Cambia el lenguaje de **esta network** a **SCL** (o inserta un bloque SCL).
-
 ```scl
 IF M_PulsePlastico THEN
     DatosEstacion.ContPlastico := DatosEstacion.ContPlastico + 1;
@@ -165,37 +151,31 @@ END_IF;
 
 ---
 
-### NW6 — Pedido de pistón (auto clasificando **o** manual)
+### NW6 — Extender pistón (automático)
 ```
-        (rama AUTO: clasificando y aún no extendido)
----| M_Clasificando |---|/ I_PistonExtendido |--+
-                                               |
-        (rama MANUAL)                          +----( M_CmdPiston )
----| M_SistemaOn |---|/ M_ModoAuto |---| I_ManualPiston |--+
+---| M_Clasificando |---|/ I_PistonExtendido |-----( Q_Piston )
 ```
 
 ---
 
-### NW7 — Salida física pistón
+### NW7 — Pistón manual
+Igual que la banda: si hay conflicto de bobina, junta NW6+NW7 en paralelo a la misma `( Q_Piston )`.
+
 ```
----| M_CmdPiston |-----( Q_Piston )
+---| M_SistemaOn |---|/ M_ModoAuto |---| I_ManualPiston |-----( Q_Piston )
 ```
 
 ---
 
 ### NW8 — TON retardo con pistón extendido
-**Objetivo:** cuando el pistón ya extendió, espera 0.5 s.
-
 ```
 ---| M_Clasificando |---| I_PistonExtendido |----[ TON ]
 
-Arriba del TON:  T_RetardoPiston     ← instancia (su propio DB)
+Arriba del TON:  T_RetardoPiston
 PT:              T#500ms
-IN:              viene de los contactos de la izquierda
-Q:               la usamos en NW9 como T_RetardoPiston.Q
 ```
 
-Detalle del TON: `docs/06_COMO_USAR_TON.md`
+Detalle: `docs/06_COMO_USAR_TON.md`
 
 ---
 
@@ -205,7 +185,7 @@ Detalle del TON: `docs/06_COMO_USAR_TON.md`
 ---| T_RetardoPiston.Q |-----(R M_Clasificando)
 ```
 
-**Parte B (misma network en SCL, o NW9b SCL):**
+**Parte B (SCL, misma network o NW9b):**
 ```scl
 IF T_RetardoPiston.Q THEN
     DatosEstacion.ContAluminio := DatosEstacion.ContAluminio + 1;
@@ -213,8 +193,6 @@ IF T_RetardoPiston.Q THEN
     DatosEstacion.UltimoMaterial := 2;
 END_IF;
 ```
-
-> Tip: si te complica mezclar LAD+SCL, deja NW9 solo el `(R M_Clasificando)` y crea **NW9b** solo SCL con el `IF` de arriba.
 
 ---
 
@@ -296,13 +274,13 @@ END_IF;
 - [ ] NW5 Lámpara emergencia
 
 ### FC_Secuencia
-- [ ] NW1 `M_CmdBanda` (auto // manual)
-- [ ] NW2 `Q_Banda`
-- [ ] NW3 pulso plástico
+- [ ] NW1 banda auto → `Q_Banda`
+- [ ] NW2 banda manual → `Q_Banda` (o paralelo con NW1)
+- [ ] NW3 pulso plástico `M_PulsePlastico`
 - [ ] NW4 SCL contar plástico
-- [ ] NW5 Set clasificando (aluminio)
-- [ ] NW6 `M_CmdPiston`
-- [ ] NW7 `Q_Piston`
+- [ ] NW5 Set `M_Clasificando` (aluminio)
+- [ ] NW6 pistón auto → `Q_Piston`
+- [ ] NW7 pistón manual → `Q_Piston` (o paralelo con NW6)
 - [ ] NW8 TON `T_RetardoPiston`
 - [ ] NW9 Reset clasificando + SCL contar aluminio
 - [ ] NW10 TON timeout + alarma
