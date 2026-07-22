@@ -1,6 +1,31 @@
 # Lógica LAD — redes sugeridas (cópialas en TIA)
 
-No es un archivo importable: son las redes que debes dibujar en lenguaje de contactos (LAD). Usa los nombres simbólicos del mapa I/O.
+No es un archivo importable: son las redes que debes **dibujar** en lenguaje de contactos (LAD). Usa los nombres simbólicos del mapa I/O.
+
+## Cómo leer estos dibujos (muy importante)
+
+El texto tipo:
+
+```
+--| I_Start |----|/| I_Stop |----( S  M_SistemaOn )---
+```
+
+**NO se escribe en TIA.** Es solo un croquis. En el editor LAD haces esto:
+
+| Dibujo en esta guía | Qué insertar en TIA |
+|---|---|
+| `\| I_Start \|` | Contacto **normalmente abierto** → operand = tag `I_Start` |
+| `\|/\|\ I_Stop \|` | Contacto **normalmente cerrado** → operand = tag `I_Stop` |
+| `(   M_xxx )` | Bobina normal → tag `M_xxx` |
+| `( S  M_xxx )` | Bobina **Set** → tag `M_xxx` |
+| `( R  M_xxx )` | Bobina **Reset** → tag `M_xxx` |
+| `[TON T_RetardoPiston …]` | Instrucción **TON** desde la paleta (no escribas la palabra TON a mano en un contacto) |
+
+Sobre las letras del nombre (`I_`, `Q_`, `M_`, `T_`):
+
+- Son parte del **nombre del tag** que tú creaste (`I_Start`, `M_SistemaOn`…).
+- En el contacto/bobina escribes **solo el nombre completo del tag**, o arrastras el tag desde la lista.
+- **No** escribas `%I I_Start` ni `I I_Start`. Si el tag existe, TIA acepta `I_Start` o su dirección `%I0.0`.
 
 ---
 
