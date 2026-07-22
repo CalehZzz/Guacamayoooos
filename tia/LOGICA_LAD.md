@@ -99,21 +99,39 @@ END_IF;
 --| M_Clasificando |----|/| I_PistonExtendido |----(   Q_Piston )---
 ```
 
-### Network 6 — Al llegar extendido: contar y pedir retraer
+### Network 6 — Al llegar extendido: TON de retardo
+En S7-1200 el TON es un **bloque IEC**, no un tag `%T0` en un contacto.
+Guía detallada: `docs/06_COMO_USAR_TON.md`
+
+1. Contactos: `M_Clasificando` + `I_PistonExtendido` → entrada **IN** del TON  
+2. Arriba del TON (???): escribe **`T_RetardoPiston`** y acepta crear su DB de instancia  
+   (**no** elijas `DatosEstacion`)  
+3. **PT** = `T#500ms`
+
+### Network 6b — Cuando el timer cumple (usa `.Q`)
+En un contacto normalmente abierto el operand debe ser:
+
+```text
+T_RetardoPiston.Q
 ```
---| M_Clasificando |----| I_PistonExtendido |----[TON T_RetardoPiston, PT=T#0.5s]
+
+(no solo `T_RetardoPiston`)
+
 ```
-Cuando `T_RetardoPiston.Q`:
+--| T_RetardoPiston.Q |----( R  M_Clasificando )
+```
+
+Y con esa misma condición (SCL o ADD):
 ```
   DatosEstacion.ContAluminio := DatosEstacion.ContAluminio + 1;
   DatosEstacion.PesoAluminioKg := DatosEstacion.PesoAluminioKg + DatosEstacion.PesoActualKg;
   DatosEstacion.UltimoMaterial := 2;
-  RESET M_Clasificando;  // Q_Piston cae → cilindro retorna por muelle / válvula
 ```
 
 ### Network 7 — Timeout pistón (alarma)
+Otro TON, instancia nueva `T_TimeoutPiston`, PT=`T#3s`, IN=`M_Clasificando`.
+
 ```
---| M_Clasificando |----[TON T_TimeoutPiston, PT=T#3s]
 --| T_TimeoutPiston.Q |----|/| I_PistonExtendido |----( S  M_Alarma )---
 ```
 

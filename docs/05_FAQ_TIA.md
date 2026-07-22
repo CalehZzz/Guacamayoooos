@@ -30,3 +30,10 @@ Son un **dibujo en texto** de la escalera. No se pegan en TIA.
 - `UltimoMaterial` → tipo **Int**, offset **20.0**
 
 Si ves `17.0` y `17.1`, casi seguro quedaron como **Bool**. Cámbialos a Int, confirma **Optimized block access = OFF**, recompila.
+
+## 4) El TON solo me deja elegir `DatosEstacion` / no puedo poner el timer en un contacto
+
+Normal en S7-1200. El TON IEC pide una **instancia nueva** arriba del bloque (ej. `T_RetardoPiston`), no el DB `DatosEstacion`.  
+Para “¿ya cumplió el tiempo?” usa el contacto con **`T_RetardoPiston.Q`**.
+
+Paso a paso: [`06_COMO_USAR_TON.md`](06_COMO_USAR_TON.md).
