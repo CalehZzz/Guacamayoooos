@@ -7,11 +7,13 @@ App web + puente al PLC Siemens (TIA Portal / PLCSIM) + guías para Automation S
 1. [`docs/00_ARQUITECTURA.md`](docs/00_ARQUITECTURA.md) — visión completa del sistema  
 2. [`docs/01_GUIA_TIA_PORTAL.md`](docs/01_GUIA_TIA_PORTAL.md) — desde “Create new project”  
 3. [`docs/02_GUIA_AUTOMATION_STUDIO.md`](docs/02_GUIA_AUTOMATION_STUDIO.md) — electroneumática  
-4. [`docs/03_CONEXION_WEB_PLC.md`](docs/03_CONEXION_WEB_PLC.md) — conectar la página al PLC  
-5. [`tia/MAPA_IO_Y_DB.md`](tia/MAPA_IO_Y_DB.md) — tags y DB1  
-6. [`tia/LOGICA_LAD.md`](tia/LOGICA_LAD.md) — **orden final de networks LAD** (usa esta para programar)  
-7. [`docs/06_COMO_USAR_TON.md`](docs/06_COMO_USAR_TON.md) — TON IEC  
-8. [`docs/05_FAQ_TIA.md`](docs/05_FAQ_TIA.md) — dudas frecuentes  
+4. [`automation_studio/COMPONENTES.md`](automation_studio/COMPONENTES.md) — **nombres exactos** de componentes AS  
+5. [`docs/03_CONEXION_WEB_PLC.md`](docs/03_CONEXION_WEB_PLC.md) — conectar la página al PLC  
+6. [`tia/MAPA_IO_Y_DB.md`](tia/MAPA_IO_Y_DB.md) — tags y DB1  
+7. [`tia/LOGICA_LAD.md`](tia/LOGICA_LAD.md) — **orden final de networks LAD** (usa esta para programar)  
+8. [`docs/06_COMO_USAR_TON.md`](docs/06_COMO_USAR_TON.md) — TON IEC  
+9. [`docs/05_FAQ_TIA.md`](docs/05_FAQ_TIA.md) — dudas frecuentes  
+10. [`docs/07_BOBINAS_S_R_P.md`](docs/07_BOBINAS_S_R_P.md) — bobinas Set/Reset/P  
 
 ## App
 

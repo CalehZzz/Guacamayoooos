@@ -50,7 +50,8 @@ Los `%M` concretos (M0.0, M0.6…) **no tienen que ser iguales a los de nadie**.
 | `M_Clasificando` | Bool | `%M0.3` | Secuencia aluminio en curso |
 | `M_PulsePieza` | Bool | `%M0.4` | Flanco genérico (opcional) |
 | `M_ResetContadores` | Bool | `%M0.5` | Reset pedido desde HMI |
-| `M_PulsePlastico` | Bool | `%M0.6` | Flanco: se contó una botella |
+| `M_PulsePlastico` | Bool | `%M0.6` | Resultado del flanco (1 ciclo) |
+| `M_EdgePlastico` | Bool | `%M1.0` | **Solo** memoria interna de la bobina/contacto P (no usar en otra red) |
 | `M_ResetAlarma` | Bool | `%M0.7` | Botón HMI para borrar alarma |
 | `T_RetardoPiston` | Instancia TON (IEC) | DB de instancia auto | Espera con pistón extendido antes de contar |
 | `T_TimeoutPiston` | Instancia TON (IEC) | DB de instancia auto | Alarma si el pistón no llega a tiempo |

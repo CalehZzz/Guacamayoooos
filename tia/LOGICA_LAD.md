@@ -93,10 +93,26 @@ En TIA: una network, **dos ramas en paralelo**, una sola bobina `( Q_Banda )` a 
 ---
 
 ## NW2 — Pulso plástico
+
+**Todo en SERIE en una sola línea** (no es paralelo; no “unas” arriba con abajo).
+
 ```
 ---| M_SistemaOn |---| M_ModoAuto |---| I_SensorPieza |---| I_BasculaLista |
 ---| I_SensorPlastico |---|/ I_SensorAluminio |-----(P M_PulsePlastico)
 ```
+
+Eso son **6 contactos seguidos** + bobina P al final.  
+Si TIA te lo partió en dos renglones, arrastra los de abajo a la **misma** línea horizontal, a la izquierda de la bobina.
+
+### Bobina P: dos tags distintos
+Si al poner la bobina P te pide tag **arriba** y **abajo**:
+
+| Campo | Qué poner | ¿Se reutiliza? |
+|---|---|---|
+| Uno (resultado / pulse) | `M_PulsePlastico` | Sí — lo usas en el SCL |
+| Otro (memoria de flanco) | `M_EdgePlastico` ← **crea este Bool nuevo** | No — solo vive ahí |
+
+**Nunca pongas el mismo tag en los dos.** La memoria de flanco es interna del PLC para recordar el estado anterior.
 
 ---
 
@@ -112,6 +128,9 @@ END_IF;
 ---
 
 ## NW4 — Detectar aluminio → Set clasificando
+
+**También todo en SERIE** (una sola línea), no paralelo:
+
 ```
 ---| M_SistemaOn |---| M_ModoAuto |---| I_SensorPieza |---| I_BasculaLista |
 ---| I_SensorAluminio |---|/ I_SensorPlastico |-----(S M_Clasificando)
@@ -229,7 +248,21 @@ END_IF;
 
 ---
 
-# Checklist rápido
+## Cuándo SÍ unir arriba con abajo (paralelo)
+
+Solo en estas networks, las dos ramas terminan en **la misma bobina**:
+
+| Network | Ramas | Bobina |
+|---|---|---|
+| FC_Modos NW2 | `I_Stop` // `I_Emergencia` | `(R M_SistemaOn)` |
+| FC_Secuencia NW1 | banda AUTO // MANUAL | `( Q_Banda )` |
+| FC_Secuencia NW5 | pistón AUTO // MANUAL | `( Q_Piston )` |
+
+## Cuándo NO unir (es serie)
+
+En **pulso plástico (NW2)** y **aluminio (NW4)** los dos renglones del croquis son la **misma cadena** de contactos. Ponlos todos seguidos en una línea → una bobina al final.
+
+---
 
 **FC_Modos:** NW1…NW5  
 **FC_Secuencia:**

@@ -1,113 +1,87 @@
-# Guía — Automation Studio (desde la pantalla de inicio)
+# Guía Automation Studio — Guacamayos (nombres exactos)
 
-Objetivo del reto: **circuito electroneumático funcional** que represente tu estación (cilindro/pistón, electroválvula, sensores de posición, y de ser posible la idea de la banda).
+## Arranque (pantalla de inicio)
 
-No necesitas que Automation Studio hable solo con TIA el primer día. En la presentación demuestras:
-1. El circuito neumático funcionando en AS.
-2. El PLC + HMI funcionando en TIA/PLCSIM.
-3. La app web recibiendo datos (bridge o simulador).
+1. **New** / nuevo proyecto  
+2. Nombre: `Guacamayos_ElectroNeumatica`  
+3. Template: **Pneumatic / Symbols / Metric Units** (o Multitechnology)  
+4. Abre el schematic y las librerías **Pneumatic** + **Electrical Control**
 
-Si tu laboratorio tiene co-simulación AS ↔ TIA, úsala al final. Si no, basta con la simulación AS independiente alineada al mismo diseño.
-
----
-
-## Parte A — Nuevo proyecto en Automation Studio
-
-1. En la pantalla de inicio: **New** / **Nouveau projet** / proyecto vacío.
-2. Nombre: `Guacamayos_ElectroNeumatica`
-3. Elige un entorno con **Pneumatics** + **Electrical** (o Electropneumatics).
-4. Abre un diagrama **Pneumatic** y otro **Electrical/Ladder** o usa el workspace electropneumático.
+Lista detallada de componentes: [`../automation_studio/COMPONENTES.md`](../automation_studio/COMPONENTES.md)
 
 ---
 
-## Parte B — Componentes neumáticos mínimos
+## Qué vas a armar (1 frase)
 
-Arma este circuito del **pistón clasificador** (empuja latas de aluminio):
-
-| Componente | Cantidad | Rol |
-|---|---|---|
-| Fuente de aire / service unit (FRL) | 1 | Alimentación |
-| Electroválvula 5/2 monoestable (o 4/2) | 1 | Controla el cilindro |
-| Cilindro simple efecto **o** doble efecto | 1 | Pistón empujador |
-| Sensores magnéticos de posición | 2 | Retractado / Extendido |
-| Silenciadores / escapes | según válvula | Buenas prácticas |
-
-### Secuencia neumática
-1. Reposo: vástago **retractado** (sensor retractado = 1).
-2. Cuando el PLC/lógica pide clasificar aluminio: energiza la bobina de la electroválvula → vástago **extiende**.
-3. Sensor extendido = 1 → (en el PLC) cuenta pieza y corta bobina.
-4. Retorno por muelle (simple efecto) o segunda cámara (doble efecto).
+Un **cilindro de doble efecto** empujado por una **válvula 5/2 con solenoide**, con **2 sensores de posición**, más pulsadores que simulan Start/piezas/material.
 
 ---
 
-## Parte C — Parte eléctrica (bobina + sensores)
+## Paso A — Neumática (nombres exactos)
 
-En el diagrama eléctrico:
+De la librería **Pneumatic**, arrastra:
 
-1. Bobina de la electroválvula = salida `Q_Piston` (en tu diseño PLC).
-2. Contactos/sensores de cilindro = entradas `I_PistonRetractado` / `I_PistonExtendido`.
-3. Agrega un **pulsador** de marcha y uno de paro si quieres una mini-demo solo en AS.
-4. Indicadores (pilot lights) para “banda” y “alarma” aunque la banda sea solo un motor simbólico.
+1. `Pneumatic Pressure Source`
+2. `Exhaust` (×2)
+3. `Double-Acting Cylinder` ← Actuators
+4. `5/2-Way NC Valve` ← Directional Valves → 5/2-Way  
+   - Properties → Technical Specifications → comando **Solenoid DC/AC** + **Spring Return**
+5. `Sensor Ref.` (×2) ← Sensors → Sensor References  
+   - Uno a extensión **0%** (retractado)  
+   - Otro a extensión **100%** (extendido)
 
-### Banda transportadora en AS
-Opciones según lo que permita tu licencia:
-- Motor eléctrico + rodillos (simplificado), o
-- Un actuador lineal que represente “avance de pieza”, o
-- Documento visual + un bit “conveyor ON” en la parte eléctrica.
-
-Para el reto, lo crítico electroneumático es el **cilindro de clasificación**. La banda puede ser más simple.
+Conecta: Fuente → válvula → cilindro; escapes a los puertos de escape de la 5/2.
 
 ---
 
-## Parte D — Sensores de material (simbolicos)
+## Paso B — Eléctrica (nombres exactos)
 
-Automation Studio no “ve” plástico vs aluminio como un sensor real de planta. Simúlalos así:
+De **Electrical Control**:
 
-1. Dos pulsadores o sensores digitales:
-   - `Sensor_Plastico`
-   - `Sensor_Aluminio`
-2. Un sensor de “pieza en estación”.
-3. En la demo: tú activas el que corresponda (como harías en PLCSIM).
+1. `Power Supply 24 Volts` + `Common (0 Volts)`
+2. Varios `Normally Open Push-Button` con alias:
+   - `I_Start`, `I_Stop`, `I_Emergencia`
+   - `I_SensorPieza`, `I_SensorPlastico`, `I_SensorAluminio`
+   - `I_ManualBanda`, `I_ManualPiston`
+3. `Normally Open Proximity Switch` ×2 → alias `I_PistonRetractado`, `I_PistonExtendido`
+4. `Solenoid, DC/AC` → alias **`Q_Piston`**
+5. (Opcional) `Coil` → `Q_Banda` + pilot lights
 
-En la presentación di: *“En el prototipo real estos serían sensores inductivos/capacitivos o de visión; aquí se emulan.”*
-
----
-
-## Parte E — Simulación completa del proceso (checklist AS)
-
-Practica esta historia en AS hasta que salga fluida:
-
-1. Aire ON / sistema listo.
-2. “Banda” ON.
-3. Pieza llega → sensor pieza.
-4. Caso A — plástico: NO energiza válvula; pieza sigue / cae a contenedor plástico.
-5. Caso B — aluminio: energiza válvula → cilindro extiende → sensor fin de carrera → retorna.
-6. Muestra contador en un display numérico de AS (si tienes) o anótalo en HMI/TIA.
+### Enlaces (Variable Assignment)
+- Solenoide de la **5/2** ↔ Alias `Q_Piston`
+- Cada **Sensor Ref.** ↔ su **Proximity Switch**
 
 ---
 
-## Parte F — Cómo relacionarlo con TIA en la defensa
+## Paso C — Simular
 
-Prepara una lámina (o diapositiva) con la misma tabla I/O:
+**Simulation → Normal Simulation**
 
-| Señal AS | Señal TIA |
+Historia:
+1. Start  
+2. Pieza + Plástico → no energices `Q_Piston`  
+3. Pieza + Aluminio → `Q_Piston` ON → extiende → sensor 100%  
+4. `Q_Piston` OFF → retorna → sensor 0%  
+5. Emergencia → off  
+
+---
+
+## Checklist del reto (PDF)
+
+- [ ] Circuito electroneumático funcional  
+- [ ] Cilindro: `Double-Acting Cylinder`  
+- [ ] Electroválvula: `5/2-Way NC Valve` + Solenoid  
+- [ ] Sensores de posición: `Sensor Ref.` + Proximity  
+- [ ] Demo completa del proceso  
+
+---
+
+## Relación con TIA (para la defensa)
+
+| Automation Studio | TIA Portal |
 |---|---|
-| Bobina EV pistón | `Q_Piston` |
-| Sensor retractado | `I_PistonRetractado` |
-| Sensor extendido | `I_PistonExtendido` |
-| Sensor pieza | `I_SensorPieza` |
-| Sensor plástico | `I_SensorPlastico` |
-| Sensor aluminio | `I_SensorAluminio` |
-| Motor banda | `Q_Banda` |
-
-Eso demuestra coherencia de diseño aunque la co-simulación no esté cableada.
-
----
-
-## Checklist del PDF (Automation Studio)
-
-- [ ] Circuito electroneumático funcional
-- [ ] Cilindro(s) neumático(s)
-- [ ] Electroválvula(s)
-- [ ] Sensores de posición
-- [ ] Simulación completa del proceso (demo contada de punta a punta)
+| Solenoid `Q_Piston` | `%Q0.1` `Q_Piston` |
+| Proximity retractado | `I_PistonRetractado` |
+| Proximity extendido | `I_PistonExtendido` |
+| Push-Buttons de material | `I_SensorPlastico` / `I_SensorAluminio` |
+| Coil `Q_Banda` | `Q_Banda` |
