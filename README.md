@@ -14,6 +14,7 @@ App web + puente al PLC Siemens (TIA Portal / PLCSIM) + guías para Automation S
 8. [`docs/06_COMO_USAR_TON.md`](docs/06_COMO_USAR_TON.md) — TON IEC  
 9. [`docs/05_FAQ_TIA.md`](docs/05_FAQ_TIA.md) — dudas frecuentes  
 10. [`docs/07_BOBINAS_S_R_P.md`](docs/07_BOBINAS_S_R_P.md) — bobinas Set/Reset/P  
+11. [`docs/09_GUIA_HMI.md`](docs/09_GUIA_HMI.md) — **configurar la HMI** (pantallas y tags)  
 
 ## App
 

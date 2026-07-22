@@ -116,25 +116,12 @@ Detalle de redes en lenguaje de contactos: ver `tia/LOGICA_LAD.md`.
 
 ## Parte E — HMI (requisito del reto)
 
-Crea **2 pantallas**:
+Guía detallada paso a paso: **`docs/09_GUIA_HMI.md`** (pantallas, botones, tags, simulación).
 
-### Pantalla 1 — Operación
-- Botones: **START**, **STOP**, **E-STOP reset** (si aplica)
-- Selector: **Manual / Automático**
-- Indicadores: Banda, Pistón, Sistema ON, Emergencia, Alarma
-- Contadores: plástico, aluminio
-- Pesos acumulados + peso actual
-- Botón **Fin de sesión** (escribe `DatosEstacion.FinSesion`)
-- Botón **Reset contadores** (solo con sistema en STOP)
-
-### Pantalla 2 — Diagnóstico / Alarmas
-- Lista de alarmas (texto):
-  - Emergencia activa
-  - Timeout pistón
-  - Sensores contradictorios
-  - Báscula no lista (opcional)
-
-Conecta cada objeto HMI al tag/DB correspondiente (drag & drop desde detalle del PLC).
+Resumen:
+- Pantalla **Operacion**: START/STOP/Emergencia, Manual/Auto, luces, contadores del DB
+- Pantalla **Alarmas**: indicadores + reset
+- Simular: PLCSIM RUN + Start simulation de la HMI
 
 ---
 
