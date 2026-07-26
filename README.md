@@ -2,19 +2,26 @@
 
 App web + puente al PLC Siemens (TIA Portal / PLCSIM) + guías para Automation Studio.
 
-## Empieza aquí
+## Empieza aquí (stack actual)
 
-1. [`docs/00_ARQUITECTURA.md`](docs/00_ARQUITECTURA.md) — visión completa del sistema  
-2. [`docs/01_GUIA_TIA_PORTAL.md`](docs/01_GUIA_TIA_PORTAL.md) — desde “Create new project”  
-3. [`docs/02_GUIA_AUTOMATION_STUDIO.md`](docs/02_GUIA_AUTOMATION_STUDIO.md) — electroneumática  
-4. [`automation_studio/COMPONENTES.md`](automation_studio/COMPONENTES.md) — **nombres exactos** de componentes AS  
-5. [`docs/03_CONEXION_WEB_PLC.md`](docs/03_CONEXION_WEB_PLC.md) — conectar la página al PLC  
-6. [`tia/MAPA_IO_Y_DB.md`](tia/MAPA_IO_Y_DB.md) — tags y DB1  
-7. [`tia/LOGICA_LAD.md`](tia/LOGICA_LAD.md) — **orden final de networks LAD** (usa esta para programar)  
-8. [`docs/06_COMO_USAR_TON.md`](docs/06_COMO_USAR_TON.md) — TON IEC  
-9. [`docs/05_FAQ_TIA.md`](docs/05_FAQ_TIA.md) — dudas frecuentes  
-10. [`docs/07_BOBINAS_S_R_P.md`](docs/07_BOBINAS_S_R_P.md) — bobinas Set/Reset/P  
-11. [`docs/09_GUIA_HMI.md`](docs/09_GUIA_HMI.md) — **configurar la HMI** (pantallas y tags)  
+**Lee primero:** [`docs/10_ARQUITECTURA_FINAL.md`](docs/10_ARQUITECTURA_FINAL.md)  
+TIA V20 · CPU **1511C-1 PN** · PLCSIM Advanced **V7** · AS **10** · KEPServerEX **6** · HMI virtual en la web.
+
+1. [`docs/10_ARQUITECTURA_FINAL.md`](docs/10_ARQUITECTURA_FINAL.md) — diagramas finales + recomendación HMI web  
+2. [`tia/MAPA_DB_HMI.md`](tia/MAPA_DB_HMI.md) — DB de comandos desde la web  
+3. [`tia/MAPA_IO_Y_DB.md`](tia/MAPA_IO_Y_DB.md) — DatosEstacion  
+4. [`tia/LOGICA_LAD_SIM.md`](tia/LOGICA_LAD_SIM.md) — networks (usa `DB_HMI.*` si ya lo creaste)  
+5. [`automation_studio/COMPONENTES.md`](automation_studio/COMPONENTES.md) — AS 10  
+6. Resto de guías en [`docs/`](docs/)  
+
+### Bridge con PLCSIM Advanced
+
+```bash
+pip install firebase-admin python-snap7
+python plc_bridge.py parque-central --ip 192.168.0.1 --db 1 --db-hmi 3
+```
+
+En la app: icono **🖥️** = HMI virtual (operador). **🏠** = usuario que acumula reciclaje.
 
 ## App
 

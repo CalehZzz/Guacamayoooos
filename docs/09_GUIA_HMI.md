@@ -1,4 +1,19 @@
-# Configurar la HMI en TIA Portal (ya la agregaste)
+# HMI — KTP700 vs HMI virtual Guacamayos
+
+## Recomendación (stack actual: 1511C + PLCSIM Advanced V7)
+
+Si la **KTP700 Basic PN** en Runtime te falla (`$190011`, no escribe tags, etc.), **no bloquees el reto**.
+
+Usa la **HMI virtual** en `index.html` (icono 🖥️): cumple el PDF (start/stop, manual/auto, sensores/actuadores, contadores, alarmas) y es tu innovación.
+
+- Comandos → Firestore `hmi_comandos/{estacion}` → `plc_bridge.py` → **DB_HMI**
+- Estado ← `DatosEstacion` ← bridge ← web
+
+Ver: `docs/10_ARQUITECTURA_FINAL.md` y `tia/MAPA_DB_HMI.md`.
+
+---
+
+# Configurar la HMI KTP en TIA Portal (opcional)
 
 Guía práctica WinCC / HMI Basic-Comfort en TIA V20, para Guacamayos.
 

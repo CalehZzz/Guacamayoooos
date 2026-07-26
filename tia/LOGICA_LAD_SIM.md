@@ -1,9 +1,16 @@
 # Programa LAD — versión SIMULACIÓN (solo reemplazo de tags)
 
-Igual que antes, pero **todas las entradas `I_` pasan a `M_HMI_...`** para que la HMI pueda escribirlas.
+Igual que antes, pero las entradas vienen de comandos HMI.
 
-Crea los tags Bool `M_HMI_*` del listado anterior.  
-`M_SistemaOn`, `M_ModoAuto`, `M_Alarma`, `M_Clasificando`, `M_PulsePlastico`, `M_EdgePlastico`, `M_ResetAlarma`, `Q_*`, `DatosEstacion` = **igual**.
+**Preferido (CPU 1511C + HMI web):** usa `DB_HMI.Start`, `DB_HMI.Stop`, … (ver `tia/MAPA_DB_HMI.md`).  
+**Alternativa:** tags `M_HMI_*` si aún no creaste el DB.
+
+Abajo se muestra con `M_HMI_*`; si usas DB, reemplaza mentalmente  
+`M_HMI_Start` → `DB_HMI.Start`, `M_HMI_Stop` → `DB_HMI.Stop`, etc.  
+`M_ModoAuto` puede ser `DB_HMI.ModoAuto`.  
+`M_ResetAlarma` → `DB_HMI.ResetAlarma`.
+
+`M_SistemaOn`, `M_Alarma`, `M_Clasificando`, `M_PulsePlastico`, `M_EdgePlastico`, `Q_*`, `DatosEstacion` = **igual**.
 
 ---
 
