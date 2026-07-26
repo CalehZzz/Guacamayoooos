@@ -43,15 +43,18 @@ flowchart LR
     BR["plc_bridge.py"]
   end
 
-  AS <-->|"I/O simulado"| KEP
-  KEP <-->|"OPC"| CPU
+  AS <-->|"tags %M (no I/Q)"| KEP
+  KEP <-->|"OPC ↔ %M"| CPU
   LOG --> DB
   CPU --> DB
-  BR <-->|"snap7 o OPC"| CPU
+  BR <-->|"snap7 DB_HMI + DatosEstacion"| CPU
   BR <--> FS
   HMIW <--> FS
   USER <--> FS
 ```
+
+> AS/KEPServer trabajan con **memorias `%M`** (`M_Sensor*`, `M_Banda`, `M_Piston`).  
+> La HMI web usa **`DB_HMI`**, no la KTP.
 
 ---
 
