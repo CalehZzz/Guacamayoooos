@@ -175,6 +175,39 @@
   .plc-chip.warn b{color:#B94B2D;}
   .plc-chip.ok b{color:var(--leaf-dark);}
 
+  /* ---------- HMI virtual (panel operador) ---------- */
+  .hmi-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0;}
+  .hmi-grid .btn{width:100%;}
+  .hmi-actions{display:flex; flex-direction:column; gap:10px; margin-top:8px;}
+  .hmi-switch-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--card); border-radius:16px; padding:14px 16px; box-shadow:var(--shadow-sm);
+    margin-bottom:12px;
+  }
+  .hmi-switch-row span{font-weight:800; color:var(--forest);}
+  .hmi-toggle{
+    appearance:none; width:52px; height:30px; border-radius:999px; border:none;
+    background:#DDD5C0; position:relative; cursor:pointer; transition:.15s;
+  }
+  .hmi-toggle::after{
+    content:""; position:absolute; top:3px; left:3px; width:24px; height:24px;
+    border-radius:50%; background:#fff; transition:.15s; box-shadow:0 1px 4px rgba(0,0,0,.2);
+  }
+  .hmi-toggle.on{background:var(--leaf);}
+  .hmi-toggle.on::after{left:25px;}
+  .hmi-sim-title{font-size:13px; font-weight:800; color:var(--forest-soft); margin:16px 0 8px; text-transform:uppercase; letter-spacing:.04em;}
+  .btn-hmi-stop{background:#fff; color:var(--coral); border:2px solid #ffd0c2;}
+  .btn-hmi-e{background:var(--coral); color:#fff;}
+  .peso-input-row{
+    display:flex; align-items:center; gap:10px; background:var(--card); border-radius:16px;
+    padding:12px 14px; box-shadow:var(--shadow-sm); margin-bottom:12px;
+  }
+  .peso-input-row label{font-size:13px; font-weight:800; color:var(--forest-soft);}
+  .peso-input-row input{
+    flex:1; border:2px solid var(--cream-2); border-radius:12px; padding:10px 12px;
+    font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--forest); background:var(--cream);
+  }
+
   .jars-row{display:flex; gap:16px; justify-content:center; margin:22px 0 8px;}
   .jar-wrap{flex:1; text-align:center; max-width:150px;}
   .jar{
@@ -357,6 +390,7 @@
       <div class="brand"><span class="logo">🌿</span><span>Guacamayos</span></div>
       <div class="navpills">
         <button class="pill" data-view="stations">🏠</button>
+        <button class="pill" data-view="hmi">🖥️</button>
         <button class="pill" data-view="history">📜</button>
         <button class="pill hidden" id="nav-admin" data-view="admin">⚙️</button>
         <button class="pill hidden" id="btn-account">👤 Ingresar</button>
@@ -426,6 +460,64 @@
           <button class="btn btn-outline" id="btn-summary-history">Ver historial</button>
           <button class="btn btn-primary" id="btn-summary-back">Otra estación</button>
         </div>
+      </section>
+
+      <!-- ---------- HMI VIRTUAL (operador / cumple requisito HMI del reto) ---------- -->
+      <section id="view-hmi" class="hidden">
+        <div class="greeting">
+          <h2>HMI virtual 🖥️</h2>
+          <p>Panel de operador Guacamayos — sustituye la KTP en simulación (START, modos, contadores, alarmas).</p>
+        </div>
+
+        <div class="hmi-switch-row">
+          <span>Modo automático</span>
+          <button type="button" class="hmi-toggle" id="hmi-modo-auto" aria-label="Modo automático"></button>
+        </div>
+
+        <div class="hmi-grid">
+          <button class="btn btn-primary" id="hmi-start">START</button>
+          <button class="btn btn-hmi-stop" id="hmi-stop">STOP</button>
+          <button class="btn btn-hmi-e" id="hmi-emergencia">EMERGENCIA</button>
+          <button class="btn btn-outline" id="hmi-reset-alarma">Reset alarma</button>
+          <button class="btn btn-outline" id="hmi-fin-sesion">Fin sesión</button>
+          <button class="btn btn-outline" id="hmi-clear-e">Quitar emerg.</button>
+        </div>
+
+        <div class="plc-panel">
+          <div class="plc-panel-head">
+            <h3>Estado PLC / máquina</h3>
+            <div class="plc-link"><span class="plc-dot off" id="hmi-dot"></span><span id="hmi-link-text">Sin datos</span></div>
+          </div>
+          <div class="plc-grid">
+            <div class="plc-chip">Sistema <b id="hmi-sistema">—</b></div>
+            <div class="plc-chip">Modo <b id="hmi-modo">—</b></div>
+            <div class="plc-chip">Banda <b id="hmi-banda">—</b></div>
+            <div class="plc-chip">Pistón <b id="hmi-piston">—</b></div>
+            <div class="plc-chip">Cont. plástico <b id="hmi-cont-p">0</b></div>
+            <div class="plc-chip">Cont. aluminio <b id="hmi-cont-a">0</b></div>
+            <div class="plc-chip" id="hmi-chip-alarma">Alarma <b id="hmi-alarma">—</b></div>
+            <div class="plc-chip" id="hmi-chip-emergencia">Emergencia <b id="hmi-emergencia-st">—</b></div>
+          </div>
+        </div>
+
+        <div class="peso-input-row">
+          <label for="hmi-peso-actual">Peso actual (kg)</label>
+          <input type="number" step="0.001" min="0" id="hmi-peso-actual" value="0.040">
+          <button class="btn btn-primary" id="hmi-peso-apply" style="width:auto; padding:10px 14px;">OK</button>
+        </div>
+
+        <div class="hmi-sim-title">Simular pieza (demo sin hardware)</div>
+        <div class="hmi-grid">
+          <button class="btn btn-outline" id="hmi-sim-plastico">Sim plástico</button>
+          <button class="btn btn-outline" id="hmi-sim-aluminio">Sim aluminio</button>
+          <button class="btn btn-outline" id="hmi-sim-extendido">Pistón extendido</button>
+          <button class="btn btn-outline" id="hmi-sim-clear">Limpiar sensores</button>
+          <button class="btn btn-outline" id="hmi-manual-banda">Banda manual</button>
+          <button class="btn btn-outline" id="hmi-manual-piston">Pistón manual</button>
+        </div>
+        <p style="font-size:12.5px; color:var(--forest-soft); margin-top:14px;">
+          Estación HMI: <b id="hmi-estacion-id">parque-central</b> · El bridge escribe estos comandos a <span class="mono">DB_HMI</span> en el PLC 1511C.
+        </p>
       </section>
 
       <!-- ---------- HISTORIAL ---------- -->
@@ -544,6 +636,27 @@ const FALLBACK_ESTACIONES = [
   { id: "plaza-americas",  nombre: "Plaza Las Américas",    zona: "Junto a la fuente",            activa: true }
 ];
 
+const HMI_ESTACION_ID = "parque-central";
+const HMI_CMD_DEFAULT = {
+  Start: false,
+  Stop: false,
+  Emergencia: false,
+  ResetAlarma: false,
+  ModoAuto: true,
+  FinSesion: false,
+  ManualBanda: false,
+  ManualPiston: false,
+  BasculaLista: false,
+  SensorPieza: false,
+  SensorPlastico: false,
+  SensorAluminio: false,
+  PistonRetractado: true,
+  PistonExtendido: false,
+  PesoActualKg: 0.04
+};
+let hmiCmd = { ...HMI_CMD_DEFAULT };
+let unsubHmiSesion = null;
+
 /* -------------------------------------------------------------------------
    4. HELPERS DE NAVEGACIÓN Y UI
    ------------------------------------------------------------------------- */
@@ -555,12 +668,13 @@ function showOnly(id){
 }
 
 function showAppView(viewName){
-  ["stations","live","summary","history","admin"].forEach(v => {
-    $("view-" + v).classList.toggle("hidden", v !== viewName);
+  ["stations","live","summary","history","admin","hmi"].forEach(v => {
+    $("view-" + v)?.classList.toggle("hidden", v !== viewName);
   });
   document.querySelectorAll(".navpills .pill[data-view]").forEach(p => {
     p.classList.toggle("active", p.dataset.view === viewName);
   });
+  if(viewName === "hmi") ensureHmiListen();
 }
 
 function toast(msg){
@@ -710,6 +824,122 @@ document.querySelectorAll(".navpills .pill[data-view]").forEach(btn => {
     showAppView(v);
   };
 });
+
+/* -------------------------------------------------------------------------
+   HMI VIRTUAL — comandos a Firestore → plc_bridge → DB_HMI en PLC 1511C
+   ------------------------------------------------------------------------- */
+function hmiCmdRef(){
+  return doc(db, "hmi_comandos", HMI_ESTACION_ID);
+}
+function hmiSesionRef(){
+  return doc(db, "sesiones_activas", HMI_ESTACION_ID);
+}
+
+async function pushHmiCmd(patch){
+  hmiCmd = { ...hmiCmd, ...patch };
+  try{
+    await setDoc(hmiCmdRef(), {
+      ...hmiCmd,
+      actualizado: serverTimestamp()
+    }, { merge: true });
+  }catch(e){
+    console.error(e);
+    toast("⚠️ No se pudo enviar comando HMI (Firestore).");
+  }
+}
+
+async function pulseHmi(flag, ms = 350){
+  await pushHmiCmd({ [flag]: true });
+  setTimeout(() => { pushHmiCmd({ [flag]: false }); }, ms);
+}
+
+function syncHmiToggleUi(){
+  $("hmi-modo-auto")?.classList.toggle("on", !!hmiCmd.ModoAuto);
+}
+
+function renderHmiFromPlc(data){
+  const plc = { ...PLC_DEFAULT, ...(data?.plc || {}) };
+  const mats = data?.materiales || {};
+  const connected = !!plc.conectado;
+  const dot = $("hmi-dot");
+  if(dot){
+    dot.className = "plc-dot " + (plc.emergencia || plc.alarma ? "alarm" : (connected ? "on" : "off"));
+  }
+  if($("hmi-link-text")){
+    $("hmi-link-text").textContent = connected ? ("PLC · " + (plc.estado || "ok")) : "Esperando bridge…";
+  }
+  if($("hmi-sistema")) $("hmi-sistema").textContent = plc.sistemaOn ? "ON" : "OFF";
+  if($("hmi-modo")) $("hmi-modo").textContent = plc.modoAuto ? "Automático" : "Manual";
+  if($("hmi-banda")) $("hmi-banda").textContent = plc.banda ? "Marcha" : "Parada";
+  if($("hmi-piston")) $("hmi-piston").textContent = plc.piston ? "Extendido" : "Retráctil";
+  if($("hmi-cont-p")) $("hmi-cont-p").textContent = String(mats.plastico?.piezas ?? 0);
+  if($("hmi-cont-a")) $("hmi-cont-a").textContent = String(mats.aluminio?.piezas ?? 0);
+  if($("hmi-alarma")) $("hmi-alarma").textContent = plc.alarma ? "ACTIVA" : "OK";
+  if($("hmi-emergencia-st")) $("hmi-emergencia-st").textContent = plc.emergencia ? "ACTIVA" : "OK";
+  $("hmi-chip-alarma")?.classList.toggle("warn", !!plc.alarma);
+  $("hmi-chip-emergencia")?.classList.toggle("warn", !!plc.emergencia);
+}
+
+function ensureHmiListen(){
+  $("hmi-estacion-id").textContent = HMI_ESTACION_ID;
+  syncHmiToggleUi();
+  if(!unsubHmiSesion){
+    unsubHmiSesion = onSnapshot(hmiSesionRef(), (snap) => {
+      renderHmiFromPlc(snap.exists() ? snap.data() : null);
+    });
+  }
+  // Asegura doc de comandos
+  pushHmiCmd({});
+}
+
+$("hmi-start").onclick = () => pulseHmi("Start");
+$("hmi-stop").onclick = () => pulseHmi("Stop");
+$("hmi-emergencia").onclick = () => pushHmiCmd({ Emergencia: true });
+$("hmi-clear-e").onclick = () => pushHmiCmd({ Emergencia: false });
+$("hmi-reset-alarma").onclick = () => pulseHmi("ResetAlarma");
+$("hmi-fin-sesion").onclick = () => pulseHmi("FinSesion", 800);
+$("hmi-modo-auto").onclick = () => {
+  const next = !hmiCmd.ModoAuto;
+  pushHmiCmd({ ModoAuto: next }).then(syncHmiToggleUi);
+};
+$("hmi-peso-apply").onclick = () => {
+  const v = parseFloat($("hmi-peso-actual").value);
+  if(Number.isNaN(v) || v < 0){ toast("Peso inválido"); return; }
+  pushHmiCmd({ PesoActualKg: v });
+  toast("Peso actual → PLC");
+};
+$("hmi-sim-plastico").onclick = async () => {
+  await pushHmiCmd({
+    BasculaLista: true, SensorPieza: true, SensorPlastico: true, SensorAluminio: false,
+    PistonExtendido: false, PistonRetractado: true
+  });
+  toast("Sim plástico ON");
+};
+$("hmi-sim-aluminio").onclick = async () => {
+  await pushHmiCmd({
+    BasculaLista: true, SensorPieza: true, SensorPlastico: false, SensorAluminio: true,
+    PistonRetractado: false
+  });
+  toast("Sim aluminio ON — luego pulsa Extendido");
+};
+$("hmi-sim-extendido").onclick = () => pushHmiCmd({ PistonExtendido: true, PistonRetractado: false });
+$("hmi-sim-clear").onclick = () => pushHmiCmd({
+  BasculaLista: false, SensorPieza: false, SensorPlastico: false, SensorAluminio: false,
+  PistonExtendido: false, PistonRetractado: true
+});
+function bindHold(btnId, flag){
+  const el = $(btnId);
+  if(!el) return;
+  const down = async (e) => { e.preventDefault(); await pushHmiCmd({ [flag]: true }); };
+  const up = async (e) => { e.preventDefault(); await pushHmiCmd({ [flag]: false }); };
+  el.addEventListener("mousedown", down);
+  el.addEventListener("mouseup", up);
+  el.addEventListener("mouseleave", up);
+  el.addEventListener("touchstart", down, { passive: false });
+  el.addEventListener("touchend", up);
+}
+bindHold("hmi-manual-banda", "ManualBanda");
+bindHold("hmi-manual-piston", "ManualPiston");
 
 /* -------------------------------------------------------------------------
    8. PRECIOS (Firestore: colección "precios")
