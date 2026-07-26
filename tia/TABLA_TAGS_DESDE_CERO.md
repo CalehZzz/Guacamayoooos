@@ -1,174 +1,179 @@
-# Tabla maestra de tags — proyecto desde cero (CPU 1511C-1 PN)
+# Tabla maestra de tags — desde cero (CPU 1511C-1 PN)
 
-Todo lo que debes **crear** en TIA. No asumas que ya existe nada.
+**Importante:** Automation Studio ↔ KEPServerEX usan tags **`%M`**, no `%I` ni `%Q`.
 
-**Stack:** TIA V20 · 1511C · PLCSIM Advanced V7 · HMI = **web Guacamayos** (no KTP) · AS 10 + KEPServerEX 6
-
----
-
-## Cómo está organizado
-
-| Grupo | Para qué |
-|---|---|
-| **A. Entradas `%I`** | Señales desde Automation Studio / KEPServer (máquina) |
-| **B. Salidas `%Q`** | Actuadores hacia AS / KEPServer |
-| **C. Memorias `%M`** | Lógica interna del PLC (latches, pulsos) |
-| **D. DB_HMI (DB3)** | Comandos de la **HMI web** (botones 🖥️) |
-| **E. DatosEstacion (DB1)** | Espejo hacia la web (contadores, estado) |
-| **F. Timers** | Instancias TON |
-
-En el LAD: botones de operador leen **`DB_HMI.*`**.  
-Sensores/actuadores de proceso leen/escriben **`I_*` / `Q_*`** (AS).  
-Si en una prueba no tienes AS, puedes forzar `I_*` en PLCSIM o poner en paralelo `DB_HMI.SensorPieza` etc. (opcional).
+HMI web Guacamayos → **`DB_HMI`** (vía bridge).  
+Espejo a la web → **`DatosEstacion`**.
 
 ---
 
-## A) Entradas digitales (`PLC tags` → Bool)
+## Grupos
 
-Direcciones de ejemplo en el DI onboard del 1511C (ajusta si tu wiring/KEPServer usa otras).
+| Grupo | Área | Uso |
+|---|---|---|
+| **A. Proceso AS/KEP** | `%M` | Sensores y actuadores que mueve Automation Studio |
+| **B. Lógica interna** | `%M` | Latches, alarmas, pulsos (solo PLC) |
+| **C. DB_HMI (DB3)** | DB | Comandos panel web 🖥️ |
+| **D. DatosEstacion (DB1)** | DB | Contadores / estado → web |
+| **E. Timers** | TON IEC | Retardo y timeout pistón |
 
-| Nombre | Dirección | Tipo | Origen | Descripción |
-|---|---|---|---|---|
-| `I_SensorPieza` | `%I0.0` | Bool | AS / KEP | Pieza en zona de clasificación |
-| `I_SensorPlastico` | `%I0.1` | Bool | AS / KEP | Material = plástico |
-| `I_SensorAluminio` | `%I0.2` | Bool | AS / KEP | Material = aluminio |
-| `I_BasculaLista` | `%I0.3` | Bool | AS / KEP / lógica | Peso estabilizado |
-| `I_PistonRetractado` | `%I0.4` | Bool | AS (sensor 0%) | Cilindro en casa |
-| `I_PistonExtendido` | `%I0.5` | Bool | AS (sensor 100%) | Cilindro afuera |
-
-> Start/Stop/Emergencia/Modo **no** van aquí: van en **DB_HMI** (HMI web).
+`%I` / `%Q` del 1511C **no los necesitas** para este diseño (puedes no crearlos).
 
 ---
 
-## B) Salidas digitales (`PLC tags` → Bool)
+## A) Tags de proceso — AS / KEPServer (`%M` Bool)
 
-| Nombre | Dirección | Tipo | Destino | Descripción |
-|---|---|---|---|---|
-| `Q_Banda` | `%Q0.0` | Bool | AS / KEP | Marcha banda |
-| `Q_Piston` | `%Q0.1` | Bool | AS (solenoide 5/2) | Extender pistón |
-| `Q_LamparaRun` | `%Q0.2` | Bool | piloto / web espejo | Sistema en marcha |
-| `Q_LamparaAlarma` | `%Q0.3` | Bool | piloto / web | Alarma |
-| `Q_LamparaEmergencia` | `%Q0.4` | Bool | piloto / web | Emergencia |
+Créalos en la **PLC tag table**. En KEPServer mapea **los mismos nombres / direcciones**.
+
+### Sensores (AS → PLC)
+
+| Nombre | Dirección | Tipo | En Automation Studio |
+|---|---|---|---|
+| `M_SensorPieza` | `%M2.0` | Bool | Pieza en estación |
+| `M_SensorPlastico` | `%M2.1` | Bool | Sensor / pulsador plástico |
+| `M_SensorAluminio` | `%M2.2` | Bool | Sensor / pulsador aluminio |
+| `M_BasculaLista` | `%M2.3` | Bool | Báscula lista |
+| `M_PistonRetractado` | `%M2.4` | Bool | Ref. sensor 0% |
+| `M_PistonExtendido` | `%M2.5` | Bool | Ref. sensor 100% |
+
+### Actuadores (PLC → AS)
+
+| Nombre | Dirección | Tipo | En Automation Studio |
+|---|---|---|---|
+| `M_Banda` | `%M3.0` | Bool | Motor / marcha banda |
+| `M_Piston` | `%M3.1` | Bool | Solenoide válvula 5/2 |
+| `M_LamparaRun` | `%M3.2` | Bool | Piloto run (opcional en AS) |
+| `M_LamparaAlarma` | `%M3.3` | Bool | Piloto alarma |
+| `M_LamparaEmergencia` | `%M3.4` | Bool | Piloto emergencia |
+
+> En el LAD, donde antes decía `Q_Banda` / `Q_Piston`, usa **`M_Banda` / `M_Piston`**.  
+> KEPServer lee esas M y las refleja en AS.
 
 ---
 
-## C) Memorias internas (`PLC tags` → Bool)
+## B) Lógica interna PLC (`%M` Bool) — no mapear a AS
 
 | Nombre | Dirección | Tipo | Descripción |
 |---|---|---|---|
-| `M_SistemaOn` | `%M0.0` | Bool | Latch sistema energizado |
-| `M_ModoAuto` | `%M0.1` | Bool | Copia modo (o usa solo `DB_HMI.ModoAuto`) |
+| `M_SistemaOn` | `%M0.0` | Bool | Latch sistema ON |
+| `M_ModoAuto` | `%M0.1` | Bool | Modo auto (copia de DB_HMI o directo) |
 | `M_Alarma` | `%M0.2` | Bool | Alarma activa |
-| `M_Clasificando` | `%M0.3` | Bool | Secuencia aluminio en curso |
-| `M_PulsePlastico` | `%M0.4` | Bool | Pulso flanco plástico (resultado P) |
-| `M_EdgePlastico` | `%M0.5` | Bool | Memoria de flanco de la bobina P (no usar en otra red) |
+| `M_Clasificando` | `%M0.3` | Bool | Secuencia aluminio |
+| `M_PulsePlastico` | `%M0.4` | Bool | Resultado flanco P |
+| `M_EdgePlastico` | `%M0.5` | Bool | Memoria flanco P (solo del TON/P) |
 
 ---
 
-## D) Data block `DB_HMI` — número **3** · Optimized **OFF**
+## C) `DB_HMI` — número **3** · Optimized **OFF**
 
-Comandos de la página (icono 🖥️). El bridge los escribe desde Firestore.
+Solo HMI web (no KTP). Bridge: Firestore `hmi_comandos` → este DB.
 
-| Nombre en el DB | Tipo | Offset típico* | Botón / control en la web |
+| Nombre | Tipo | Offset típico | Control web 🖥️ |
 |---|---|---|---|
 | `Start` | Bool | 0.0 | START |
 | `Stop` | Bool | 0.1 | STOP |
 | `Emergencia` | Bool | 0.2 | EMERGENCIA |
 | `ResetAlarma` | Bool | 0.3 | Reset alarma |
-| `ModoAuto` | Bool | 0.4 | Switch Auto/Manual |
+| `ModoAuto` | Bool | 0.4 | Switch Auto |
 | `FinSesion` | Bool | 0.5 | Fin sesión |
-| `ManualBanda` | Bool | 0.6 | Banda manual (mantener) |
-| `ManualPiston` | Bool | 0.7 | Pistón manual (mantener) |
-| `BasculaLista` | Bool | 1.0 | Sim báscula (demo) |
-| `SensorPieza` | Bool | 1.1 | Sim pieza (demo) |
-| `SensorPlastico` | Bool | 1.2 | Sim plástico (demo) |
-| `SensorAluminio` | Bool | 1.3 | Sim aluminio (demo) |
-| `PistonRetractado` | Bool | 1.4 | Sim retractado (demo) |
-| `PistonExtendido` | Bool | 1.5 | Sim extendido (demo) |
-| `PesoActualKg` | **Real** | **2.0** (el que te dio TIA) | Campo peso actual |
+| `ManualBanda` | Bool | 0.6 | Banda manual |
+| `ManualPiston` | Bool | 0.7 | Pistón manual |
+| `BasculaLista` | Bool | 1.0 | Sim báscula (demo sin AS) |
+| `SensorPieza` | Bool | 1.1 | Sim pieza |
+| `SensorPlastico` | Bool | 1.2 | Sim plástico |
+| `SensorAluminio` | Bool | 1.3 | Sim aluminio |
+| `PistonRetractado` | Bool | 1.4 | Sim retractado |
+| `PistonExtendido` | Bool | 1.5 | Sim extendido |
+| `PesoActualKg` | Real | **2.0** (tu compile) | Peso actual kg |
 
-\*Confirma offsets en tu compile; si difieren, manda el de TIA.
+### LAD: operador vs proceso
 
-**En el LAD (operador):** usa `DB_HMI.Start`, `DB_HMI.Stop`, …  
-**Sensores de proceso:** preferible `I_SensorPieza` (AS). Para demo sin AS puedes usar `DB_HMI.SensorPieza` **o** ambos en paralelo (OR).
+| Función | Leer |
+|---|---|
+| START / STOP / Emergencia | `DB_HMI.Start` / `.Stop` / `.Emergencia` |
+| Modo | `DB_HMI.ModoAuto` |
+| Sensores con AS corriendo | `M_SensorPieza`, `M_SensorPlastico`, … |
+| Sensores solo demo web | `DB_HMI.SensorPieza` **o** OR con `M_Sensor…` |
+| Banda / pistón salida | bobina **`M_Banda`** / **`M_Piston`** |
+
+Ejemplo OR (AS o web):
+```
+---| M_SensorPieza |----+----(
+---| DB_HMI.SensorPieza |--+
+```
 
 ---
 
-## E) Data block `DatosEstacion` — número **1** · Optimized **OFF**
-
-Lo lee el bridge y lo muestra la web (usuario + panel HMI).
+## D) `DatosEstacion` — número **1** · Optimized **OFF**
 
 | Nombre | Tipo | Offset típico | Descripción |
 |---|---|---|---|
-| `ContPlastico` | Int | 0.0 | Piezas plástico sesión |
-| `ContAluminio` | Int | 2.0 | Piezas aluminio sesión |
-| `PesoPlasticoKg` | Real | 4.0 | kg acumulados plástico |
-| `PesoAluminioKg` | Real | 8.0 | kg acumulados aluminio |
-| `PesoActualKg` | Real | 12.0 | último peso (espejo; también puedes copiar desde DB_HMI) |
+| `ContPlastico` | Int | 0.0 | Piezas plástico |
+| `ContAluminio` | Int | 2.0 | Piezas aluminio |
+| `PesoPlasticoKg` | Real | 4.0 | kg plástico |
+| `PesoAluminioKg` | Real | 8.0 | kg aluminio |
+| `PesoActualKg` | Real | 12.0 | último peso |
 | `SesionActiva` | Bool | 16.0 | sesión abierta |
-| `FinSesion` | Bool | 16.1 | pedir cierre a la web |
-| `SistemaOn` | Bool | 16.2 | espejo marcha |
-| `ModoAuto` | Bool | 16.3 | espejo modo |
-| `Emergencia` | Bool | 16.4 | espejo emergencia |
-| `Alarma` | Bool | 16.5 | espejo alarma |
-| `BandaOn` | Bool | 16.6 | espejo `Q_Banda` |
-| `PistonOn` | Bool | 16.7 | espejo `Q_Piston` |
-| `EstadoMaquina` | Int | 18.0 | 0 idle … 4 emergencia |
-| `UltimoMaterial` | Int | 20.0 | 0 ninguno, 1 plástico, 2 aluminio |
+| `FinSesion` | Bool | 16.1 | fin → web |
+| `SistemaOn` | Bool | 16.2 | espejo |
+| `ModoAuto` | Bool | 16.3 | espejo |
+| `Emergencia` | Bool | 16.4 | espejo |
+| `Alarma` | Bool | 16.5 | espejo |
+| `BandaOn` | Bool | 16.6 | espejo `M_Banda` |
+| `PistonOn` | Bool | 16.7 | espejo `M_Piston` |
+| `EstadoMaquina` | Int | 18.0 | 0…4 |
+| `UltimoMaterial` | Int | 20.0 | 0/1/2 |
 
-Si al compilar un offset sale distinto (como el Real del HMI), **usa el de TIA**.
-
----
-
-## F) Timers (instancias TON IEC)
-
-No son tags de la tag table clásica: se crean al poner el bloque TON.
-
-| Nombre instancia | Tipo | PT | Uso |
-|---|---|---|---|
-| `T_RetardoPiston` | TON (IEC) | `T#500ms` | Espera con pistón extendido antes de contar aluminio |
-| `T_TimeoutPiston` | TON (IEC) | `T#3s` | Alarma si no llega a extendido |
-
-Contactos: `T_RetardoPiston.Q` · `T_TimeoutPiston.Q`
+En `FC_EspejoWeb`:  
+`DatosEstacion.BandaOn := M_Banda;` · `DatosEstacion.PistonOn := M_Piston;`
 
 ---
 
-## G) Analógica (opcional, báscula real/sim)
+## E) Timers
 
-| Nombre | Dirección / tag | Tipo | Nota |
-|---|---|---|---|
-| `AI_BasculaRaw` | `%IW…` (canal AI del 1511C) | Int/Word | Solo si escalas desde AI |
-| o solo | `DB_HMI.PesoActualKg` / `DatosEstacion.PesoActualKg` | Real | Suficiente para demo |
-
----
-
-## Checklist de creación en TIA (orden)
-
-1. [ ] Tag table: todas las **A + B + C**  
-2. [ ] DB **`DatosEstacion`** nº **1**, Optimized OFF, campos **E**  
-3. [ ] DB **`DB_HMI`** nº **3**, Optimized OFF, campos **D**  
-4. [ ] FCs: `FC_Modos`, `FC_Secuencia`, `FC_Alarmas`, `FC_EspejoWeb` + calls en OB1  
-5. [ ] TONs **F** dentro de `FC_Secuencia`  
-6. [ ] Compile → offsets OK (`EstadoMaquina` Int ~18, `UltimoMaterial` Int ~20)  
-7. [ ] PLCSIM Advanced RUN → `plc_bridge.py --db 1 --db-hmi 3`  
-8. [ ] Web 🖥️ manda comandos; 🏠 muestra acumulado  
+| Instancia | PT | Uso |
+|---|---|---|
+| `T_RetardoPiston` | `T#500ms` | Contar aluminio tras extendido |
+| `T_TimeoutPiston` | `T#3s` | Alarma timeout |
 
 ---
 
-## Redes: de dónde lee cada cosa (resumen)
+## Mapa mental
 
-| Función | Tag(s) |
+```
+AS 10  ←—— M_Sensor* / M_Banda / M_Piston ——→  KEPServerEX 6  ←→  PLC 1511C
+                                                      ↑
+                                              DB_HMI (HMI web)
+                                              DatosEstacion (web estado)
+```
+
+---
+
+## Checklist creación
+
+1. [ ] Tag table: grupo **A** (AS/KEP) + grupo **B** (interna)  
+2. [ ] `DatosEstacion` DB1 Optimized OFF  
+3. [ ] `DB_HMI` DB3 Optimized OFF  
+4. [ ] En KEPServer: mismos `%M2.x` / `%M3.x`  
+5. [ ] LAD: salidas a `M_Banda` / `M_Piston` (no Q)  
+6. [ ] TONs + FCs + OB1  
+7. [ ] Bridge `--db 1 --db-hmi 3`
+
+---
+
+## Reemplazo rápido en networks
+
+| Antes (guías viejas) | Ahora |
 |---|---|
-| START / STOP / E-STOP | `DB_HMI.Start` / `.Stop` / `.Emergencia` |
-| Modo auto | `DB_HMI.ModoAuto` (o copia a `M_ModoAuto`) |
-| Reset alarma | `DB_HMI.ResetAlarma` |
-| Fin sesión | `DB_HMI.FinSesion` → espejo a `DatosEstacion.FinSesion` |
-| Banda / pistón salidas | `Q_Banda` / `Q_Piston` |
-| Sensores proceso (AS) | `I_Sensor*` / `I_Piston*` / `I_BasculaLista` |
-| Sim sensores desde web | `DB_HMI.Sensor*` (demo) |
-| Contadores | `DatosEstacion.ContPlastico` / `.ContAluminio` |
-| Latch sistema | `M_SistemaOn` |
-| Clasificando | `M_Clasificando` |
-| Alarma | `M_Alarma` |
-
-Guías de networks: `tia/LOGICA_LAD_SIM.md` (cambia `M_HMI_X` → `DB_HMI.X` al crear desde cero).
+| `Q_Banda` | `M_Banda` |
+| `Q_Piston` | `M_Piston` |
+| `Q_LamparaRun` | `M_LamparaRun` |
+| `Q_LamparaAlarma` | `M_LamparaAlarma` |
+| `Q_LamparaEmergencia` | `M_LamparaEmergencia` |
+| `I_SensorPieza` | `M_SensorPieza` |
+| `I_SensorPlastico` | `M_SensorPlastico` |
+| `I_SensorAluminio` | `M_SensorAluminio` |
+| `I_BasculaLista` | `M_BasculaLista` |
+| `I_PistonRetractado` | `M_PistonRetractado` |
+| `I_PistonExtendido` | `M_PistonExtendido` |
+| `M_HMI_Start` / botones | `DB_HMI.Start` … |
