@@ -18,9 +18,17 @@ Crea un Data Block global **`DB_HMI`**, número sugerido **DB3**, **Optimized ac
 | 1.3 | `SensorAluminio` | Bool | Sim aluminio |
 | 1.4 | `PistonRetractado` | Bool | Sim retractado |
 | 1.5 | `PistonExtendido` | Bool | Sim extendido |
-| 4.0 | `PesoActualKg` | Real | Peso actual (alineado) |
+| 2.0* | `PesoActualKg` | **Real** | Peso en kg con decimales (0.04, 0.02…) |
 
-Tamaño a escribir desde Python: **8 bytes**.
+\*En muchos 1511C con Optimized OFF, TIA coloca el Real en **2.0** (justo después de los bools del byte 1).  
+Si en **tu** compile sale otro offset, **manda el de TIA** (no el de esta tabla).
+
+Tamaño a escribir desde Python: **6–8 bytes** (bools + Real).
+
+### ¿Por qué Real y no Int?
+- El peso es fraccionario: `0.045 kg`, no solo enteros.
+- `Real` = punto flotante (32 bit) en el PLC.
+- Si usaras `Int`, tendrías que guardar gramos (`45`) y convertir; más lío para báscula/AI.
 
 Firestore: `hmi_comandos/{estacionId}`
 

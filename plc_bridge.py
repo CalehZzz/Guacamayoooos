@@ -28,7 +28,8 @@ except ImportError:
 
 SERVICE_ACCOUNT_PATH = "serviceAccountKey.json"
 DB_READ_SIZE = 24
-DB_HMI_SIZE = 8
+DB_HMI_SIZE = 8  # bytes 0-1 bools; PesoActualKg Real suele quedar en offset 2.0 (TIA 1511C)
+PESO_OFFSET = 2  # si tu DB_HMI muestra otro offset al compilar, cámbialo aquí
 
 ESTADO_TXT = {0: "idle", 1: "running", 2: "clasificando", 3: "alarma", 4: "emergencia"}
 MATERIAL_TXT = {0: None, 1: "plastico", 2: "aluminio"}
@@ -110,7 +111,7 @@ def escribir_db_hmi(client: snap7.client.Client, db_hmi: int, cmd: dict) -> None
         peso = float(peso)
     except (TypeError, ValueError):
         peso = 0.0
-    set_real(raw, 4, peso)
+    set_real(raw, PESO_OFFSET, peso)
     client.db_write(db_hmi, 0, raw)
 
 
