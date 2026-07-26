@@ -8,9 +8,10 @@ App web + puente al PLC Siemens (TIA Portal / PLCSIM) + guías para Automation S
 TIA V20 · CPU **1511C-1 PN** · PLCSIM Advanced **V7** · AS **10** · KEPServerEX **6** · HMI virtual en la web.
 
 1. [`docs/10_ARQUITECTURA_FINAL.md`](docs/10_ARQUITECTURA_FINAL.md) — diagramas finales + recomendación HMI web  
-2. [`tia/MAPA_DB_HMI.md`](tia/MAPA_DB_HMI.md) — DB de comandos desde la web  
-3. [`tia/MAPA_IO_Y_DB.md`](tia/MAPA_IO_Y_DB.md) — DatosEstacion  
-4. [`tia/LOGICA_LAD_SIM.md`](tia/LOGICA_LAD_SIM.md) — networks (usa `DB_HMI.*` si ya lo creaste)  
+2. [`tia/TABLA_TAGS_DESDE_CERO.md`](tia/TABLA_TAGS_DESDE_CERO.md) — **todas las tags a crear (desde cero)**  
+3. [`tia/MAPA_DB_HMI.md`](tia/MAPA_DB_HMI.md) — DB de comandos desde la web  
+4. [`tia/MAPA_IO_Y_DB.md`](tia/MAPA_IO_Y_DB.md) — DatosEstacion  
+5. [`tia/LOGICA_LAD_SIM.md`](tia/LOGICA_LAD_SIM.md) — networks (`DB_HMI.*`)  
 5. [`automation_studio/COMPONENTES.md`](automation_studio/COMPONENTES.md) — AS 10  
 6. Resto de guías en [`docs/`](docs/)  
 
