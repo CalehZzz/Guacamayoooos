@@ -23,7 +23,9 @@ Crea un Data Block global **`DB_HMI`**, número sugerido **DB3**, **Optimized ac
 \*En muchos 1511C con Optimized OFF, TIA coloca el Real en **2.0** (justo después de los bools del byte 1).  
 Si en **tu** compile sale otro offset, **manda el de TIA** (no el de esta tabla).
 
-Tamaño a escribir desde Python: **6–8 bytes** (bools + Real).
+Tamaño mínimo del DB: **6 bytes** (bools + Real). El bridge escribe 6 bytes.
+
+Si `plc_probe` dice `DB3: OK hasta 4 bytes`, falta `PesoActualKg` (Real) u otros campos: agrégalos, compila y Download otra vez.
 
 ### ¿Por qué Real y no Int?
 - El peso es fraccionario: `0.045 kg`, no solo enteros.

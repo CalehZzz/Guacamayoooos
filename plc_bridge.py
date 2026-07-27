@@ -27,8 +27,12 @@ except ImportError:
 
 
 SERVICE_ACCOUNT_PATH = "serviceAccountKey.json"
-DB_READ_SIZE = 24
-DB_HMI_SIZE = 8  # bytes 0-1 bools; PesoActualKg Real suele quedar en offset 2.0 (TIA 1511C)
+# DatosEstacion termina en UltimoMaterial (Int @ 20.0) → tamaño real 22 bytes (0..21).
+# Pedir 24 provoca Invalid address (0x05) si el DB no está rellenado.
+DB_READ_SIZE = 22
+# DB_HMI: bools en 0..1 + Real PesoActualKg en 2.0 → mínimo 6 bytes.
+# Escribimos 6; si tu DB_HMI aún es más chico, amplíalo en TIA (ver MAPA_DB_HMI.md).
+DB_HMI_SIZE = 6
 PESO_OFFSET = 2  # si tu DB_HMI muestra otro offset al compilar, cámbialo aquí
 
 ESTADO_TXT = {0: "idle", 1: "running", 2: "clasificando", 3: "alarma", 4: "emergencia"}

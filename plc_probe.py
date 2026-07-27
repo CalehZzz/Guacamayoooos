@@ -53,7 +53,7 @@ def main() -> None:
         print(f"  FAIL: {e}")
         print("  → Revisa PUT/GET descargado + instancia PLCSIM correcta.\n")
 
-    sizes = [2, 4, 8, 12, 16, 20, 22, 24, 32]
+    sizes = [2, 4, 6, 8, 12, 16, 20, 22, 24, 32]
     print("\n--- Data Blocks DB1..DB10 ---")
     found = []
     for dbn in range(1, 11):
@@ -70,7 +70,7 @@ def main() -> None:
         if ok_sizes:
             mx = max(ok_sizes)
             found.append((dbn, mx))
-            print(f"  DB{dbn}: OK hasta {mx} bytes  (bridge necesita 24 en DatosEstacion, 8 en DB_HMI)")
+            print(f"  DB{dbn}: OK hasta {mx} bytes  (DatosEstacion≥22, DB_HMI≥6)")
         else:
             print(f"  DB{dbn}: no legible  ({last_err})")
 
@@ -85,12 +85,15 @@ def main() -> None:
     else:
         print("DBs legibles:", ", ".join(f"DB{n}(≤{s}B)" for n, s in found))
         print()
-        print("Usa en el bridge los números que SÍ respondieron, por ejemplo:")
         for n, s in found:
-            if s >= 24:
-                print(f"  candidato DatosEstacion: --db {n}")
-            if 8 <= s < 24 or s >= 8:
-                print(f"  candidato DB_HMI (si es el de comandos): --db-hmi {n}")
+            if s >= 22:
+                print(f"  candidato DatosEstacion: --db {n}  (tamaño OK)")
+            elif s >= 6:
+                print(f"  DB{n}: {s}B — si es DatosEstacion, falta ampliar (necesita ≥22)")
+            if s >= 6:
+                print(f"  candidato DB_HMI: --db-hmi {n}  (tamaño OK para bools+peso)")
+            elif s > 0:
+                print(f"  DB{n}: {s}B — si es DB_HMI, agrega PesoActualKg Real (necesita ≥6)")
         print()
         print("Si DB1 no aparece pero otro sí: en TIA el número del DB no es 1,")
         print("o DatosEstacion no se descargó. Mira en TIA el [DBx] al lado del nombre.")
