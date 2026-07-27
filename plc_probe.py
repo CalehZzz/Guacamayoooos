@@ -28,6 +28,10 @@ def main() -> None:
     args = p.parse_args()
 
     client = snap7.client.Client()
+    try:
+        client.set_connection_type(3)
+    except Exception:
+        pass
     print(f"Conectando a {args.ip} rack={args.rack} slot={args.slot} …")
     try:
         client.connect(args.ip, args.rack, args.slot)
