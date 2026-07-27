@@ -69,11 +69,47 @@ def parse_args() -> argparse.Namespace:
 
 
 def conectar_plc(ip: str, rack: int, slot: int) -> snap7.client.Client:
+    # Tipo OP (3) suele ir mejor con S7-1200/1500 + PUT/GET que el PG por defecto.
     client = snap7.client.Client()
+    try:
+        client.set_connection_type(3)  # 1=PG, 2=OP, 3=Basic/OP
+    except Exception:
+        pass
     client.connect(ip, rack, slot)
     if not client.get_connected():
         raise RuntimeError(f"No conectó a {ip} r{rack}s{slot}")
     return client
+
+
+def diagnostico_dbs(client: snap7.client.Client, db_datos: int, db_hmi: int) -> None:
+    """Si falla, explica la causa más probable (0x05)."""
+    print("\n--- Diagnóstico rápido DB ---")
+    try:
+        client.mb_read(0, 2)
+        print("  Merker MB0: OK (comunicación PUT/GET básica responde)")
+    except Exception as e:
+        print(f"  Merker MB0: FAIL ({e})")
+        print("  → Download HARDWARE de la CPU con PUT/GET a esta instancia PLCSIM.")
+
+    for dbn, label, need in ((db_datos, "DatosEstacion", DB_READ_SIZE), (db_hmi, "DB_HMI", DB_HMI_SIZE)):
+        ok = False
+        max_ok = 0
+        for sz in (2, 4, 8, 16, 20, 22, 24, 32):
+            try:
+                client.db_read(dbn, 0, sz)
+                max_ok = sz
+                ok = True
+            except Exception:
+                break
+        if ok and max_ok >= need:
+            print(f"  DB{dbn} ({label}): OK (legible ≥{max_ok} bytes, necesitas {need})")
+        elif ok:
+            print(f"  DB{dbn} ({label}): parcial — solo {max_ok} bytes (necesitas {need})")
+            print("  → El DB es demasiado pequeño: agrega todos los campos y vuelve a descargar.")
+        else:
+            print(f"  DB{dbn} ({label}): NO legible (Invalid address típico)")
+            print("  → Causas: DB no descargado en ESTA IP, número distinto, o Optimized ON.")
+    print("  Tip: py plc_probe.py --ip <misma_IP>  → lista todos los DB visibles\n")
 
 
 def leer_datos_estacion(client: snap7.client.Client, db_number: int) -> dict:
@@ -142,6 +178,7 @@ def main() -> None:
         print(f"   {e}")
         sys.exit(1)
     print("✅ PLC conectado.")
+    diagnostico_dbs(plc, args.db, args.db_hmi)
 
     if args.reset_on_start:
         try:
