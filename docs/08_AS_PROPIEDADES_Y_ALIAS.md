@@ -46,15 +46,16 @@ Ponles nombres claros (en el Ref. de sensor o al enlazar):
 
 | Sensor en el cilindro | Nombre / alias |
 |---|---|
-| En **0%** (vástago adentro) | `I_PistonRetractado` |
-| En **100%** (vástago afuera) | `I_PistonExtendido` |
+| En **0%** (vástago adentro) | `M_PistonRetractado` |
+| En **100%** (vástago afuera) | `M_PistonExtendido` |
 
-Esos mismos nombres son los de TIA.
+Esos mismos nombres van en TIA (`%M2.4` / `%M2.5`) y en KEPServer.  
+Guía detallada: `tia/AS_TAGS_Y_SENSORES_0_100.md`.
 
 ### Cómo ponerles nombre
 1. Doble clic en cada **Ref. de sensor unidimensional**  
 2. Pestaña **Identificación** / **Nombre** / **General**  
-3. Campo **Nombre** o **Alias** → escribe `I_PistonRetractado` o `I_PistonExtendido`
+3. Campo **Nombre** o **Alias** → escribe `M_PistonRetractado` o `M_PistonExtendido`
 
 Si esa ref. no tiene campo de nombre:
 - El nombre se lo pones al **detector / relé sensor** eléctrico al enlazarlo, o  
