@@ -753,7 +753,21 @@ $("btn-google").onclick = async () => {
       });
     }
   }catch(e){
-    showAuthError("login-error", "No se pudo iniciar con Google. Si estás abriendo el archivo directo (file://), súbelo a un servidor local o a GitHub Pages para que el login con Google funcione.");
+    console.error("Google login:", e);
+    const code = e.code || "";
+    let msg = "No se pudo iniciar con Google.";
+    if(location.protocol === "file:"){
+      msg = "Estás en file://. Abre la app por GitHub Pages o http://localhost.";
+    }else if(code.includes("unauthorized-domain")){
+      msg = "Dominio no autorizado en Firebase. En Authentication → Settings → Authorized domains agrega: " + location.hostname;
+    }else if(code.includes("popup-closed") || code.includes("cancelled")){
+      msg = "Se cerró la ventana de Google. Intenta de nuevo y no la cierres.";
+    }else if(code.includes("popup-blocked")){
+      msg = "El navegador bloqueó el popup. Permite ventanas emergentes para este sitio.";
+    }else if(code){
+      msg = "Google Auth falló: " + code;
+    }
+    showAuthError("login-error", msg);
   }
 };
 
