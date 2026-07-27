@@ -97,8 +97,8 @@ A veces el texto visible se edita:
 ## 4) Mini checklist
 
 - [ ] 5/2 abierta → **Especificaciones técnicas** → Solenoide + Muelle  
-- [ ] Sensor @ 0% → nombre `I_PistonRetractado`  
-- [ ] Sensor @ 100% → nombre `I_PistonExtendido`  
+- [ ] Sensor @ 0% → nombre `M_PistonRetractado`  
+- [ ] Sensor @ 100% → nombre `M_PistonExtendido`  
 - [ ] Relé/detector enlazado por **Asignación de variables** (aunque no tenga alias)
 
 ---

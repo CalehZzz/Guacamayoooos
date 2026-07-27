@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Guacamayos 🌿 Separa y pesa</title>
+<title>SIBU — Clasificación y pesaje</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
   :root{
     --cream:#FBF7EE;
@@ -23,6 +23,23 @@
     --shadow: 0 8px 24px rgba(31,59,45,0.10);
     --shadow-sm: 0 4px 10px rgba(31,59,45,0.08);
     --radius: 22px;
+    /* Siemens Comfort / KTP look */
+    --sx-bezel:#2a2f36;
+    --sx-bezel-hi:#3d4450;
+    --sx-screen:#cfd4db;
+    --sx-screen-2:#b8bfc9;
+    --sx-header:#007a78;
+    --sx-header-2:#005e5c;
+    --sx-field:#f4f6f8;
+    --sx-ink:#1a1f26;
+    --sx-muted:#4a5562;
+    --sx-green:#2f9e44;
+    --sx-green-d:#237a34;
+    --sx-red:#c92a2a;
+    --sx-red-d:#9b1c1c;
+    --sx-amber:#e67700;
+    --sx-blue:#1864ab;
+    --sx-softkey:#4a5568;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -54,7 +71,7 @@
     .leaf-float{animation:none;}
   }
 
-  #app{position:relative; z-index:1; max-width:520px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;}
+  #app{position:relative; z-index:1; max-width:560px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column;}
 
   /* ---------- Top bar ---------- */
   .topbar{
@@ -175,29 +192,294 @@
   .plc-chip.warn b{color:#B94B2D;}
   .plc-chip.ok b{color:var(--leaf-dark);}
 
-  /* ---------- HMI virtual (panel operador) ---------- */
-  .hmi-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:12px 0;}
-  .hmi-grid .btn{width:100%;}
-  .hmi-actions{display:flex; flex-direction:column; gap:10px; margin-top:8px;}
-  .hmi-switch-row{
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    background:var(--card); border-radius:16px; padding:14px 16px; box-shadow:var(--shadow-sm);
-    margin-bottom:12px;
+  /* ---------- HMI virtual estilo Siemens Comfort / KTP ---------- */
+  #view-hmi{
+    margin: 0 -8px;
   }
-  .hmi-switch-row span{font-weight:800; color:var(--forest);}
-  .hmi-toggle{
-    appearance:none; width:52px; height:30px; border-radius:999px; border:none;
-    background:#DDD5C0; position:relative; cursor:pointer; transition:.15s;
+  .siemens-panel{
+    background: linear-gradient(165deg, var(--sx-bezel-hi) 0%, var(--sx-bezel) 55%, #1c2026 100%);
+    border-radius: 18px;
+    padding: 14px 12px 16px;
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,.08) inset,
+      0 18px 40px rgba(0,0,0,.35);
   }
-  .hmi-toggle::after{
-    content:""; position:absolute; top:3px; left:3px; width:24px; height:24px;
-    border-radius:50%; background:#fff; transition:.15s; box-shadow:0 1px 4px rgba(0,0,0,.2);
+  .sp-brand-strip{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 0 6px 10px;
+    color: #c5ccd6;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-size: 12px;
   }
-  .hmi-toggle.on{background:var(--leaf);}
-  .hmi-toggle.on::after{left:25px;}
-  .hmi-sim-title{font-size:13px; font-weight:800; color:var(--forest-soft); margin:16px 0 8px; text-transform:uppercase; letter-spacing:.04em;}
-  .btn-hmi-stop{background:#fff; color:var(--coral); border:2px solid #ffd0c2;}
-  .btn-hmi-e{background:var(--coral); color:#fff;}
+  .sp-brand-strip .sp-model{ opacity: .7; letter-spacing: .06em; font-size: 11px; }
+  .sp-screen-frame{
+    background: #1e232b;
+    border-radius: 6px;
+    padding: 6px;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.5);
+  }
+  .sp-lcd{
+    background: linear-gradient(180deg, var(--sx-screen) 0%, var(--sx-screen-2) 100%);
+    border-radius: 3px;
+    overflow: hidden;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Rajdhani', sans-serif;
+    color: var(--sx-ink);
+  }
+  .sp-header{
+    background: linear-gradient(180deg, #009996 0%, var(--sx-header) 45%, var(--sx-header-2) 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    gap: 8px;
+    border-bottom: 2px solid #004846;
+  }
+  .sp-header-left{
+    display:flex; flex-direction:column; gap:1px; min-width:0;
+  }
+  .sp-header-left .sp-product{
+    font-size: 11px; font-weight: 600; letter-spacing: .14em; opacity: .9;
+    text-transform: uppercase;
+  }
+  .sp-header-left .sp-title{
+    font-size: 18px; font-weight: 700; letter-spacing: .04em; line-height: 1.1;
+  }
+  .sp-header-right{
+    text-align: right; font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; line-height: 1.35; white-space: nowrap;
+  }
+  .sp-alarm{
+    min-height: 28px;
+    padding: 5px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    background: #8a9099;
+    color: #1a1f26;
+    border-bottom: 1px solid #6d747e;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sp-alarm.ok{ background: #94a3a0; color: #16302c; }
+  .sp-alarm.warn{
+    background: linear-gradient(90deg, #ffd43b, #fab005);
+    color: #5c3b00;
+    animation: sp-blink 1.1s steps(2, end) infinite;
+  }
+  .sp-alarm.fault{
+    background: linear-gradient(90deg, #ff6b6b, #c92a2a);
+    color: #fff;
+    animation: sp-blink 0.8s steps(2, end) infinite;
+  }
+  @keyframes sp-blink{
+    50%{ filter: brightness(1.15); }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .sp-alarm.warn, .sp-alarm.fault{ animation: none; }
+  }
+  .sp-body{
+    flex: 1;
+    padding: 10px 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sp-section-label{
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+    margin: 2px 0 0;
+  }
+  .sp-io-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .sp-io{
+    background: var(--sx-field);
+    border: 1px solid #8b949e;
+    box-shadow: inset 0 1px 0 #fff, 0 1px 0 rgba(0,0,0,.08);
+    padding: 6px 8px 5px;
+    min-height: 48px;
+  }
+  .sp-io .lbl{
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sp-io .val{
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--sx-ink);
+    margin-top: 2px;
+  }
+  .sp-io.warn{ border-color: var(--sx-red); background: #fff5f5; }
+  .sp-io.warn .val{ color: var(--sx-red); }
+  .sp-io.ok .val{ color: var(--sx-green-d); }
+  .sp-mode-row{
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .sp-mode-row .sp-io{ flex: 1; }
+  .sp-toggle{
+    appearance: none;
+    border: 1px solid #6b7280;
+    background: linear-gradient(180deg, #e9ecef, #ced4da);
+    color: var(--sx-ink);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .04em;
+    padding: 0 12px;
+    min-width: 88px;
+    cursor: pointer;
+    box-shadow: inset 0 1px 0 #fff;
+  }
+  .sp-toggle.on{
+    background: linear-gradient(180deg, #51cf66, var(--sx-green));
+    color: #fff;
+    border-color: var(--sx-green-d);
+    text-shadow: 0 1px 0 rgba(0,0,0,.2);
+  }
+  .sp-btn-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 7px;
+  }
+  .sp-btn{
+    appearance: none;
+    border: 1px solid #5c6570;
+    border-radius: 2px;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 12px 6px;
+    cursor: pointer;
+    color: #fff;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.25),
+      0 2px 0 rgba(0,0,0,.25);
+    transition: transform .08s, filter .08s;
+  }
+  .sp-btn:active{
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.25);
+  }
+  .sp-btn-start{
+    background: linear-gradient(180deg, #51cf66, var(--sx-green-d));
+    border-color: #1b5e2a;
+  }
+  .sp-btn-stop{
+    background: linear-gradient(180deg, #ff8787, var(--sx-red));
+    border-color: #7f1d1d;
+  }
+  .sp-btn-e{
+    background: linear-gradient(180deg, #ff6b6b, #862e2e);
+    border-color: #4a1515;
+    grid-column: span 1;
+  }
+  .sp-btn-fn{
+    background: linear-gradient(180deg, #748194, var(--sx-softkey));
+    border-color: #2f3640;
+  }
+  .sp-btn-blue{
+    background: linear-gradient(180deg, #4dabf7, var(--sx-blue));
+    border-color: #0b3d66;
+  }
+  .sp-peso-row{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--sx-field);
+    border: 1px solid #8b949e;
+    padding: 8px;
+  }
+  .sp-peso-row label{
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+    white-space: nowrap;
+  }
+  .sp-peso-row input{
+    flex: 1;
+    border: 1px solid #6b7280;
+    background: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    padding: 7px 8px;
+    color: var(--sx-ink);
+    min-width: 0;
+  }
+  .sp-peso-row input:focus{ outline: 2px solid var(--sx-header); outline-offset: 0; }
+  .sp-sim-grid{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .sp-footer-note{
+    font-size: 10px;
+    color: var(--sx-muted);
+    font-family: 'Share Tech Mono', monospace;
+    padding: 0 2px 2px;
+  }
+  .sp-softkeys{
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+    padding: 0 2px;
+  }
+  .sp-softkey{
+    appearance: none;
+    border: 1px solid #1a1d22;
+    background: linear-gradient(180deg, #5c6570, #3a414c);
+    color: #e9ecef;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 10px 2px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    line-height: 1.15;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.15);
+  }
+  .sp-softkey small{
+    display: block;
+    font-size: 9px;
+    opacity: .65;
+    font-weight: 600;
+  }
+  .sp-softkey:active{ filter: brightness(1.15); }
+  .sp-led{
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #6b7280;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.4);
+    flex-shrink: 0;
+  }
+  .sp-led.on{ background: #40c057; box-shadow: 0 0 6px #40c057; }
+  .sp-led.alarm{ background: #fa5252; box-shadow: 0 0 6px #fa5252; }
+
   .peso-input-row{
     display:flex; align-items:center; gap:10px; background:var(--card); border-radius:16px;
     padding:12px 14px; box-shadow:var(--shadow-sm); margin-bottom:12px;
@@ -320,13 +602,13 @@
   <!-- ============ VISTA: CARGANDO ============ -->
   <div id="view-loading" class="auth-wrap">
     <div class="spinner"></div>
-    <p style="color:var(--forest-soft); font-size:14px;">Cargando Guacamayos...</p>
+    <p style="color:var(--forest-soft); font-size:14px;">Cargando SIBU...</p>
   </div>
 
   <!-- ============ VISTA: LOGIN ============ -->
   <div id="view-login" class="auth-wrap hidden">
-    <div class="auth-logo">🌿♻️</div>
-    <h1>Guacamayos</h1>
+    <div class="auth-logo">♻️</div>
+    <h1>SIBU</h1>
     <p class="tagline">Conéctate a la estación, separa botellas y latas, y mira tu acumulado en vivo desde el PLC.</p>
     <div class="auth-card">
       <div id="login-error" class="error-msg"></div>
@@ -338,8 +620,8 @@
         <label>Contraseña</label>
         <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
       </div>
-      <button class="btn btn-primary" id="btn-login">🔓 Iniciar sesión</button>
-      <button class="btn btn-google" id="btn-google">🔵 Continuar con Google</button>
+      <button class="btn btn-primary" id="btn-login">Iniciar sesión</button>
+      <button class="btn btn-google" id="btn-google">Continuar con Google</button>
       <div class="switcher">¿Primera vez aquí? <b id="go-register">Crear cuenta</b></div>
       <div class="switcher"><b id="go-guest">Continuar sin cuenta</b></div>
     </div>
@@ -349,7 +631,7 @@
   <div id="view-register" class="auth-wrap hidden">
     <div class="auth-logo">🌱</div>
     <h1>Crea tu cuenta</h1>
-    <p class="tagline">Solo toma un momento. Así guardamos tu historial de reciclaje.</p>
+    <p class="tagline">Solo toma un momento. Así guardamos tu historial de reciclaje en SIBU.</p>
     <div class="auth-card">
       <div id="register-error" class="error-msg"></div>
       <div class="field">
@@ -364,7 +646,7 @@
         <label>Contraseña</label>
         <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres">
       </div>
-      <button class="btn btn-primary" id="btn-register">🌿 Crear cuenta</button>
+      <button class="btn btn-primary" id="btn-register">Crear cuenta</button>
       <div class="switcher">¿Ya tienes cuenta? <b id="go-login">Inicia sesión</b></div>
       <div class="switcher"><b id="go-guest-2">Continuar sin cuenta</b></div>
     </div>
@@ -375,7 +657,7 @@
     <div class="modal-card">
       <div class="modal-emoji">💾</div>
       <h3>Guarda tu historial de pesajes</h3>
-      <p>Estás usando Guacamayos sin cuenta. Puedes seguir pesando libremente, pero si creas una cuenta gratis podemos guardar tus registros de pesaje y mostrarte tu historial más adelante.</p>
+      <p>Estás usando SIBU sin cuenta. Puedes seguir pesando libremente, pero si creas una cuenta gratis podemos guardar tus registros de pesaje y mostrarte tu historial más adelante.</p>
       <div class="btn-row" style="margin-top:16px;">
         <button class="btn btn-outline" id="modal-continue-guest">Continuar sin guardar</button>
         <button class="btn btn-primary" id="modal-go-register">Crear cuenta</button>
@@ -387,7 +669,7 @@
   <!-- ============ APP (con topbar) ============ -->
   <div id="app-shell" class="hidden">
     <div class="topbar">
-      <div class="brand"><span class="logo">🌿</span><span>Guacamayos</span></div>
+      <div class="brand"><span class="logo">♻️</span><span>SIBU</span></div>
       <div class="navpills">
         <button class="pill" data-view="stations">🏠</button>
         <button class="pill" data-view="hmi">🖥️</button>
@@ -402,8 +684,8 @@
       <!-- ---------- ESTACIONES ---------- -->
       <section id="view-stations" class="hidden">
         <div class="greeting">
-          <h2 id="greet-name">Hola 👋</h2>
-          <p>Elige la estación y conéctate a la máquina. Solo botellas plásticas y latas de aluminio.</p>
+          <h2 id="greet-name">Hola</h2>
+          <p>Elige la estación SIBU y conéctate a la máquina. Solo botellas plásticas y latas de aluminio.</p>
         </div>
         <div id="stations-list"></div>
       </section>
@@ -462,67 +744,125 @@
         </div>
       </section>
 
-      <!-- ---------- HMI VIRTUAL (operador / cumple requisito HMI del reto) ---------- -->
+      <!-- ---------- HMI VIRTUAL estilo Siemens Comfort / KTP ---------- -->
       <section id="view-hmi" class="hidden">
-        <div class="greeting">
-          <h2>HMI virtual 🖥️</h2>
-          <p>Panel de operador Guacamayos — sustituye la KTP en simulación (START, modos, contadores, alarmas).</p>
-        </div>
-
-        <div class="hmi-switch-row">
-          <span>Modo automático</span>
-          <button type="button" class="hmi-toggle" id="hmi-modo-auto" aria-label="Modo automático"></button>
-        </div>
-
-        <div class="hmi-grid">
-          <button class="btn btn-primary" id="hmi-start">START</button>
-          <button class="btn btn-hmi-stop" id="hmi-stop">STOP</button>
-          <button class="btn btn-hmi-e" id="hmi-emergencia">EMERGENCIA</button>
-          <button class="btn btn-outline" id="hmi-reset-alarma">Reset alarma</button>
-          <button class="btn btn-outline" id="hmi-fin-sesion">Fin sesión</button>
-          <button class="btn btn-outline" id="hmi-clear-e">Quitar emerg.</button>
-        </div>
-
-        <div class="plc-panel">
-          <div class="plc-panel-head">
-            <h3>Estado PLC / máquina</h3>
-            <div class="plc-link"><span class="plc-dot off" id="hmi-dot"></span><span id="hmi-link-text">Sin datos</span></div>
+        <div class="siemens-panel">
+          <div class="sp-brand-strip">
+            <span>SIBU HMI</span>
+            <span class="sp-model">Comfort Panel · 7"</span>
           </div>
-          <div class="plc-grid">
-            <div class="plc-chip">Sistema <b id="hmi-sistema">—</b></div>
-            <div class="plc-chip">Modo <b id="hmi-modo">—</b></div>
-            <div class="plc-chip">Banda <b id="hmi-banda">—</b></div>
-            <div class="plc-chip">Pistón <b id="hmi-piston">—</b></div>
-            <div class="plc-chip">Cont. plástico <b id="hmi-cont-p">0</b></div>
-            <div class="plc-chip">Cont. aluminio <b id="hmi-cont-a">0</b></div>
-            <div class="plc-chip" id="hmi-chip-alarma">Alarma <b id="hmi-alarma">—</b></div>
-            <div class="plc-chip" id="hmi-chip-emergencia">Emergencia <b id="hmi-emergencia-st">—</b></div>
+          <div class="sp-screen-frame">
+            <div class="sp-lcd">
+              <div class="sp-header">
+                <div class="sp-header-left">
+                  <span class="sp-product">SIEMENS · WinCC</span>
+                  <span class="sp-title">SIBU · Clasificación</span>
+                </div>
+                <div class="sp-header-right">
+                  <div id="hmi-clock">--:--:--</div>
+                  <div id="hmi-link-text">Sin datos</div>
+                </div>
+              </div>
+
+              <div class="sp-alarm ok" id="hmi-alarm-bar">
+                <span class="sp-led on" id="hmi-dot"></span>
+                <span id="hmi-alarm-text">Sistema listo — sin alarmas</span>
+              </div>
+
+              <div class="sp-body">
+                <div class="sp-section-label">Estado de proceso</div>
+                <div class="sp-io-grid">
+                  <div class="sp-io" id="hmi-chip-sistema">
+                    <div class="lbl">Sistema</div>
+                    <div class="val" id="hmi-sistema">—</div>
+                  </div>
+                  <div class="sp-io" id="hmi-chip-modo">
+                    <div class="lbl">Modo</div>
+                    <div class="val" id="hmi-modo">—</div>
+                  </div>
+                  <div class="sp-io">
+                    <div class="lbl">Banda</div>
+                    <div class="val" id="hmi-banda">—</div>
+                  </div>
+                  <div class="sp-io">
+                    <div class="lbl">Pistón</div>
+                    <div class="val" id="hmi-piston">—</div>
+                  </div>
+                  <div class="sp-io">
+                    <div class="lbl">Cont. plástico</div>
+                    <div class="val" id="hmi-cont-p">0</div>
+                  </div>
+                  <div class="sp-io">
+                    <div class="lbl">Cont. aluminio</div>
+                    <div class="val" id="hmi-cont-a">0</div>
+                  </div>
+                  <div class="sp-io" id="hmi-chip-alarma">
+                    <div class="lbl">Alarma</div>
+                    <div class="val" id="hmi-alarma">—</div>
+                  </div>
+                  <div class="sp-io" id="hmi-chip-emergencia">
+                    <div class="lbl">Emergencia</div>
+                    <div class="val" id="hmi-emergencia-st">—</div>
+                  </div>
+                </div>
+
+                <div class="sp-section-label">Modo de operación</div>
+                <div class="sp-mode-row">
+                  <div class="sp-io">
+                    <div class="lbl">Selector</div>
+                    <div class="val" id="hmi-modo-label">Automático</div>
+                  </div>
+                  <button type="button" class="sp-toggle on" id="hmi-modo-auto" aria-label="Modo automático">AUTO</button>
+                </div>
+
+                <div class="sp-section-label">Comandos operador</div>
+                <div class="sp-btn-grid">
+                  <button class="sp-btn sp-btn-start" id="hmi-start">Start</button>
+                  <button class="sp-btn sp-btn-stop" id="hmi-stop">Stop</button>
+                  <button class="sp-btn sp-btn-e" id="hmi-emergencia">Emerg.</button>
+                  <button class="sp-btn sp-btn-fn" id="hmi-reset-alarma">Reset alm.</button>
+                  <button class="sp-btn sp-btn-fn" id="hmi-fin-sesion">Fin sesión</button>
+                  <button class="sp-btn sp-btn-blue" id="hmi-clear-e">Quit. emerg.</button>
+                </div>
+
+                <div class="sp-section-label">Peso actual (DB_HMI)</div>
+                <div class="sp-peso-row">
+                  <label for="hmi-peso-actual">kg</label>
+                  <input type="number" step="0.001" min="0" id="hmi-peso-actual" value="0.040">
+                  <button class="sp-btn sp-btn-blue" id="hmi-peso-apply" style="padding:10px 14px;">OK</button>
+                </div>
+
+                <div class="sp-section-label">Simulación I/O (sin AS)</div>
+                <div class="sp-sim-grid">
+                  <button class="sp-btn sp-btn-fn" id="hmi-sim-plastico">Sim plástico</button>
+                  <button class="sp-btn sp-btn-fn" id="hmi-sim-aluminio">Sim aluminio</button>
+                  <button class="sp-btn sp-btn-fn" id="hmi-sim-extendido">Pistón 100%</button>
+                  <button class="sp-btn sp-btn-fn" id="hmi-sim-clear">Limpiar I</button>
+                  <button class="sp-btn sp-btn-blue" id="hmi-manual-banda">Banda man.</button>
+                  <button class="sp-btn sp-btn-blue" id="hmi-manual-piston">Pistón man.</button>
+                </div>
+
+                <p class="sp-footer-note">
+                  Estación: <span id="hmi-estacion-id">parque-central</span> · PLC 1511C · DB_HMI
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sp-softkeys">
+            <button type="button" class="sp-softkey" id="hmi-sk-start"><small>F1</small>Start</button>
+            <button type="button" class="sp-softkey" id="hmi-sk-stop"><small>F2</small>Stop</button>
+            <button type="button" class="sp-softkey" id="hmi-sk-auto"><small>F3</small>Auto</button>
+            <button type="button" class="sp-softkey" id="hmi-sk-reset"><small>F4</small>Reset</button>
+            <button type="button" class="sp-softkey" id="hmi-sk-e"><small>F5</small>Emerg</button>
+            <button type="button" class="sp-softkey" id="hmi-sk-clear"><small>F6</small>Quit E</button>
           </div>
         </div>
-
-        <div class="peso-input-row">
-          <label for="hmi-peso-actual">Peso actual (kg)</label>
-          <input type="number" step="0.001" min="0" id="hmi-peso-actual" value="0.040">
-          <button class="btn btn-primary" id="hmi-peso-apply" style="width:auto; padding:10px 14px;">OK</button>
-        </div>
-
-        <div class="hmi-sim-title">Simular pieza (demo sin hardware)</div>
-        <div class="hmi-grid">
-          <button class="btn btn-outline" id="hmi-sim-plastico">Sim plástico</button>
-          <button class="btn btn-outline" id="hmi-sim-aluminio">Sim aluminio</button>
-          <button class="btn btn-outline" id="hmi-sim-extendido">Pistón extendido</button>
-          <button class="btn btn-outline" id="hmi-sim-clear">Limpiar sensores</button>
-          <button class="btn btn-outline" id="hmi-manual-banda">Banda manual</button>
-          <button class="btn btn-outline" id="hmi-manual-piston">Pistón manual</button>
-        </div>
-        <p style="font-size:12.5px; color:var(--forest-soft); margin-top:14px;">
-          Estación HMI: <b id="hmi-estacion-id">parque-central</b> · El bridge escribe estos comandos a <span class="mono">DB_HMI</span> en el PLC 1511C.
-        </p>
       </section>
 
       <!-- ---------- HISTORIAL ---------- -->
       <section id="view-history" class="hidden">
-        <div class="greeting"><h2>Tu historial 📜</h2><p>Todo lo que has reciclado con Guacamayos.</p></div>
+        <div class="greeting"><h2>Tu historial</h2><p>Todo lo que has reciclado con SIBU.</p></div>
         <div id="history-list"></div>
       </section>
 
@@ -558,7 +898,7 @@
 
 <script type="module">
 /* =========================================================================
-   GUACAMAYOS — App de clasificación + pesaje (innovación del reto Siemens)
+   SIBU — App de clasificación + pesaje (innovación del reto Siemens)
    La app escucha `sesiones_activas/{estacionId}` en Firestore.
    Quien escribe ese documento es:
      - plc_bridge.py  → lee el PLC virtual (PLCSIM) con snap7
@@ -631,7 +971,7 @@ let sesion = null;        // sesión de pesaje activa
 let unsubSesion = null;    // función para dejar de escuchar la sesión en Firestore
 
 const FALLBACK_ESTACIONES = [
-  { id: "parque-central",  nombre: "Estación Guacamayos Demo", zona: "Báscula + sensor + pistón (PLC virtual)", activa: true },
+  { id: "parque-central",  nombre: "Estación SIBU Demo", zona: "Báscula + sensor + pistón (PLC virtual)", activa: true },
   { id: "parque-robles",   nombre: "Parque Los Robles",     zona: "Zona norte, cancha techada",   activa: true },
   { id: "plaza-americas",  nombre: "Plaza Las Américas",    zona: "Junto a la fuente",            activa: true }
 ];
@@ -704,7 +1044,7 @@ function enterAsGuest(){
   $("nav-admin").classList.add("hidden");
   $("btn-account").classList.remove("hidden");
   $("btn-logout").classList.add("hidden");
-  $("greet-name").textContent = "Hola 👋";
+  $("greet-name").textContent = "Hola";
   Promise.all([cargarPrecios(), cargarEstaciones()]).then(() => {
     $("app-shell").classList.remove("hidden");
     showAppView("stations");
@@ -806,7 +1146,7 @@ onAuthStateChanged(auth, async (user) => {
       const uSnap = await getDoc(doc(db, "usuarios", user.uid));
       nombre = uSnap.exists() ? uSnap.data().nombre : "Reciclador";
     }
-    $("greet-name").textContent = `Hola, ${nombre.split(" ")[0]} 👋`;
+    $("greet-name").textContent = `Hola, ${nombre.split(" ")[0]}`;
 
     await Promise.all([cargarPrecios(), cargarEstaciones()]);
 
@@ -819,7 +1159,7 @@ onAuthStateChanged(auth, async (user) => {
     $("nav-admin").classList.add("hidden");
     $("btn-account").classList.remove("hidden");
     $("btn-logout").classList.add("hidden");
-    $("greet-name").textContent = "Hola 👋";
+    $("greet-name").textContent = "Hola";
     await Promise.all([cargarPrecios(), cargarEstaciones()]);
     $("app-shell").classList.remove("hidden");
     ["view-loading","view-login","view-register"].forEach(v => $(v)?.classList.add("hidden"));
@@ -868,7 +1208,12 @@ async function pulseHmi(flag, ms = 350){
 }
 
 function syncHmiToggleUi(){
-  $("hmi-modo-auto")?.classList.toggle("on", !!hmiCmd.ModoAuto);
+  const btn = $("hmi-modo-auto");
+  if(!btn) return;
+  const on = !!hmiCmd.ModoAuto;
+  btn.classList.toggle("on", on);
+  btn.textContent = on ? "AUTO" : "MANUAL";
+  if($("hmi-modo-label")) $("hmi-modo-label").textContent = on ? "Automático" : "Manual";
 }
 
 function renderHmiFromPlc(data){
@@ -877,10 +1222,28 @@ function renderHmiFromPlc(data){
   const connected = !!plc.conectado;
   const dot = $("hmi-dot");
   if(dot){
-    dot.className = "plc-dot " + (plc.emergencia || plc.alarma ? "alarm" : (connected ? "on" : "off"));
+    dot.className = "sp-led " + (plc.emergencia || plc.alarma ? "alarm" : (connected ? "on" : ""));
   }
   if($("hmi-link-text")){
     $("hmi-link-text").textContent = connected ? ("PLC · " + (plc.estado || "ok")) : "Esperando bridge…";
+  }
+  const bar = $("hmi-alarm-bar");
+  const alarmTxt = $("hmi-alarm-text");
+  if(bar){
+    bar.classList.remove("ok", "warn", "fault");
+    if(plc.emergencia){
+      bar.classList.add("fault");
+      if(alarmTxt) alarmTxt.textContent = "EMERGENCIA ACTIVA — máquina detenida";
+    }else if(plc.alarma){
+      bar.classList.add("warn");
+      if(alarmTxt) alarmTxt.textContent = "ALARMA ACTIVA — reset requerido";
+    }else if(connected){
+      bar.classList.add("ok");
+      if(alarmTxt) alarmTxt.textContent = "Sistema listo — sin alarmas";
+    }else{
+      bar.classList.add("ok");
+      if(alarmTxt) alarmTxt.textContent = "Sin enlace PLC / bridge";
+    }
   }
   if($("hmi-sistema")) $("hmi-sistema").textContent = plc.sistemaOn ? "ON" : "OFF";
   if($("hmi-modo")) $("hmi-modo").textContent = plc.modoAuto ? "Automático" : "Manual";
@@ -892,6 +1255,7 @@ function renderHmiFromPlc(data){
   if($("hmi-emergencia-st")) $("hmi-emergencia-st").textContent = plc.emergencia ? "ACTIVA" : "OK";
   $("hmi-chip-alarma")?.classList.toggle("warn", !!plc.alarma);
   $("hmi-chip-emergencia")?.classList.toggle("warn", !!plc.emergencia);
+  $("hmi-chip-sistema")?.classList.toggle("ok", !!plc.sistemaOn);
 }
 
 function ensureHmiListen(){
@@ -954,6 +1318,32 @@ function bindHold(btnId, flag){
 }
 bindHold("hmi-manual-banda", "ManualBanda");
 bindHold("hmi-manual-piston", "ManualPiston");
+
+/* Softkeys F1–F6 (mismo efecto que botones de pantalla) */
+function wireSoftkey(skId, targetId){
+  const sk = $(skId);
+  const target = $(targetId);
+  if(!sk || !target) return;
+  sk.onclick = (e) => {
+    e.preventDefault();
+    target.click();
+  };
+}
+wireSoftkey("hmi-sk-start", "hmi-start");
+wireSoftkey("hmi-sk-stop", "hmi-stop");
+wireSoftkey("hmi-sk-auto", "hmi-modo-auto");
+wireSoftkey("hmi-sk-reset", "hmi-reset-alarma");
+wireSoftkey("hmi-sk-e", "hmi-emergencia");
+wireSoftkey("hmi-sk-clear", "hmi-clear-e");
+
+function tickHmiClock(){
+  const el = $("hmi-clock");
+  if(!el) return;
+  const d = new Date();
+  el.textContent = d.toLocaleTimeString("es-ES", { hour12: false });
+}
+setInterval(tickHmiClock, 1000);
+tickHmiClock();
 
 /* -------------------------------------------------------------------------
    8. PRECIOS (Firestore: colección "precios")

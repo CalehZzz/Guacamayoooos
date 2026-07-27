@@ -145,14 +145,31 @@ def leer_datos_estacion(client: snap7.client.Client, db_number: int) -> dict:
 def escribir_db_hmi(client: snap7.client.Client, db_hmi: int, cmd: dict) -> None:
     raw = bytearray(DB_HMI_SIZE)
     for key, byte, bit in BOOL_MAP:
+        if byte >= DB_HMI_SIZE:
+            continue
         set_bool(raw, byte, bit, bool(cmd.get(key, False)))
     peso = cmd.get("PesoActualKg", 0.0)
     try:
         peso = float(peso)
     except (TypeError, ValueError):
         peso = 0.0
-    set_real(raw, PESO_OFFSET, peso)
-    client.db_write(db_hmi, 0, raw)
+    if PESO_OFFSET + 4 <= DB_HMI_SIZE:
+        set_real(raw, PESO_OFFSET, peso)
+    try:
+        client.db_write(db_hmi, 0, raw)
+    except Exception:
+        # DB demasiado pequeño (ej. solo 4 bytes): escribe al menos los bools de comando
+        raw2 = bytearray(2)
+        for key, byte, bit in BOOL_MAP:
+            if byte > 1:
+                continue
+            set_bool(raw2, byte, bit, bool(cmd.get(key, False)))
+        client.db_write(db_hmi, 0, raw2)
+        raise RuntimeError(
+            f"DB_HMI (DB{db_hmi}) es demasiado pequeño para peso. "
+            "Se escribieron solo bools (2 bytes). "
+            "En TIA agrega PesoActualKg Real → Download (probe debe decir ≥6 bytes)."
+        ) from None
 
 
 def reset_sesion_en_plc(client: snap7.client.Client, db_number: int) -> None:
