@@ -192,6 +192,143 @@
   .plc-chip.warn b{color:#B94B2D;}
   .plc-chip.ok b{color:var(--leaf-dark);}
 
+  /* ---------- Animación estación (banda + pistón) ---------- */
+  .machine-stage{
+    margin: 14px 0 6px;
+    background: linear-gradient(180deg, #E8F0EA 0%, #D5E4DA 100%);
+    border: 2px solid rgba(31,59,45,.12);
+    border-radius: 18px;
+    padding: 14px 12px 12px;
+    overflow: hidden;
+  }
+  .machine-stage-head{
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    margin-bottom: 10px;
+  }
+  .machine-stage-head h3{
+    font-family:'Fredoka',sans-serif; font-size:14px; color:var(--forest); margin:0;
+  }
+  .machine-status-pill{
+    font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
+    padding:4px 10px; border-radius:999px; background:#fff; color:var(--forest-soft);
+    border:1px solid rgba(31,59,45,.1);
+  }
+  .machine-status-pill.on{
+    background:#E6F5EA; color:var(--leaf-dark); border-color:#B7E0C4;
+  }
+  .machine-canvas{
+    position:relative;
+    height: 118px;
+  }
+  .belt-frame{
+    position:absolute; left:8px; right:78px; top:42px; height:36px;
+    background: #3A4550;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.12), 0 4px 0 #2A323A;
+    overflow:hidden;
+  }
+  .belt-surface{
+    position:absolute; inset:4px;
+    border-radius:5px;
+    background:
+      repeating-linear-gradient(90deg,
+        #5B6A78 0 14px,
+        #475460 14px 28px);
+    background-size: 56px 100%;
+  }
+  .machine-stage.running .belt-surface{
+    animation: belt-scroll 0.7s linear infinite;
+  }
+  @keyframes belt-scroll{
+    from{ background-position: 0 0; }
+    to{ background-position: -56px 0; }
+  }
+  .belt-roller{
+    position:absolute; top:38px; width:22px; height:44px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 35%, #9AA6B2, #4A5560 55%, #2E363E);
+    border: 2px solid #1F262C;
+  }
+  .belt-roller.left{ left: 2px; }
+  .belt-roller.right{ right: 70px; }
+  .machine-stage.running .belt-roller{
+    animation: roller-spin 0.7s linear infinite;
+  }
+  @keyframes roller-spin{
+    to{ transform: rotate(360deg); }
+  }
+  .piece-on-belt{
+    position:absolute; top:14px; left:18%;
+    font-size: 28px; line-height:1;
+    opacity: 0;
+    transform: translateX(0) scale(.9);
+    transition: opacity .25s;
+    filter: drop-shadow(0 3px 2px rgba(0,0,0,.2));
+    pointer-events:none;
+    z-index: 2;
+  }
+  .piece-on-belt.show{ opacity: 1; }
+  .machine-stage.running .piece-on-belt.show{
+    animation: piece-travel 2.4s linear infinite;
+  }
+  @keyframes piece-travel{
+    0%{ left: 12%; transform: translateY(0) scale(1); }
+    70%{ left: 58%; transform: translateY(0) scale(1); }
+    85%{ left: 68%; transform: translateY(-6px) scale(1.05); }
+    100%{ left: 72%; transform: translateY(10px) scale(.85); opacity: .3; }
+  }
+  .piston-assy{
+    position:absolute; right: 6px; top: 18px; width: 64px; height: 86px;
+  }
+  .piston-body{
+    position:absolute; right: 10px; top: 8px; width: 28px; height: 70px;
+    background: linear-gradient(90deg, #8B95A1, #5C6672);
+    border-radius: 6px;
+    border: 2px solid #3A424C;
+  }
+  .piston-rod{
+    position:absolute; right: 38px; top: 34px; width: 8px; height: 14px;
+    background: #C5CCD4;
+    border-radius: 2px;
+    transform-origin: right center;
+    transition: width .45s cubic-bezier(.2,.8,.2,1);
+  }
+  .machine-stage.piston-on .piston-rod{
+    width: 34px;
+  }
+  .piston-head{
+    position:absolute; right: 44px; top: 28px; width: 14px; height: 26px;
+    background: #E8EEF3;
+    border: 2px solid #6B7580;
+    border-radius: 3px;
+    transition: transform .45s cubic-bezier(.2,.8,.2,1);
+  }
+  .machine-stage.piston-on .piston-head{
+    transform: translateX(-26px);
+  }
+  .bin-slot{
+    position:absolute; right: 78px; bottom: 2px; width: 36px; height: 28px;
+    background: #9AA6C4;
+    border: 2px solid #6E7A96;
+    border-radius: 4px 4px 2px 2px;
+    opacity: .85;
+  }
+  .bin-slot::after{
+    content:"Al";
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size:10px; font-weight:800; color:#fff;
+  }
+  .machine-legend{
+    display:flex; gap:12px; flex-wrap:wrap; margin-top:8px;
+    font-size:11.5px; font-weight:700; color:var(--forest-soft);
+  }
+  .machine-legend span b{ color:var(--forest); }
+  @media (prefers-reduced-motion: reduce){
+    .machine-stage.running .belt-surface,
+    .machine-stage.running .belt-roller,
+    .machine-stage.running .piece-on-belt.show{ animation: none; }
+  }
+
   /* ---------- HMI virtual — Comfort Panel / KTP700 rectangular ---------- */
   #app-shell.hmi-mode,
   #app.hmi-mode{
@@ -759,6 +896,32 @@
             <div class="plc-chip">Peso actual <b id="plc-peso-actual">—</b></div>
             <div class="plc-chip" id="plc-chip-alarma">Alarma <b id="plc-alarma">—</b></div>
             <div class="plc-chip" id="plc-chip-emergencia">Emergencia <b id="plc-emergencia">—</b></div>
+          </div>
+        </div>
+
+        <div class="machine-stage" id="machine-stage" aria-label="Animación de estación">
+          <div class="machine-stage-head">
+            <h3>Estación en vivo</h3>
+            <span class="machine-status-pill" id="machine-pill">Banda parada</span>
+          </div>
+          <div class="machine-canvas">
+            <div class="belt-roller left"></div>
+            <div class="belt-frame">
+              <div class="belt-surface"></div>
+            </div>
+            <div class="belt-roller right"></div>
+            <div class="piece-on-belt" id="piece-on-belt" aria-hidden="true">🥫</div>
+            <div class="bin-slot" title="Canal aluminio"></div>
+            <div class="piston-assy" title="Pistón">
+              <div class="piston-body"></div>
+              <div class="piston-rod"></div>
+              <div class="piston-head"></div>
+            </div>
+          </div>
+          <div class="machine-legend">
+            <span>Banda: <b id="machine-banda-lbl">Parada</b></span>
+            <span>Pistón: <b id="machine-piston-lbl">Retráctil</b></span>
+            <span>Pieza: <b id="machine-piece-lbl">—</b></span>
           </div>
         </div>
 
@@ -1515,6 +1678,40 @@ function renderPlcPanel(plc){
   alarmaChip.classList.toggle("ok", !p.alarma);
   emergChip.classList.toggle("warn", !!p.emergencia);
   emergChip.classList.toggle("ok", !p.emergencia);
+
+  // Animación gráfica banda / pistón (para demo sin banda física en AS)
+  const stage = $("machine-stage");
+  if(stage){
+    const running = !!p.banda && !p.emergencia;
+    stage.classList.toggle("running", running);
+    stage.classList.toggle("piston-on", !!p.piston);
+    const pill = $("machine-pill");
+    if(pill){
+      pill.classList.toggle("on", running);
+      pill.textContent = p.emergencia ? "Emergencia" : (running ? "Banda en marcha" : (p.piston ? "Clasificando" : "Banda parada"));
+    }
+    if($("machine-banda-lbl")) $("machine-banda-lbl").textContent = p.banda ? "Marcha" : "Parada";
+    if($("machine-piston-lbl")) $("machine-piston-lbl").textContent = p.piston ? "Extendido" : "Retráctil";
+    const piece = $("piece-on-belt");
+    const pieceLbl = $("machine-piece-lbl");
+    if(piece){
+      let emoji = "";
+      if(p.ultimoMaterial === "plastico") emoji = MATERIALES.plastico.emoji;
+      else if(p.ultimoMaterial === "aluminio") emoji = MATERIALES.aluminio.emoji;
+      else if(running) emoji = "♻️";
+      if(emoji){
+        piece.textContent = emoji;
+        piece.classList.add("show");
+      }else{
+        piece.classList.remove("show");
+      }
+      if(pieceLbl){
+        pieceLbl.textContent = p.ultimoMaterial && MATERIALES[p.ultimoMaterial]
+          ? MATERIALES[p.ultimoMaterial].nombre
+          : (running ? "en tránsito" : "—");
+      }
+    }
+  }
 }
 
 function buildJars(){
