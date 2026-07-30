@@ -664,6 +664,19 @@
 
   .section-title{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--forest-soft); font-weight:800; margin:6px 0 10px;}
 
+  .demo-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    background:#FFF3CD; color:#8A6D1D; border:1px solid #F0D78C;
+    font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    padding:4px 10px; border-radius:999px;
+  }
+  .demo-banner{
+    background:linear-gradient(90deg,#FFF3CD,#FFE8A3);
+    color:#6B5420; text-align:center; font-size:12.5px; font-weight:800;
+    padding:8px 14px; border-bottom:1px solid #F0D78C;
+  }
+  .auth-demo{margin:0 auto 16px;}
+
   .spinner{
     width:34px; height:34px; border:4px solid var(--cream-2); border-top-color:var(--leaf);
     border-radius:50%; animation:spin 1s linear infinite; margin:30px auto;
@@ -686,69 +699,24 @@
     <p style="color:var(--forest-soft); font-size:14px;">Cargando SIBU...</p>
   </div>
 
-  <!-- ============ VISTA: LOGIN ============ -->
+  <!-- ============ VISTA: ACCESO (solo Google) ============ -->
   <div id="view-login" class="auth-wrap hidden">
     <div class="auth-logo">♻️</div>
     <h1>SIBU</h1>
-    <p class="tagline">Conéctate a la estación, separa botellas y latas, y mira tu acumulado en vivo desde el PLC.</p>
+    <div class="demo-badge auth-demo">DEMO · Prototipo</div>
+    <p class="tagline">Estación Colegio Don Bosco — clasifica botellas y latas. Accede con Google para continuar.</p>
     <div class="auth-card">
       <div id="login-error" class="error-msg"></div>
-      <div class="field">
-        <label>Correo</label>
-        <input type="email" id="login-email" placeholder="tucorreo@ejemplo.com" autocomplete="email">
-      </div>
-      <div class="field">
-        <label>Contraseña</label>
-        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
-      </div>
-      <button class="btn btn-primary" id="btn-login">Iniciar sesión</button>
-      <button class="btn btn-google" id="btn-google">Continuar con Google</button>
-      <div class="switcher">¿Primera vez aquí? <b id="go-register">Crear cuenta</b></div>
-      <div class="switcher"><b id="go-guest">Continuar sin cuenta</b></div>
-    </div>
-  </div>
-
-  <!-- ============ VISTA: REGISTRO ============ -->
-  <div id="view-register" class="auth-wrap hidden">
-    <div class="auth-logo">🌱</div>
-    <h1>Crea tu cuenta</h1>
-    <p class="tagline">Solo toma un momento. Así guardamos tu historial de reciclaje en SIBU.</p>
-    <div class="auth-card">
-      <div id="register-error" class="error-msg"></div>
-      <div class="field">
-        <label>Nombre</label>
-        <input type="text" id="reg-nombre" placeholder="¿Cómo te llamas?">
-      </div>
-      <div class="field">
-        <label>Correo</label>
-        <input type="email" id="reg-email" placeholder="tucorreo@ejemplo.com">
-      </div>
-      <div class="field">
-        <label>Contraseña</label>
-        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres">
-      </div>
-      <button class="btn btn-primary" id="btn-register">Crear cuenta</button>
-      <div class="switcher">¿Ya tienes cuenta? <b id="go-login">Inicia sesión</b></div>
-      <div class="switcher"><b id="go-guest-2">Continuar sin cuenta</b></div>
-    </div>
-  </div>
-
-  <!-- ============ MODAL: RECOMENDACIÓN DE REGISTRO ============ -->
-  <div id="modal-register-overlay" class="modal-overlay hidden">
-    <div class="modal-card">
-      <div class="modal-emoji">💾</div>
-      <h3>Guarda tu historial de pesajes</h3>
-      <p>Estás usando SIBU sin cuenta. Puedes seguir pesando libremente, pero si creas una cuenta gratis podemos guardar tus registros de pesaje y mostrarte tu historial más adelante.</p>
-      <div class="btn-row" style="margin-top:16px;">
-        <button class="btn btn-outline" id="modal-continue-guest">Continuar sin guardar</button>
-        <button class="btn btn-primary" id="modal-go-register">Crear cuenta</button>
-      </div>
-      <div class="switcher" style="margin-top:10px;"><b id="modal-go-login">Ya tengo cuenta</b></div>
+      <button class="btn btn-primary" id="btn-acceder">Acceder</button>
+      <p style="margin:14px 0 0; font-size:12.5px; color:var(--forest-soft); text-align:center; line-height:1.45;">
+        Debes iniciar sesión con Google para usar SIBU. Versión de demostración / prototipo.
+      </p>
     </div>
   </div>
 
   <!-- ============ APP (con topbar) ============ -->
   <div id="app-shell" class="hidden">
+    <div class="demo-banner">DEMO — Prototipo SIBU · Colegio Don Bosco · No es versión de producción</div>
     <div class="topbar">
       <div class="brand"><span class="logo">♻️</span><span>SIBU</span></div>
       <div class="navpills">
@@ -756,8 +724,7 @@
         <button class="pill" data-view="hmi">🖥️</button>
         <button class="pill" data-view="history">📜</button>
         <button class="pill hidden" id="nav-admin" data-view="admin">⚙️</button>
-        <button class="pill hidden" id="btn-account">👤 Ingresar</button>
-        <button class="pill hidden" id="btn-logout">🚪</button>
+        <button class="pill hidden" id="btn-logout">Salir</button>
       </div>
     </div>
 
@@ -798,7 +765,7 @@
         <div class="jars-row" id="jars-row"></div>
         <div class="total-readout">
           <div class="lbl">Total acumulado en esta sesión</div>
-          <div class="amt mono" id="live-total">$0.00</div>
+          <div class="amt mono" id="live-total">₡0.00</div>
           <div class="sub" id="live-peso">0.00 kg en total</div>
         </div>
         <div class="btn-row">
@@ -816,7 +783,7 @@
           <div id="summary-breakdown"></div>
           <div class="total-readout" style="margin-top:14px;">
             <div class="lbl">Total ganado</div>
-            <div class="amt mono" id="summary-total">$0.00</div>
+            <div class="amt mono" id="summary-total">₡0.00</div>
           </div>
         </div>
         <div class="btn-row">
@@ -1012,8 +979,7 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-  getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signOut, updateProfile, GoogleAuthProvider, signInWithPopup
+  getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, query,
@@ -1048,7 +1014,7 @@ const MATERIALES = {
   plastico: { nombre: "Plástico", emoji: "🥤", color: "#5AA9E6", pesoMin: 0.02, pesoMax: 0.06, cap: 3 },
   aluminio: { nombre: "Aluminio", emoji: "🥫", color: "#9AA6C4", pesoMin: 0.01, pesoMax: 0.03, cap: 1.5 }
 };
-const PRECIOS_POR_DEFECTO = { plastico: 0.45, aluminio: 1.20 };
+const PRECIOS_POR_DEFECTO = { plastico: 250, aluminio: 650 }; // ₡ por kg (CRC)
 
 const PLC_DEFAULT = {
   conectado: false,
@@ -1075,12 +1041,10 @@ let sesion = null;        // sesión de pesaje activa
 let unsubSesion = null;    // función para dejar de escuchar la sesión en Firestore
 
 const FALLBACK_ESTACIONES = [
-  { id: "parque-central",  nombre: "Estación SIBU Demo", zona: "Báscula + sensor + pistón (PLC virtual)", activa: true },
-  { id: "parque-robles",   nombre: "Parque Los Robles",     zona: "Zona norte, cancha techada",   activa: true },
-  { id: "plaza-americas",  nombre: "Plaza Las Américas",    zona: "Junto a la fuente",            activa: true }
+  { id: "parque-central",  nombre: "Colegio Don Bosco", zona: "DEMO · Prototipo SIBU · Báscula + sensor + pistón", activa: true }
 ];
 
-const HMI_ESTACION_ID = "parque-central";
+const HMI_ESTACION_ID = "parque-central"; // mismo ID que usa plc_bridge.py
 const HMI_CMD_DEFAULT = {
   Start: false,
   Stop: false,
@@ -1107,7 +1071,7 @@ let unsubHmiSesion = null;
 const $ = (id) => document.getElementById(id);
 
 function showOnly(id){
-  ["view-loading","view-login","view-register"].forEach(v => $(v)?.classList.add("hidden"));
+  ["view-loading","view-login"].forEach(v => $(v)?.classList.add("hidden"));
   $(id)?.classList.remove("hidden");
 }
 
@@ -1130,70 +1094,22 @@ function toast(msg){
   setTimeout(() => t.classList.remove("show"), 2200);
 }
 
-function money(n){ return "$" + n.toFixed(2); }
-
-/* -------------------------------------------------------------------------
-   5. AUTENTICACIÓN
-   ------------------------------------------------------------------------- */
-$("go-register").onclick = () => showOnly("view-register");
-$("go-login").onclick = () => showOnly("view-login");
-$("go-guest").onclick = () => enterAsGuest();
-$("go-guest-2").onclick = () => enterAsGuest();
-$("btn-account").onclick = () => { $("app-shell").classList.add("hidden"); showOnly("view-login"); };
-
-function enterAsGuest(){
-  currentUser = null;
-  isAdmin = false;
-  $("view-loading").classList.add("hidden");
-  $("view-login").classList.add("hidden");
-  $("view-register").classList.add("hidden");
-  $("nav-admin").classList.add("hidden");
-  $("btn-account").classList.remove("hidden");
-  $("btn-logout").classList.add("hidden");
-  $("greet-name").textContent = "Hola";
-  Promise.all([cargarPrecios(), cargarEstaciones()]).then(() => {
-    $("app-shell").classList.remove("hidden");
-    showAppView("stations");
-  });
+function money(n){
+  const v = Number(n) || 0;
+  return "₡" + v.toLocaleString("es-CR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-$("btn-login").onclick = async () => {
-  const email = $("login-email").value.trim();
-  const pass = $("login-password").value;
+/* -------------------------------------------------------------------------
+   5. AUTENTICACIÓN — solo Google (obligatorio)
+   ------------------------------------------------------------------------- */
+$("btn-acceder").onclick = async () => {
   $("login-error").style.display = "none";
-  if(!email || !pass){ return showAuthError("login-error", "Completa correo y contraseña."); }
-  try{
-    await signInWithEmailAndPassword(auth, email, pass);
-  }catch(e){
-    showAuthError("login-error", traducirErrorAuth(e));
-  }
-};
-
-$("btn-register").onclick = async () => {
-  const nombre = $("reg-nombre").value.trim();
-  const email = $("reg-email").value.trim();
-  const pass = $("reg-password").value;
-  $("register-error").style.display = "none";
-  if(!nombre || !email || !pass){ return showAuthError("register-error", "Completa todos los campos."); }
-  if(pass.length < 6){ return showAuthError("register-error", "La contraseña debe tener al menos 6 caracteres."); }
-  try{
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    await updateProfile(cred.user, { displayName: nombre });
-    await setDoc(doc(db, "usuarios", cred.user.uid), {
-      nombre, email, creado: serverTimestamp()
-    });
-  }catch(e){
-    showAuthError("register-error", traducirErrorAuth(e));
-  }
-};
-
-$("btn-google").onclick = async () => {
   try{
     const cred = await signInWithPopup(auth, googleProvider);
     const uSnap = await getDoc(doc(db, "usuarios", cred.user.uid));
     if(!uSnap.exists()){
       await setDoc(doc(db, "usuarios", cred.user.uid), {
-        nombre: cred.user.displayName || "Reciclador",
+        nombre: cred.user.displayName || "Usuario SIBU",
         email: cred.user.email,
         creado: serverTimestamp()
       });
@@ -1201,15 +1117,15 @@ $("btn-google").onclick = async () => {
   }catch(e){
     console.error("Google login:", e);
     const code = e.code || "";
-    let msg = "No se pudo iniciar con Google.";
+    let msg = "No se pudo acceder con Google.";
     if(location.protocol === "file:"){
       msg = "Estás en file://. Abre la app por GitHub Pages o http://localhost.";
     }else if(code.includes("unauthorized-domain")){
-      msg = "Dominio no autorizado en Firebase. En Authentication → Settings → Authorized domains agrega: " + location.hostname;
+      msg = "Dominio no autorizado en Firebase. Agrega: " + location.hostname;
     }else if(code.includes("popup-closed") || code.includes("cancelled")){
-      msg = "Se cerró la ventana de Google. Intenta de nuevo y no la cierres.";
+      msg = "Se cerró la ventana de Google. Intenta de nuevo.";
     }else if(code.includes("popup-blocked")){
-      msg = "El navegador bloqueó el popup. Permite ventanas emergentes para este sitio.";
+      msg = "El navegador bloqueó el popup. Permite ventanas emergentes.";
     }else if(code){
       msg = "Google Auth falló: " + code;
     }
@@ -1221,55 +1137,51 @@ $("btn-logout").onclick = () => signOut(auth);
 
 function showAuthError(id, msg){
   const el = $(id);
+  if(!el) return;
   el.textContent = msg;
   el.style.display = "block";
-}
-
-function traducirErrorAuth(e){
-  const code = e.code || "";
-  if(code.includes("user-not-found") || code.includes("invalid-credential")) return "Correo o contraseña incorrectos.";
-  if(code.includes("wrong-password")) return "Contraseña incorrecta.";
-  if(code.includes("email-already-in-use")) return "Ese correo ya tiene una cuenta.";
-  if(code.includes("invalid-email")) return "El correo no es válido.";
-  if(code.includes("weak-password")) return "La contraseña es muy débil (mínimo 6 caracteres).";
-  return "Ocurrió un error. Intenta de nuevo.";
 }
 
 /* -------------------------------------------------------------------------
    6. LISTENER PRINCIPAL DE AUTENTICACIÓN
    ------------------------------------------------------------------------- */
 onAuthStateChanged(auth, async (user) => {
+  $("view-loading")?.classList.add("hidden");
   if(user){
     currentUser = user;
-    const tokenResult = await user.getIdTokenResult(true);
-    isAdmin = tokenResult.claims.admin === true;
-    $("nav-admin").classList.toggle("hidden", !isAdmin);
-    $("btn-account").classList.add("hidden");
-    $("btn-logout").classList.remove("hidden");
+    try{
+      const tokenResult = await user.getIdTokenResult(true);
+      isAdmin = tokenResult.claims.admin === true;
+    }catch(e){
+      isAdmin = false;
+    }
+    $("nav-admin")?.classList.toggle("hidden", !isAdmin);
+    $("btn-logout")?.classList.remove("hidden");
 
     let nombre = user.displayName;
     if(!nombre){
       const uSnap = await getDoc(doc(db, "usuarios", user.uid));
-      nombre = uSnap.exists() ? uSnap.data().nombre : "Reciclador";
+      nombre = uSnap.exists() ? (uSnap.data().nombre || "Usuario") : "Usuario";
     }
-    $("greet-name").textContent = `Hola, ${nombre.split(" ")[0]}`;
+    if($("greet-name")) $("greet-name").textContent = `Hola, ${nombre.split(" ")[0]}`;
 
     await Promise.all([cargarPrecios(), cargarEstaciones()]);
-
     $("app-shell").classList.remove("hidden");
-    ["view-loading","view-login","view-register"].forEach(v => $(v)?.classList.add("hidden"));
+    ["view-loading","view-login"].forEach(v => $(v)?.classList.add("hidden"));
     showAppView("stations");
   } else {
-    // Sin sesión: no forzamos login, la app queda disponible como invitado.
-    currentUser = null; isAdmin = false;
-    $("nav-admin").classList.add("hidden");
-    $("btn-account").classList.remove("hidden");
-    $("btn-logout").classList.add("hidden");
-    $("greet-name").textContent = "Hola";
-    await Promise.all([cargarPrecios(), cargarEstaciones()]);
-    $("app-shell").classList.remove("hidden");
-    ["view-loading","view-login","view-register"].forEach(v => $(v)?.classList.add("hidden"));
-    showAppView("stations");
+    // Sin Google: no se puede entrar
+    currentUser = null;
+    isAdmin = false;
+    detenerEscuchaSesion();
+    if(typeof unsubHmiSesion !== "undefined" && unsubHmiSesion){
+      try{ unsubHmiSesion(); }catch(e){}
+      unsubHmiSesion = null;
+    }
+    $("app-shell")?.classList.add("hidden");
+    $("nav-admin")?.classList.add("hidden");
+    $("btn-logout")?.classList.add("hidden");
+    showOnly("view-login");
   }
 });
 
@@ -1570,10 +1482,6 @@ async function borrarSesionActiva(estacionId){
 async function onSesionFinalizadaPorPLC(){
   detenerEscuchaSesion();
   if(!sesion) return;
-  if(!currentUser){
-    $("modal-register-overlay").classList.remove("hidden");
-    return;
-  }
   await finalizarYGuardar();
 }
 
@@ -1625,7 +1533,7 @@ function buildJars(){
       <div class="jar-count" id="count-${key}">0 piezas</div>
       <div class="jar-stats">
         <div><span class="val" id="peso-${key}">0.00</span> kg</div>
-        <div><span class="val" id="sub-${key}">$0.00</span></div>
+        <div><span class="val" id="sub-${key}">₡0.00</span></div>
       </div>
     `;
     row.appendChild(wrap);
@@ -1664,30 +1572,7 @@ $("btn-cancel-session").onclick = async () => {
 
 $("btn-finish-session").onclick = async () => {
   detenerEscuchaSesion();
-  if(!currentUser){
-    $("modal-register-overlay").classList.remove("hidden");
-    return;
-  }
   await finalizarYGuardar();
-};
-
-$("modal-continue-guest").onclick = async () => {
-  $("modal-register-overlay").classList.add("hidden");
-  await finalizarYGuardar();
-};
-$("modal-go-register").onclick = async () => {
-  $("modal-register-overlay").classList.add("hidden");
-  if(sesion) await borrarSesionActiva(sesion.estacionId);
-  sesion = null;
-  $("app-shell").classList.add("hidden");
-  showOnly("view-register");
-};
-$("modal-go-login").onclick = async () => {
-  $("modal-register-overlay").classList.add("hidden");
-  if(sesion) await borrarSesionActiva(sesion.estacionId);
-  sesion = null;
-  $("app-shell").classList.add("hidden");
-  showOnly("view-login");
 };
 
 async function finalizarYGuardar(){
@@ -1761,11 +1646,7 @@ $("btn-summary-history").onclick = () => { renderHistorial(); showAppView("histo
 async function renderHistorial(){
   const cont = $("history-list");
   if(!currentUser){
-    cont.innerHTML = `<div class="empty-state"><div class="e">🔒</div>Crea una cuenta gratis para guardar y ver tu historial de pesajes.<br><br><button class="btn btn-primary" id="btn-history-register" style="max-width:220px; margin:0 auto;">Crear cuenta</button></div>`;
-    $("btn-history-register").onclick = () => {
-      $("app-shell").classList.add("hidden");
-      showOnly("view-register");
-    };
+    cont.innerHTML = `<div class="empty-state"><div class="e">🔒</div>Accede con Google para ver tu historial.</div>`;
     return;
   }
   cont.innerHTML = `<div class="spinner"></div>`;
@@ -1830,8 +1711,8 @@ function renderPreciosAdmin(){
       <span class="price-emoji">${mat.emoji}</span>
       <span class="price-name">${mat.nombre}</span>
       <div class="price-input-wrap">
-        <span>$</span>
-        <input type="number" step="0.01" min="0" id="price-input-${key}" value="${(precios[key] ?? PRECIOS_POR_DEFECTO[key]).toFixed(2)}">
+        <span>₡</span>
+        <input type="number" step="1" min="0" id="price-input-${key}" value="${(precios[key] ?? PRECIOS_POR_DEFECTO[key]).toFixed(2)}">
         <span>/kg</span>
       </div>
       <button class="save-mini" id="save-price-${key}">Guardar</button>
