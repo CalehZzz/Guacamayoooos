@@ -1,5 +1,5 @@
 # Guacamayos — Estación de clasificación + app (Siemens Youth Innovation Search 2026)
-
+py plc_bridge.py parque-central --ip 192.168.0.1 --db 1 --db-hmi 3
 App web + puente al PLC Siemens (TIA Portal / PLCSIM) + guías para Automation Studio.
 
 ## Empieza aquí (stack actual)
