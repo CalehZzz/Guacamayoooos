@@ -799,6 +799,14 @@
   .add-station-form{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
   .add-station-form input{padding:10px 12px; border-radius:12px; border:2px solid var(--cream-2); font-family:'Nunito'; font-size:14px;}
 
+  .real-card{margin-bottom:14px;}
+  .real-cmd{
+    margin:0; padding:12px 14px; background:var(--cream); border-radius:12px;
+    font-size:12.5px; overflow-x:auto; color:var(--forest); border:2px solid var(--cream-2);
+    white-space:pre-wrap; word-break:break-all;
+  }
+  #hmi-sim-block.hidden-real{display:none !important;}
+
   .section-title{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--forest-soft); font-weight:800; margin:6px 0 10px;}
 
   .demo-badge{
@@ -859,6 +867,7 @@
       <div class="navpills">
         <button class="pill" data-view="stations">🏠</button>
         <button class="pill" data-view="hmi">🖥️</button>
+        <button class="pill" data-view="plc-real">🔌</button>
         <button class="pill" data-view="history">📜</button>
         <button class="pill hidden" id="nav-admin" data-view="admin">⚙️</button>
         <button class="pill hidden" id="btn-logout">Salir</button>
@@ -1065,7 +1074,7 @@
                   </div>
                 </div>
 
-                <div class="sp-col sp-col-wide">
+                <div class="sp-col sp-col-wide" id="hmi-sim-block">
                   <div class="sp-section-label">Simulación proceso (reemplaza AS / KEP)</div>
                   <div class="sp-sim-grid">
                     <button class="sp-btn sp-btn-fn" id="hmi-sim-plastico">1 · Plástico</button>
@@ -1105,6 +1114,66 @@
       <section id="view-history" class="hidden">
         <div class="greeting"><h2>Tu historial</h2><p>Todo lo que has reciclado con SIBU.</p></div>
         <div id="history-list"></div>
+      </section>
+
+      <!-- ---------- PLC REAL (1214C) ---------- -->
+      <section id="view-plc-real" class="hidden">
+        <div class="greeting">
+          <h2>PLC real · 1214C</h2>
+          <p>Proyecto TIA aparte (`plc_real/`). Sensores y actuadores físicos — no uses el proyecto de PLCSIM 1511C.</p>
+        </div>
+
+        <div class="card real-card">
+          <div class="section-title">Arquitectura</div>
+          <p style="font-size:14px; color:var(--forest-soft); line-height:1.5; margin:0 0 12px;">
+            Web ⇄ Firestore ⇄ <span class="mono">plc_bridge_real.py</span> ⇄ CPU <b>1214C AC/DC/Rly</b> (`%I` / `%Q`)
+          </p>
+          <div class="plc-grid">
+            <div class="plc-chip">Estación Firestore <b id="real-estacion-id">colegio-don-bosco-real</b></div>
+            <div class="plc-chip">DB estado <b>DatosEstacion · DB1</b></div>
+            <div class="plc-chip">DB comandos <b>DB_HMI · DB3</b></div>
+            <div class="plc-chip">Docs <b>plc_real/</b></div>
+          </div>
+        </div>
+
+        <div class="card real-card">
+          <div class="section-title">Bridge en tu PC (misma red que el PLC)</div>
+          <pre class="real-cmd mono" id="real-bridge-cmd">py plc_real/plc_bridge_real.py --ip 192.168.0.10</pre>
+          <div class="field" style="margin-top:12px;">
+            <label>IP del 1214C</label>
+            <input type="text" id="real-plc-ip" value="192.168.0.10" autocomplete="off">
+          </div>
+          <button class="btn btn-outline" id="btn-copy-real-cmd" type="button">Copiar comando</button>
+        </div>
+
+        <div class="card real-card">
+          <div class="section-title">Estado en vivo (estación real)</div>
+          <div class="plc-panel" style="margin:0; box-shadow:none;">
+            <div class="plc-panel-head">
+              <h3>CPU 1214C</h3>
+              <div class="plc-link"><span class="plc-dot off" id="real-dot"></span><span id="real-link-text">Sin bridge</span></div>
+            </div>
+            <div class="plc-grid">
+              <div class="plc-chip">Sistema <b id="real-sistema">—</b></div>
+              <div class="plc-chip">Modo <b id="real-modo">—</b></div>
+              <div class="plc-chip">Banda <b id="real-banda">—</b></div>
+              <div class="plc-chip">Pistón <b id="real-piston">—</b></div>
+              <div class="plc-chip">Cont. plástico <b id="real-cont-p">0</b></div>
+              <div class="plc-chip">Cont. aluminio <b id="real-cont-a">0</b></div>
+              <div class="plc-chip">Alarma <b id="real-alarma">—</b></div>
+              <div class="plc-chip">Emergencia <b id="real-emergencia">—</b></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-outline" id="btn-real-listen" type="button">Escuchar estación real</button>
+          <button class="btn btn-primary" id="btn-real-hmi" type="button">Abrir HMI (modo real)</button>
+        </div>
+        <p style="font-size:12.5px; color:var(--forest-soft); margin-top:10px; line-height:1.45;">
+          En modo real el HMI <b>oculta</b> la simulación de sensores: usa entradas físicas del 1214C.
+          Checklist y networks: carpeta <span class="mono">plc_real/</span> del repo.
+        </p>
       </section>
 
       <!-- ---------- ADMIN ---------- -->
@@ -1211,10 +1280,14 @@ let sesion = null;        // sesión de pesaje activa
 let unsubSesion = null;    // función para dejar de escuchar la sesión en Firestore
 
 const FALLBACK_ESTACIONES = [
-  { id: "parque-central",  nombre: "Colegio Don Bosco", zona: "DEMO · Prototipo SIBU · Báscula + sensor + pistón", activa: true }
+  { id: "parque-central",  nombre: "Colegio Don Bosco", zona: "DEMO · Simulación PLCSIM 1511C", activa: true },
+  { id: "colegio-don-bosco-real", nombre: "Colegio Don Bosco · PLC real", zona: "CPU 1214C AC/DC/Rly · I/O físico", activa: true }
 ];
 
-const HMI_ESTACION_ID = "parque-central"; // mismo ID que usa plc_bridge.py
+const HMI_ESTACION_DEMO = "parque-central";
+const HMI_ESTACION_REAL = "colegio-don-bosco-real";
+let HMI_ESTACION_ID = HMI_ESTACION_DEMO;
+let hmiModeReal = false;
 const HMI_CMD_DEFAULT = {
   Start: false,
   Stop: false,
@@ -1249,7 +1322,7 @@ function showOnly(id){
 }
 
 function showAppView(viewName){
-  ["stations","live","summary","history","admin","hmi"].forEach(v => {
+  ["stations","live","summary","history","admin","hmi","plc-real"].forEach(v => {
     $("view-" + v)?.classList.toggle("hidden", v !== viewName);
   });
   document.querySelectorAll(".navpills .pill[data-view]").forEach(p => {
@@ -1258,6 +1331,7 @@ function showAppView(viewName){
   $("app")?.classList.toggle("hmi-mode", viewName === "hmi");
   $("app-shell")?.classList.toggle("hmi-mode", viewName === "hmi");
   if(viewName === "hmi") ensureHmiListen();
+  if(viewName === "plc-real") updateRealBridgeCmd();
 }
 
 function toast(msg){
@@ -1366,6 +1440,17 @@ document.querySelectorAll(".navpills .pill[data-view]").forEach(btn => {
     const v = btn.dataset.view;
     if(v === "history") renderHistorial();
     if(v === "admin") renderAdmin();
+    if(v === "hmi"){
+      hmiModeReal = false;
+      HMI_ESTACION_ID = HMI_ESTACION_DEMO;
+      hmiAutoPiston = true;
+      if($("hmi-auto-piston")){
+        $("hmi-auto-piston").classList.add("on");
+        $("hmi-auto-piston").textContent = "AUTO";
+      }
+      if($("hmi-auto-piston-lbl")) $("hmi-auto-piston-lbl").textContent = "AUTO";
+    }
+    if(v === "plc-real") ensureRealListen();
     showAppView(v);
   };
 });
@@ -1448,8 +1533,8 @@ function renderHmiFromPlc(data){
   $("hmi-chip-emergencia")?.classList.toggle("warn", !!plc.emergencia);
   $("hmi-chip-sistema")?.classList.toggle("ok", !!plc.sistemaOn);
 
-  // Sin AS: cuando el PLC pide pistón, la web simula el final de carrera 100%
-  if(hmiAutoPiston){
+  // Solo en demo: simula final de carrera. En PLC real el sensor es I_PistonExtendido.
+  if(hmiAutoPiston && !hmiModeReal){
     if(plc.piston && !hmiPrevPiston){
       if(hmiPistonTimer) clearTimeout(hmiPistonTimer);
       hmiPistonTimer = setTimeout(() => {
@@ -1465,14 +1550,16 @@ function renderHmiFromPlc(data){
 }
 
 function ensureHmiListen(){
-  $("hmi-estacion-id").textContent = HMI_ESTACION_ID;
+  $("hmi-estacion-id").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : " · DEMO");
+  $("hmi-sim-block")?.classList.toggle("hidden-real", !!hmiModeReal);
   syncHmiToggleUi();
-  if(!unsubHmiSesion){
-    unsubHmiSesion = onSnapshot(hmiSesionRef(), (snap) => {
-      renderHmiFromPlc(snap.exists() ? snap.data() : null);
-    });
+  if(unsubHmiSesion){
+    try{ unsubHmiSesion(); }catch(e){}
+    unsubHmiSesion = null;
   }
-  // Asegura doc de comandos
+  unsubHmiSesion = onSnapshot(hmiSesionRef(), (snap) => {
+    renderHmiFromPlc(snap.exists() ? snap.data() : null);
+  });
   pushHmiCmd({});
 }
 
@@ -1563,6 +1650,76 @@ function tickHmiClock(){
 }
 setInterval(tickHmiClock, 1000);
 tickHmiClock();
+
+/* -------------------------------------------------------------------------
+   PLC REAL — estación colegio-don-bosco-real + HMI sin sim sensores
+   ------------------------------------------------------------------------- */
+let unsubRealSesion = null;
+
+function updateRealBridgeCmd(){
+  const ip = ($("real-plc-ip")?.value || "192.168.0.10").trim() || "192.168.0.10";
+  const cmd = `py plc_real/plc_bridge_real.py --ip ${ip}`;
+  if($("real-bridge-cmd")) $("real-bridge-cmd").textContent = cmd;
+  if($("real-estacion-id")) $("real-estacion-id").textContent = HMI_ESTACION_REAL;
+}
+
+function renderRealPanel(data){
+  const plc = { ...PLC_DEFAULT, ...(data?.plc || {}) };
+  const mats = data?.materiales || {};
+  const connected = !!plc.conectado;
+  const dot = $("real-dot");
+  if(dot){
+    dot.className = "plc-dot " + (plc.emergencia || plc.alarma ? "alarm" : (connected ? "on" : "off"));
+  }
+  if($("real-link-text")){
+    $("real-link-text").textContent = connected ? ("1214C · " + (plc.estado || "ok")) : "Esperando plc_bridge_real…";
+  }
+  if($("real-sistema")) $("real-sistema").textContent = plc.sistemaOn ? "ON" : "OFF";
+  if($("real-modo")) $("real-modo").textContent = plc.modoAuto ? "Automático" : "Manual";
+  if($("real-banda")) $("real-banda").textContent = plc.banda ? "Marcha" : "Parada";
+  if($("real-piston")) $("real-piston").textContent = plc.piston ? "Extendido" : "Retráctil";
+  if($("real-cont-p")) $("real-cont-p").textContent = String(mats.plastico?.piezas ?? 0);
+  if($("real-cont-a")) $("real-cont-a").textContent = String(mats.aluminio?.piezas ?? 0);
+  if($("real-alarma")) $("real-alarma").textContent = plc.alarma ? "ACTIVA" : "OK";
+  if($("real-emergencia")) $("real-emergencia").textContent = plc.emergencia ? "ACTIVA" : "OK";
+}
+
+function ensureRealListen(){
+  updateRealBridgeCmd();
+  if(unsubRealSesion) return;
+  unsubRealSesion = onSnapshot(doc(db, "sesiones_activas", HMI_ESTACION_REAL), (snap) => {
+    renderRealPanel(snap.exists() ? snap.data() : null);
+  });
+}
+
+$("real-plc-ip")?.addEventListener("input", updateRealBridgeCmd);
+$("btn-copy-real-cmd")?.addEventListener("click", async () => {
+  updateRealBridgeCmd();
+  const t = $("real-bridge-cmd")?.textContent || "";
+  try{
+    await navigator.clipboard.writeText(t);
+    toast("Comando copiado");
+  }catch(e){
+    toast("Copia manual: " + t);
+  }
+});
+$("btn-real-listen")?.addEventListener("click", () => {
+  ensureRealListen();
+  toast("Escuchando " + HMI_ESTACION_REAL);
+});
+$("btn-real-hmi")?.addEventListener("click", () => {
+  hmiModeReal = true;
+  HMI_ESTACION_ID = HMI_ESTACION_REAL;
+  hmiAutoPiston = false;
+  if($("hmi-auto-piston")){
+    $("hmi-auto-piston").classList.remove("on");
+    $("hmi-auto-piston").textContent = "MANUAL";
+  }
+  if($("hmi-auto-piston-lbl")) $("hmi-auto-piston-lbl").textContent = "OFF (real)";
+  ensureRealListen();
+  showAppView("hmi");
+  toast("HMI en modo PLC real 1214C");
+});
 
 /* -------------------------------------------------------------------------
    8. PRECIOS (Firestore: colección "precios")

@@ -1,23 +1,23 @@
 # Tabla maestra de tags — desde cero (CPU 1511C-1 PN)
 
-**Importante:** Automation Studio ↔ KEPServerEX usan tags **`%M`**, no `%I` ni `%Q`.
+> **Modo actual (sin AS):** sensores y comandos van por **`DB_HMI`**.  
+> Guía: `docs/11_SIN_AS_SOLO_WEB.md` · Networks: `tia/NETWORKS_WEB_ONLY.md`.
 
-HMI web Guacamayos → **`DB_HMI`** (vía bridge).  
+HMI web SIBU → **`DB_HMI`** (vía bridge).  
 Espejo a la web → **`DatosEstacion`**.
 
 ---
 
-## Grupos
+## Grupos (modo web-only)
 
 | Grupo | Área | Uso |
 |---|---|---|
-| **A. Proceso AS/KEP** | `%M` | Sensores y actuadores que mueve Automation Studio |
-| **B. Lógica interna** | `%M` | Latches, alarmas, pulsos (solo PLC) |
-| **C. DB_HMI (DB3)** | DB | Comandos panel web 🖥️ |
+| **B. Lógica interna** | `%M` | `M_SistemaOn`, `M_Banda`, `M_Piston`, alarmas… |
+| **C. DB_HMI (DB3)** | DB | Comandos + **sensores simulados** desde la web |
 | **D. DatosEstacion (DB1)** | DB | Contadores / estado → web |
 | **E. Timers** | TON IEC | Retardo y timeout pistón |
 
-`%I` / `%Q` del 1511C **no los necesitas** para este diseño (puedes no crearlos).
+~~Grupo A (AS/KEP `%M2.x`)~~ — **no necesario** si no usas Automation Studio.
 
 ---
 

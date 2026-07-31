@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""
+SIBU — Bridge PLC REAL (S7-1200 CPU 1214C AC/DC/Rly)
+
+Mismos DBs que el demo (DatosEstacion=DB1, DB_HMI=DB3), distinta estación Firestore
+y distinta IP (la del 1214C en la red, no PLCSIM).
+
+  py plc_real/plc_bridge_real.py
+  py plc_real/plc_bridge_real.py --ip 192.168.0.10
+
+Requiere serviceAccountKey.json en la raíz del repo.
+Docs: plc_real/README.md
+"""
+
+from __future__ import annotations
+
+import os
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+os.chdir(ROOT)
+
+DEFAULT_ESTACION = "colegio-don-bosco-real"
+DEFAULT_IP = "192.168.0.10"
+
+
+def _inject_defaults(argv: list[str]) -> list[str]:
+    """Si no pasas estación/IP, usa defaults del PLC real."""
+    args = list(argv)
+    # py script.py  →  py script.py colegio-don-bosco-real --ip ...
+    if len(args) == 1:
+        return [args[0], DEFAULT_ESTACION, "--ip", DEFAULT_IP, "--db", "1", "--db-hmi", "3"]
+    # py script.py --ip x  → inserta estación
+    if len(args) > 1 and args[1].startswith("-"):
+        return [args[0], DEFAULT_ESTACION] + args[1:]
+    return args
+
+
+if __name__ == "__main__":
+    sys.argv = _inject_defaults(sys.argv)
+    print("=== SIBU bridge · PLC REAL 1214C ===")
+    print(f"CWD={ROOT}")
+    print(f"Args: {' '.join(sys.argv[1:])}")
+    print("Sensores/actuadores: I/Q físicos (ver plc_real/NETWORKS_LAD.md)\n")
+    from plc_bridge import main
+
+    main()

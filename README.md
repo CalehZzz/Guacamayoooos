@@ -15,14 +15,24 @@ TIA V20 · CPU **1511C-1 PN** · PLCSIM Advanced **V7** · AS **10** · KEPServe
 5. [`automation_studio/COMPONENTES.md`](automation_studio/COMPONENTES.md) — AS 10  
 6. Resto de guías en [`docs/`](docs/)  
 
-### Bridge con PLCSIM Advanced
+### Bridge con PLCSIM Advanced (demo)
 
 ```bash
 pip install firebase-admin python-snap7
 python plc_bridge.py parque-central --ip 192.168.0.1 --db 1 --db-hmi 3
 ```
 
-En la app: icono **🖥️** = HMI virtual (operador). **🏠** = usuario que acumula reciclaje.
+En la app: icono **🖥️** = HMI demo · **🔌** = PLC real (1214C) · **🏠** = usuario.
+
+### PLC real (S7-1200 1214C) — carpeta aparte
+
+**No uses el proyecto TIA del 1511C.** Todo está en [`plc_real/`](plc_real/README.md):
+
+```bash
+python plc_real/plc_bridge_real.py --ip 192.168.0.10
+```
+
+Estación Firestore: `colegio-don-bosco-real`. Networks I/Q: `plc_real/NETWORKS_LAD.md`.
 
 ## App
 
