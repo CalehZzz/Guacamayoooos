@@ -1066,17 +1066,24 @@
                 </div>
 
                 <div class="sp-col sp-col-wide">
-                  <div class="sp-section-label">Simulación I/O (sin AS)</div>
+                  <div class="sp-section-label">Simulación proceso (reemplaza AS / KEP)</div>
                   <div class="sp-sim-grid">
-                    <button class="sp-btn sp-btn-fn" id="hmi-sim-plastico">Sim plástico</button>
-                    <button class="sp-btn sp-btn-fn" id="hmi-sim-aluminio">Sim aluminio</button>
-                    <button class="sp-btn sp-btn-fn" id="hmi-sim-extendido">Pistón 100%</button>
-                    <button class="sp-btn sp-btn-fn" id="hmi-sim-clear">Limpiar I</button>
+                    <button class="sp-btn sp-btn-fn" id="hmi-sim-plastico">1 · Plástico</button>
+                    <button class="sp-btn sp-btn-fn" id="hmi-sim-aluminio">2 · Aluminio</button>
+                    <button class="sp-btn sp-btn-fn" id="hmi-sim-extendido">3 · Pistón 100%</button>
+                    <button class="sp-btn sp-btn-fn" id="hmi-sim-clear">Limpiar sensores</button>
                     <button class="sp-btn sp-btn-blue" id="hmi-manual-banda">Banda man.</button>
                     <button class="sp-btn sp-btn-blue" id="hmi-manual-piston">Pistón man.</button>
                   </div>
+                  <div class="sp-mode-row" style="margin-top:6px;">
+                    <div class="sp-io">
+                      <div class="lbl">Feedback pistón</div>
+                      <div class="val" id="hmi-auto-piston-lbl">AUTO</div>
+                    </div>
+                    <button type="button" class="sp-toggle on" id="hmi-auto-piston" aria-label="Auto feedback pistón">AUTO</button>
+                  </div>
                   <p class="sp-footer-note">
-                    Estación: <span id="hmi-estacion-id">parque-central</span> · PLC 1511C · DB_HMI · SIBU
+                    Flujo: START → 1 Plástico (cuenta) o 2 Aluminio → (AUTO extiende pistón) / 3 manual · Estación <span id="hmi-estacion-id">parque-central</span>
                   </p>
                 </div>
               </div>
@@ -1227,6 +1234,9 @@ const HMI_CMD_DEFAULT = {
 };
 let hmiCmd = { ...HMI_CMD_DEFAULT };
 let unsubHmiSesion = null;
+let hmiAutoPiston = true;
+let hmiPrevPiston = false;
+let hmiPistonTimer = null;
 
 /* -------------------------------------------------------------------------
    4. HELPERS DE NAVEGACIÓN Y UI
@@ -1437,6 +1447,21 @@ function renderHmiFromPlc(data){
   $("hmi-chip-alarma")?.classList.toggle("warn", !!plc.alarma);
   $("hmi-chip-emergencia")?.classList.toggle("warn", !!plc.emergencia);
   $("hmi-chip-sistema")?.classList.toggle("ok", !!plc.sistemaOn);
+
+  // Sin AS: cuando el PLC pide pistón, la web simula el final de carrera 100%
+  if(hmiAutoPiston){
+    if(plc.piston && !hmiPrevPiston){
+      if(hmiPistonTimer) clearTimeout(hmiPistonTimer);
+      hmiPistonTimer = setTimeout(() => {
+        pushHmiCmd({ PistonExtendido: true, PistonRetractado: false });
+      }, 450);
+    }
+    if(!plc.piston && hmiPrevPiston){
+      if(hmiPistonTimer) clearTimeout(hmiPistonTimer);
+      pushHmiCmd({ PistonExtendido: false, PistonRetractado: true });
+    }
+  }
+  hmiPrevPiston = !!plc.piston;
 }
 
 function ensureHmiListen(){
@@ -1472,20 +1497,33 @@ $("hmi-sim-plastico").onclick = async () => {
     BasculaLista: true, SensorPieza: true, SensorPlastico: true, SensorAluminio: false,
     PistonExtendido: false, PistonRetractado: true
   });
-  toast("Sim plástico ON");
+  toast("Sim plástico → PLC");
+  setTimeout(() => pushHmiCmd({
+    BasculaLista: false, SensorPieza: false, SensorPlastico: false, SensorAluminio: false
+  }), 600);
 };
 $("hmi-sim-aluminio").onclick = async () => {
   await pushHmiCmd({
     BasculaLista: true, SensorPieza: true, SensorPlastico: false, SensorAluminio: true,
-    PistonRetractado: false
+    PistonRetractado: true, PistonExtendido: false
   });
-  toast("Sim aluminio ON — luego pulsa Extendido");
+  toast(hmiAutoPiston ? "Sim aluminio — pistón AUTO extenderá" : "Sim aluminio — pulsa Pistón 100%");
 };
-$("hmi-sim-extendido").onclick = () => pushHmiCmd({ PistonExtendido: true, PistonRetractado: false });
+$("hmi-sim-extendido").onclick = () => {
+  pushHmiCmd({ PistonExtendido: true, PistonRetractado: false });
+  toast("Final de carrera 100% → PLC");
+};
 $("hmi-sim-clear").onclick = () => pushHmiCmd({
   BasculaLista: false, SensorPieza: false, SensorPlastico: false, SensorAluminio: false,
   PistonExtendido: false, PistonRetractado: true
 });
+$("hmi-auto-piston").onclick = () => {
+  hmiAutoPiston = !hmiAutoPiston;
+  $("hmi-auto-piston").classList.toggle("on", hmiAutoPiston);
+  $("hmi-auto-piston").textContent = hmiAutoPiston ? "AUTO" : "MANUAL";
+  if($("hmi-auto-piston-lbl")) $("hmi-auto-piston-lbl").textContent = hmiAutoPiston ? "AUTO" : "MANUAL";
+  toast(hmiAutoPiston ? "Feedback pistón AUTO" : "Feedback pistón MANUAL (usa botón 3)");
+};
 function bindHold(btnId, flag){
   const el = $(btnId);
   if(!el) return;
