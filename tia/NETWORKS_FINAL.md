@@ -1,10 +1,13 @@
 # Networks FINAL — sin confusión
 
-**Regla única:**
-- `DB_HMI.*` = botones de la **web** (START, STOP, modo…)
-- `M_Sensor*` / `M_Banda` / `M_Piston` = **Automation Studio** vía KEPServer
-- `M_SistemaOn`, `M_Alarma`, etc. = lógica interna del PLC
-- `DatosEstacion` = lo que lee la web (contadores)
+> **Actualización:** sin Automation Studio usa **`tia/NETWORKS_WEB_ONLY.md`**  
+> (sensores = `DB_HMI.*`, no `M_Sensor*`).
+
+**Regla única (modo web-only):**
+- `DB_HMI.*` = botones **y sensores simulados** de la web
+- `M_Banda` / `M_Piston` / latches = lógica interna PLC
+- `DatosEstacion` = espejo a la web
+- **No** AS / KEPServer
 
 ---
 
