@@ -32,7 +32,8 @@ En la app: icono **🖥️** = HMI demo · **🔌** = PLC real (1214C) · **🏠
 python plc_real/plc_bridge_real.py --ip 192.168.0.10
 ```
 
-Estación Firestore: `colegio-don-bosco-real`. Networks I/Q: `plc_real/NETWORKS_LAD.md`.
+Estación Firestore: `colegio-don-bosco-real`.  
+Hardware real: **3 pistones** (P1 retenedor · P2 plástico · P3 aluminio) — ver `plc_real/TABLA_IO_1214C.md` y `plc_real/NETWORKS_LAD.md`.
 
 ## App
 
