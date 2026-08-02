@@ -194,8 +194,7 @@ Serie → bobina Set:
 8. `(S) M_ClasifAluminio`
 
 ```
-[ On ]──[ Auto ]──[ Pieza ]──[ Báscula ]──[ Aluminio ]──[/ Plástico ]──[/ ClasifPlastico ]
-                                                                          └──(S) M_ClasifAluminio
+[ On ]─[ Auto ]─[ Pieza ]─[ Báscula ]─[ Aluminio ]─[/ Plástico ]─[/ ClasifPlastico ]─(S) M_ClasifAluminio
 ```
 
 ---
@@ -214,8 +213,7 @@ Serie → bobina Set:
 8. `(S) M_ClasifPlastico`
 
 ```
-[ On ]──[ Auto ]──[ Pieza ]──[ Báscula ]──[ Plástico ]──[/ Aluminio ]──[/ ClasifAluminio ]
-                                                                        └──(S) M_ClasifPlastico
+[ On ]─[ Auto ]─[ Pieza ]─[ Báscula ]─[ Plástico ]─[/ Aluminio ]─[/ ClasifAluminio ]─(S) M_ClasifPlastico
 ```
 
 ---
