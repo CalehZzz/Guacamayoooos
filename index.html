@@ -324,35 +324,45 @@
   }
   .machine-legend span b{ color:var(--forest); }
 
-  /* Variante 3 pistones (PLC real) */
+  /* 3 pistones a lo largo de la banda (uno al lado del otro) */
   .machine-stage.triple{
     background: linear-gradient(180deg, #E7EEF2 0%, #D2DCE4 100%);
   }
-  .machine-stage.triple .machine-canvas{ height: 150px; }
-  .machine-stage.triple .belt-frame{ right: 148px; }
-  .machine-stage.triple .belt-roller.right{ right: 140px; }
+  .machine-stage.triple .machine-canvas{ height: 148px; }
+  .machine-stage.triple .belt-frame{
+    left: 10px;
+    right: 10px;
+    top: 78px;
+  }
+  .machine-stage.triple .belt-roller.left{ left: 4px; top: 74px; }
+  .machine-stage.triple .belt-roller.right{ right: 4px; top: 74px; }
   .machine-stage.triple .bin-slot{ display: none; }
+  .machine-stage.triple .piece-on-belt{ top: 50px; }
   .pistons-row{
     position: absolute;
-    right: 4px;
-    top: 10px;
-    bottom: 8px;
-    width: 138px;
+    left: 28px;
+    right: 28px;
+    top: 6px;
+    height: 70px;
+    width: auto;
     display: flex;
-    gap: 4px;
+    justify-content: space-between;
     align-items: stretch;
+    gap: 10px;
+    pointer-events: none;
   }
   .piston-unit{
     flex: 1;
+    max-width: 96px;
     position: relative;
-    background: rgba(255,255,255,.45);
+    background: rgba(255,255,255,.55);
     border: 1px solid rgba(31,59,45,.14);
     border-radius: 8px;
     min-width: 0;
   }
   .piston-unit .pu-lbl{
     position: absolute;
-    top: 4px;
+    top: 3px;
     left: 0; right: 0;
     text-align: center;
     font-size: 9px;
@@ -363,39 +373,51 @@
   }
   .piston-unit .pu-state{
     position: absolute;
-    bottom: 4px;
-    left: 0; right: 0;
-    text-align: center;
+    right: 5px;
+    top: 18px;
     font-size: 9px;
     font-weight: 800;
     color: var(--forest);
     z-index: 2;
   }
+  /* Cilindro vertical: baja hacia la banda al extender */
   .piston-unit .piston-assy{
     position: absolute;
     left: 50%;
-    top: 22px;
-    width: 36px;
-    height: 88px;
+    top: 16px;
+    width: 28px;
+    height: 52px;
     transform: translateX(-50%);
     right: auto;
   }
   .piston-unit .piston-body{
-    right: 4px; top: 10px; width: 22px; height: 58px;
+    left: 4px;
+    right: auto;
+    top: 0;
+    width: 20px;
+    height: 18px;
   }
   .piston-unit .piston-rod{
-    right: 26px; top: 30px; width: 6px; height: 12px;
-    transition: width .4s cubic-bezier(.2,.8,.2,1);
+    left: 11px;
+    right: auto;
+    top: 16px;
+    width: 6px;
+    height: 8px;
+    transition: height .4s cubic-bezier(.2,.8,.2,1);
   }
   .piston-unit .piston-head{
-    right: 30px; top: 24px; width: 12px; height: 22px;
+    left: 6px;
+    right: auto;
+    top: 22px;
+    width: 16px;
+    height: 10px;
     transition: transform .4s cubic-bezier(.2,.8,.2,1);
   }
-  .piston-unit.on .piston-rod{ width: 22px; }
-  .piston-unit.on .piston-head{ transform: translateX(-16px); }
+  .piston-unit.on .piston-rod{ width: 6px; height: 28px; }
+  .piston-unit.on .piston-head{ transform: translateY(20px); }
   .piston-unit.on{
     border-color: var(--leaf-dark);
-    background: rgba(95,174,126,.18);
+    background: rgba(95,174,126,.2);
   }
   .piston-unit.on .pu-state{ color: var(--leaf-dark); }
 
@@ -447,18 +469,6 @@
     outline: 2px solid #ffd43b;
     outline-offset: 1px;
   }
-  #hmi-real-io-block .machine-stage{
-    margin: 0;
-    border-radius: 4px;
-    border-color: #7d8694;
-  }
-  #hmi-real-io-block .machine-stage-head h3{
-    font-family: 'Rajdhani', sans-serif;
-    font-size: 12px;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-  }
-
   @media (prefers-reduced-motion: reduce){
     .machine-stage.running .belt-surface,
     .machine-stage.running .belt-roller,
@@ -1146,7 +1156,7 @@
 
         <div class="machine-stage triple" id="machine-stage" aria-label="Animación de estación">
           <div class="machine-stage-head">
-            <h3>Estación en vivo · 3 pistones</h3>
+            <h3>Banda · P1 → P2 → P3</h3>
             <span class="machine-status-pill" id="machine-pill">Banda parada</span>
           </div>
           <div class="machine-canvas">
@@ -1362,43 +1372,6 @@
                 </div>
 
                 <div class="sp-col sp-col-wide" id="hmi-real-io-block">
-                  <div class="sp-section-label">Banda + 3 pistones (siempre visible)</div>
-                  <div class="machine-stage triple" id="hmi-machine-stage" aria-label="Animación 3 pistones">
-                    <div class="machine-stage-head">
-                      <h3>Vista en vivo · P1 / P2 / P3</h3>
-                      <span class="machine-status-pill" id="hmi-machine-pill">Banda parada</span>
-                    </div>
-                    <div class="machine-canvas">
-                      <div class="belt-roller left"></div>
-                      <div class="belt-frame"><div class="belt-surface"></div></div>
-                      <div class="belt-roller right"></div>
-                      <div class="piece-on-belt" id="hmi-piece-on-belt" aria-hidden="true">♻️</div>
-                      <div class="pistons-row">
-                        <div class="piston-unit" id="hmi-pu-1">
-                          <div class="pu-lbl">P1</div>
-                          <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
-                          <div class="pu-state" id="hmi-pu-1-st">IN</div>
-                        </div>
-                        <div class="piston-unit" id="hmi-pu-2">
-                          <div class="pu-lbl">P2</div>
-                          <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
-                          <div class="pu-state" id="hmi-pu-2-st">IN</div>
-                        </div>
-                        <div class="piston-unit" id="hmi-pu-3">
-                          <div class="pu-lbl">P3</div>
-                          <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
-                          <div class="pu-state" id="hmi-pu-3-st">IN</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="machine-legend">
-                      <span>Banda: <b id="hmi-machine-banda">Parada</b></span>
-                      <span>P1: <b id="hmi-machine-p1">IN</b></span>
-                      <span>P2: <b id="hmi-machine-p2">IN</b></span>
-                      <span>P3: <b id="hmi-machine-p3">IN</b></span>
-                    </div>
-                  </div>
-
                   <div class="sp-section-label">Banda (modo MANUAL)</div>
                   <div class="sp-piston-row">
                     <div class="sp-piston-info" id="hmi-banda-info">
@@ -2033,13 +2006,6 @@ async function setPistonExtend(which, extend){
   else if(which === 2) patch.ManualPiston2 = !!extend;
   else patch.ManualPiston = !!extend; // P3
   await pushHmiCmd(patch);
-  // Feedback visual inmediato (aunque el PLC aún no responda)
-  updateTripleMachineStage("hmi", {
-    banda: !!(hmiCmd.ManualBanda),
-    piston1: !!hmiCmd.ManualPiston1,
-    piston2: !!hmiCmd.ManualPiston2,
-    piston3: !!hmiCmd.ManualPiston
-  });
   syncRealPistonCmdUi({
     banda: !!hmiCmd.ManualBanda,
     piston1: !!hmiCmd.ManualPiston1,
@@ -2052,12 +2018,6 @@ async function setPistonExtend(which, extend){
 async function setBandaManual(on){
   await setManualModeForActuators();
   await pushHmiCmd({ ModoAuto: false, ManualBanda: !!on });
-  updateTripleMachineStage("hmi", {
-    banda: !!on,
-    piston1: !!hmiCmd.ManualPiston1,
-    piston2: !!hmiCmd.ManualPiston2,
-    piston3: !!hmiCmd.ManualPiston
-  });
   syncRealPistonCmdUi({
     banda: !!on,
     piston1: !!hmiCmd.ManualPiston1,
@@ -2115,7 +2075,6 @@ function renderHmiFromPlc(data){
   $("hmi-chip-emergencia")?.classList.toggle("warn", !!plc.emergencia);
   $("hmi-chip-sistema")?.classList.toggle("ok", !!plc.sistemaOn);
 
-  updateTripleMachineStage("hmi", plc);
   syncRealPistonCmdUi({ ...plc, piston1: ps.p1, piston2: ps.p2, piston3: ps.p3 });
 
   // Solo en demo: simula final de carrera. En PLC real el sensor es I_PistonExtendido.
