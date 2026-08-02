@@ -7,6 +7,11 @@ Defensa **virtual**.
 
 **Jurado:** ingenieros Siemens (CR). Hablen técnico con seguridad; no “vendan humo”.
 
+**Regla de timing:** los minutos abajo asumen habla natural (~140 palabras/min) + demos.  
+Si un bloque de texto se siente largo al ensayar, **corten adornos**, no corten TIA ni la demo.
+
+**Importante:** no adelanten el cierre físico. Eso aparece **solo al final**.
+
 ---
 
 ## Mapa rápido: criterios → quién los gana
@@ -17,8 +22,8 @@ Defensa **virtual**.
 | Programación PLC en TIA Portal | 20 | **Carla** |
 | Simulación electroneumática en AS | 15 | **Carla** |
 | Desarrollo de la HMI | 15 | **Caleb** |
-| Funcionamiento integral | 15 | Los 3 (demo + cierre físico) |
-| Innovación y mejora técnica | 10 | **Caleb** (+ sorpresa física) |
+| Funcionamiento integral | 15 | Los 3 (demo al final del bloque Caleb + cierre) |
+| Innovación y mejora técnica | 10 | **Caleb** |
 | Presentación técnica | 5 | Estructura de esta defensa |
 | Presentación y habilidades comunicativas | 10 | **Edgar** abre; tono de los 3 |
 | **TOTAL** | **100** | |
@@ -29,230 +34,217 @@ Defensa **virtual**.
 
 | Quién | Tiene abierto / listo |
 |---|---|
-| Edgar | Diapos “problema CR” + foto/idea de estación en colegio/parque |
-| Carla | TIA V20 (LAD + DBs) + Automation Studio + KEPServer (si hay sim corriendo, mejor) |
-| Caleb | GitHub Pages / `index.html` + HMI + (opcional) bridge conectado |
-| Los 3 | Zoom/Meet estable · micrófono · “sorpresa física” lista para el minuto 12 |
+| Edgar | 2–3 diapos: problema + sketch estación |
+| Carla | TIA (OB1/FCs/DBs) + AS + KEP ya abiertos en ventanas |
+| Caleb | Web/HMI lista; pantalla completa ensayada |
+| Los 3 | Zoom/Meet estable · mics · **mesa física lista pero fuera de cámara hasta el final** |
 
-**Regla de oro virtual:** quien habla, comparte pantalla. Cambio de turno = “te paso la pantalla / te doy el lead”.
-
----
-
-## Reloj (15:00)
-
-| Min | Bloque | Quién | Pantalla |
-|---:|---|---|---|
-| 0:00–0:50 | Hook / apertura | Edgar | Edgar |
-| 0:50–3:40 | Problemática + propuesta SIBU | Edgar | Edgar |
-| 3:40–4:00 | Puente a Carla | Edgar → Carla | — |
-| 4:00–9:10 | TIA + AS + KEPServer | Carla | **Carla** |
-| 9:10–9:25 | Puente a Caleb | Carla → Caleb | — |
-| 9:25–12:10 | Innovación web / HMI | Caleb | **Caleb** |
-| 12:10–14:10 | Funcionamiento integral + **sorpresa física** | Caleb + Edgar (+ Carla comenta) | Caleb / cámara física |
-| 14:10–15:00 | Cierre memorable | Edgar (+ 1 línea cada uno) | Edgar |
-
-Si se atrasan: corten adornos, **no** corten TIA (20 pts) ni la demo integral.
+**Regla virtual:** quien habla, comparte pantalla. Handoff &lt; 10 s.
 
 ---
 
-# BLOQUE 1 — Edgar (0:00 → 3:40)  
-## Captar atención + problemática + propuesta · ~10 pts análisis + comunicación
+## Reloj realista (15:00)
 
-### 0:00–0:50 · Hook (no digan “buenas, nosotros somos…”)
+| Min | Dur | Bloque | Quién |
+|---:|---:|---|---|
+| 0:00–0:35 | 35s | Hook | Edgar |
+| 0:35–0:50 | 15s | Quiénes somos | Edgar |
+| 0:50–1:30 | 40s | Problemática (3 fallas) | Edgar |
+| 1:30–2:15 | 45s | Propuesta + 3 capas | Edgar |
+| 2:15–2:25 | 10s | Handoff → Carla | Edgar |
+| 2:25–3:00 | 35s | Stack / diagrama AS–KEP–TIA | Carla |
+| 3:00–4:45 | 1:45 | TIA: FCs + detalle + 30–40s mostrando LAD | Carla |
+| 4:45–5:50 | 1:05 | AS + KEP (40s habla + 25s mostrar circuito) | Carla |
+| 5:50–6:00 | 10s | Handoff → Caleb | Carla |
+| 6:00–6:40 | 40s | Innovación: por qué web | Caleb |
+| 6:40–8:10 | 1:30 | HMI: explicación 40s + clicks en vivo 50s | Caleb |
+| 8:10–8:35 | 25s | 3 mejoras técnicas | Caleb |
+| 8:35–9:00 | 25s | Ciclo integral (narrado) | Caleb |
+| 9:00–12:30 | 3:30 | **Demo integral en vivo** (PLC/AS/web según lo que corra) | Caleb + Carla |
+| 12:30–14:20 | 1:50 | **Cierre físico** (primera mención) | Edgar + Caleb (+ Carla 10s) |
+| 14:20–15:00 | 40s | Cierre + gracias | Edgar (+ 1 línea c/u) |
 
-**Edgar (mirando a cámara, sin diapos al inicio o con una sola imagen fuerte: basura en parque / colegio):**
+Si la demo integral se atrasa: recorten el tramo 9:00–12:30, **no** el físico ni el cierre.
 
-> “Ingenieros: imaginen un colegio en San José un viernes a las 2 de la tarde.  
+---
+
+# BLOQUE 1 — Edgar (0:00 → 2:25)
+
+### 0:00–0:35 · Hook (~35 s)
+
+**Edgar (cámara; 1 imagen fuerte opcional):**
+
+> “Ingenieros: imaginen un colegio en San José un viernes a las 2.  
 > Hay un contenedor de reciclaje… y al lado, botellas y latas en el piso.  
-> No es que la gente no sepa reciclar. Es que **reciclar no da feedback**.  
-> No pesa, no clasifica, no premia, no deja evidencia.  
-> Hoy les presentamos **SIBU**: una estación de clasificación y pesaje que convierte el reciclaje en un proceso medible — y en una recompensa.”
+> No es que la gente no sepa reciclar. Es que **reciclar no da feedback**: no pesa, no clasifica, no premia.  
+> Hoy les presentamos **SIBU**: una estación que convierte el reciclaje en un proceso medible y en una recompensa.”
 
-*(Pausa 1 segundo. Sonrían. Luego sí: presentaciones cortas.)*
+### 0:35–0:50 · Equipo (~15 s)
 
-> “Somos el equipo Guacamayos — Colegio Don Bosco.  
-> Yo soy **Edgar**. Conmigo están **Caleb**, aquí en el colegio.  
-> Y en remoto, desde otro país, **Carla**, que les va a mostrar el corazón Siemens del sistema.”
+> “Equipo Guacamayos, Colegio Don Bosco.  
+> Yo soy **Edgar**. Conmigo está **Caleb**.  
+> En remoto, **Carla**, que les abre el núcleo Siemens.”
 
-### 0:50–2:40 · Problemática (cultura de reciclaje → problema de ingeniería)
+### 0:50–1:30 · Problemática (~40 s)
 
-**Edgar (diapos 2–3: datos locales / observación, no ensayo):**
+> “En la práctica el reciclaje escolar y comunitario falla en tres cosas de ingeniería:  
+> uno, **clasificación inconsistente**;  
+> dos, **sin medición** — ni peso ni sesión;  
+> tres, **sin incentivo cerrado** — el usuario no ve resultado.  
+> Eso no se arregla con un afiche. Se arregla con automatización y una interfaz que sí se use.”
 
-> “En Costa Rica hablamos mucho de sostenibilidad, pero en la práctica el reciclaje escolar y comunitario tiene tres fallas de ingeniería:  
-> 1) **Clasificación inconsistente** — plástico y aluminio se mezclan.  
-> 2) **Sin medición** — no hay peso, no hay contadores, no hay sesión.  
-> 3) **Sin incentivo cerrado** — el usuario no ve un resultado inmediato.  
->  
-> Eso no se resuelve con un afiche. Se resuelve con **automatización + una interfaz que la gente sí use**.”
+### 1:30–2:15 · Propuesta (~45 s)
 
-### 2:40–3:40 · Propuesta (estación replicable)
+> “Propuesta: una **estación modular SIBU** para colegio, parque o centro comunal.  
+> Flujo: pieza → báscula → banda → sensor de material → separación → app con piezas, kilos y colones.  
+> Tres capas: electroneumática en **Automation Studio**, cerebro en **TIA Portal**, innovación en **HMI/app web** que habla con el PLC.  
+> Carla les muestra el PLC y el circuito. Caleb, la capa que toca el usuario.”
 
-**Edgar (diapos: sketch estación en colegio / parque):**
+### 2:15–2:25 · Handoff (~10 s)
 
-> “Nuestra propuesta: una **estación modular SIBU** que se pueda instalar en un colegio, un parque o un centro comunal.  
-> Flujo: la persona deja la pieza → se pesa → la banda avanza → sensores identifican material → actuadores separan → la app acumula piezas, kilos y una recompensa en colones.  
->  
-> Arquitectura en tres capas, como les gusta a Siemens:  
-> - **Campo / simulación:** electroneumática en Automation Studio  
-> - **Cerebro:** PLC en TIA Portal  
-> - **Innovación:** HMI y app web que habla con el PLC  
->  
-> Carla les va a abrir el PLC y el circuito. Caleb, la innovación.  
-> Y al final… les tenemos una sorpresa física.”
-
-**Puente (3:40):**  
-> “Carla, te paso el lead. Muéstrales por qué esto no es solo una idea bonita: es LAD, timers y un bus de datos limpio.”
+> “Carla, te paso el lead: LAD, timers y el bus de datos.”
 
 ---
 
-# BLOQUE 2 — Carla (4:00 → 9:10)  
-## TIA Portal (20) + Automation Studio (15) + KEP · el bloque más pesado
+# BLOQUE 2 — Carla (2:25 → 6:00)
 
-> **Tono:** ingeniera a ingenieros. Digan tags, DBs, TON, por qué `%M` y no solo `I/Q` en sim.
+### 2:25–3:00 · Stack (~35 s)
 
-### 4:00–4:40 · Arquitectura (1 diagrama)
+**Carla (diagrama AS ↔ KEP ↔ TIA):**
 
-**Carla (comparte pantalla: diagrama AS ↔ KEP ↔ TIA/PLCSIM):**
+> “Soy Carla.  
+> Stack: **TIA V20**, CPU **1511C** en **PLCSIM Advanced**, **Automation Studio 10**, **KEPServerEX 6**.  
+> AS no habla S7 a gusto; KEP mueve tags a memorias del PLC.  
+> En sim usamos **`%M`** con AS.  
+> La web escribe **`DB_HMI`** y lee **`DatosEstacion`** — no pisa I/Q a ciegas.”
 
-> “Buenas. Soy Carla.  
-> Stack: **TIA Portal V20**, CPU **1511C** en **PLCSIM Advanced**, **Automation Studio 10**, puente **KEPServerEX 6**.  
-> Automation Studio no habla S7 nativo con comodidad; por eso KEPServer mueve tags hacia memorias del PLC.  
-> En simulación usamos **`%M`** para sensores y actuadores compartidos con AS.  
-> La web no toca I/Q a lo loco: escribe **`DB_HMI`** y lee **`DatosEstacion`**.”
+### 3:00–4:45 · TIA Portal (~1:45 = ~60–70 s habla + 30–40 s mostrando)
 
-### 4:40–7:10 · Programación PLC en TIA (apunten a los 20 pts)
+**Carla (OB1 + FCs en pantalla):**
 
-**Carla (TIA: OB1 + FCs + un network clave en pantalla grande):**
-
-> “Software estructurado en cuatro funciones:  
-> - **`FC_Modos`:** Start / Stop / Emergencia / modo auto — latches limpios, sin pelear bobinas.  
-> - **`FC_Secuencia`:** banda, detección de material, secuencia de clasificación, conteo.  
-> - **`FC_Alarmas`:** timeout de pistón, sensores contradictorios, reset.  
-> - **`FC_EspejoWeb`:** copia estado a `DatosEstacion` para la app.  
+> “Cuatro funciones:  
+> **`FC_Modos`** — Start, Stop, emergencia, auto.  
+> **`FC_Secuencia`** — banda, material, clasificación, conteo.  
+> **`FC_Alarmas`** — timeout y sensores contradictorios.  
+> **`FC_EspejoWeb`** — estado a `DatosEstacion`.  
 >  
-> Detalle que importa en evaluación:  
-> - Una sola bobina por actuador: **AUTO // MANUAL en paralelo**, no doble escritura.  
-> - Timers **TON IEC** — retardo de clasificación y timeout de seguridad.  
-> - Data Blocks con **Optimized access OFF** porque el bridge usa offsets fijos (snap7).  
-> - Contrato claro: comandos en **DB3 `DB_HMI`**, estado en **DB1 `DatosEstacion`**.”
+> Detalles que importan: una bobina por actuador con **AUTO // MANUAL en paralelo**; **TON IEC** de retardo y timeout; DBs con **Optimized OFF** por offsets de snap7; comandos en **DB3**, estado en **DB1**.”
 
-*(Si pueden: 20–30 s de ONLINE / force o simulación corta de un ciclo plástico vs aluminio.)*
+*(Ahora sí: 30–40 s ONLINE / un network grande / un ciclo corto. No narren encima todo el tiempo.)*
 
-> “En el camino a hardware real también diseñamos la variante **S7-1200 1214C** con I/Q físicos y **tres pistones**: retenedor, empuje plástico y empuje aluminio — misma lógica de producto, distinto mapa de campo.”
+### 4:45–5:50 · AS + KEP (~1:05)
 
-### 7:10–9:00 · Automation Studio + KEPServer (15 pts)
+**Carla (AS visible):**
 
-**Carla (AS en pantalla: cilindro, 5/2, sensores 0%/100%):**
+> “En AS: aire → **5/2** → cilindro doble efecto → sensores **0% / 100%**.  
+> KEP enlaza a tags del PLC.  
+> El PLC manda solenoide; AS mueve; el sensor vuelve; la secuencia avanza.  
+> Feedback de proceso, no animación suelta.”
 
-> “En Automation Studio modelamos la estación electroneumática:  
-> fuente → válvula **5/2** → cilindro de doble efecto → referencias de sensor en **0% y 100%**.  
->  
-> KEPServer enlaza esas variables a tags del PLC.  
-> Cuando el PLC pone el solenoide, AS mueve el vástago; cuando llega a 100%, el sensor regresa al PLC y la secuencia avanza.  
-> Eso cierra el lazo: **no es un GIF, es feedback de proceso**.”
+*(25 s mostrando el cilindro moverse o el enlace de tags.)*
 
-### 9:00–9:10 · Handoff a Caleb
+### 5:50–6:00 · Handoff (~10 s)
 
-> “Hasta aquí: cerebro Siemens + músculo neumático.  
-> Caleb les muestra la capa que el usuario toca — y por qué eso es nuestra innovación.”
+> “Cerebro Siemens y músculo neumático listos.  
+> Caleb: la capa que el usuario toca.”
 
 ---
 
-# BLOQUE 3 — Caleb (9:25 → 12:10)  
-## HMI (15) + Innovación (10)
+# BLOQUE 3 — Caleb (6:00 → 9:00)
 
-### 9:25–10:20 · La apuesta de innovación
+### 6:00–6:40 · Innovación (~40 s)
 
-**Caleb (abre la web / GitHub Pages):**
+**Caleb (abre la web):**
 
-> “La innovación no fue poner otra KTP en el rack.  
-> Fue preguntarnos: ¿quién usa la estación en un colegio o un parque?  
-> Un estudiante con el celular. Un docente. Un jurado remoto.  
->  
-> Entonces construimos **SIBU web**:  
-> - App de usuario: sesión, materiales, kilos, recompensa en **colones**.  
-> - **HMI virtual** estilo Comfort/KTP para operar como panel industrial.  
-> - Puente **`plc_bridge.py`**: Firestore ↔ snap7 ↔ DBs del PLC.  
->  
-> El navegador no habla S7. El bridge sí. Eso es diseño de sistema, no maquillaje.”
+> “La innovación no fue otra KTP en el rack.  
+> Fue preguntar: ¿quién usa esto en un colegio o un parque? Un celular.  
+> Por eso **SIBU web**: app de usuario con kilos y colones; **HMI virtual** tipo Comfort; puente **`plc_bridge.py`** Firestore ↔ snap7 ↔ DBs.  
+> El navegador no habla S7. El bridge sí.”
 
-### 10:20–11:40 · HMI: qué hace (demo viva)
+### 6:40–8:10 · HMI (~1:30)
 
-**Caleb (HMI a pantalla completa si pueden):**
+**Habla (~40 s):**
 
-> “En la HMI el operador manda Start, Stop, emergencia, modo auto/manual, peso y — en la versión real — **Extender/Retractar** de cada pistón.  
-> Los comandos caen en `DB_HMI`.  
-> El estado vuelve por `DatosEstacion`: banda, pistones, contadores, alarmas.  
->  
-> Para el usuario final no mostramos tags: mostramos progreso y recompensa.  
-> Misma verdad de proceso, dos lenguajes: industrial y humano.”
+> “En la HMI: Start, Stop, emergencia, auto/manual, peso.  
+> Comandos a `DB_HMI`. Estado desde `DatosEstacion`: banda, pistones, contadores, alarmas.  
+> Al usuario le mostramos progreso y recompensa, no tags. Misma verdad de proceso, dos lenguajes.”
 
-*(Click real: Start → simular plástico/aluminio o mostrar sesión en vivo. 30–40 s máximo.)*
+**Demo clicks (~50 s):** pantalla completa → Start → un ciclo plástico o aluminio → señalar contadores. Pocas palabras mientras clickean.
 
-### 11:40–12:10 · Por qué esto suma innovación técnica
+### 8:10–8:35 · Tres mejoras (~25 s)
 
-> “Mejora técnica concreta:  
-> 1) HMI remota usable en defensa virtual y en sitio.  
-> 2) Contrato de datos versionado (offsets, DBs).  
-> 3) Camino a PLC real 1214C sin rehacer la app.  
-> Eso es innovación aplicada a Siemens, no una landing page decorativa.”
+> “Uno: HMI usable en remoto y en sitio.  
+> Dos: contrato de datos con offsets fijos.  
+> Tres: la app no se rehace si cambiamos de PLCSIM a hardware.  
+> Innovación aplicada a Siemens, no una landing.”
 
-**Puente:**  
-> “Ahora el criterio que amarra todo: funcionamiento integral. Y la sorpresa.”
+### 8:35–9:00 · Ciclo integral narrado (~25 s)
+
+> “Ciclo: pieza → peso → banda → material → clasificación → conteo → recompensa.  
+> Timeout o sensores cruzados: alarma. Emergencia: paro.  
+> Un sistema, no tres demos sueltas. Ahora lo corremos junto.”
 
 ---
 
-# BLOQUE 4 — Funcionamiento integral + sorpresa física (12:10 → 14:10) · 15 pts + boost innovación
+# BLOQUE 4 — Demo integral (9:00 → 12:30) · ~3:30
 
-### 12:10–12:50 · Ciclo integral (narrado en 40 s)
+**Objetivo:** que el jurado *vea* TIA/AS/web alineados.  
+No lean guion aquí. Solo cues:
 
-**Caleb o Edgar (mientras se ve el flujo):**
+1. Caleb: “Arrancamos sesión / Start.”  
+2. Carla (si AS/TIA en su pantalla, o Caleb si todo está en una): ciclo plástico.  
+3. Ciclo aluminio / clasificación.  
+4. Señalar contador + app.  
+5. (Opcional 15 s) emergencia o alarma.
 
-> “Ciclo completo:  
-> pieza → peso → banda → material → clasificación → conteo → recompensa en app.  
-> Si hay timeout o sensores contradictorios: alarma.  
-> Si hay emergencia: paro.  
-> Eso es funcionamiento integral: no tres demos sueltas, un sistema.”
-
-### 12:50–14:10 · SORPRESA — enfoque físico
-
-**Coreografía sugerida (virtual):**
-
-1. Edgar:  
-   > “Hasta ahora vieron simulación y software. La pregunta del jurado siempre es: ¿esto vive fuera de la laptop?”
-2. Caleb acerca la cámara / comparte video corto / muestra mesa:  
-   > “Estamos llevando SIBU a **físico**: estación real con banda, sensores y **tres pistones** — retenedor, plástico, aluminio — operada desde la misma web. Sin botonera: el mando es el HMI.”
-3. Carla (10 s, refuerzo Siemens):  
-   > “Eso implica pasar de tags `%M`/AS a **I/Q reales** en 1214C, manteniendo el mismo contrato de DBs. Misma lógica de producto, otro nivel de campo.”
-
-**No prometan hardware que no puedan mostrar.** Si el físico está a medias:  
-> “Esta es la mesa en construcción / la prueba de concepto física; el software ya está listo para alimentarla.”
+Si algo falla: pasen al siguiente material; no depuren en vivo más de 20 s.
 
 ---
 
-# BLOQUE 5 — Cierre (14:10 → 15:00)
+# BLOQUE 5 — Cierre físico (12:30 → 14:20) · primera mención
 
-**Edgar:**
+**Aquí es la primera vez que hablan de llevarlo a mesa física.**
 
-> “SIBU ataca un problema real de cultura de reciclaje con una respuesta de automatización:  
-> clasifica, mide y recompensa.  
-> Siemens en el núcleo. Una web como puente al mundo real.  
-> Y una estación pensada para colegios y espacios públicos en Costa Rica.”
+**Edgar (~20 s):**
 
-**Cada uno, una línea (ensayen, suena a banda):**
+> “Hasta ahora vieron el sistema en simulación y software.  
+> La pregunta de todo jurado Siemens es: ¿esto baja a campo?”
 
-- **Carla:** “PLC estructurado, seguro y listo para campo.”  
-- **Caleb:** “Innovación que un estudiante puede tocar con el celular.”  
-- **Edgar:** “Gracias. Quedamos abiertos a sus preguntas técnicas.”
+**Caleb (~40–50 s, cámara a la mesa / video corto):**
+
+> “Sí. Estamos montando SIBU en **físico**: banda, sensores y **tres pistones** — retenedor, plástico, aluminio — con mando desde la misma web.  
+> Sin botonera en mesa: opera el HMI.”
+
+**Carla (~10–15 s):**
+
+> “Eso es pasar de `%M`/AS a **I/Q** en **1214C**, mismo contrato de DBs.”
+
+Si el hardware está a medias, digan exactamente eso — sin overclaim.
 
 ---
 
-## Frases prohibidas (suenan a feria escolar)
+# BLOQUE 6 — Cierre (14:20 → 15:00) · ~40 s
+
+**Edgar (~25 s):**
+
+> “SIBU responde a un problema real de reciclaje con automatización: clasifica, mide y recompensa.  
+> Siemens en el núcleo. Web como puente al usuario.  
+> Estación pensada para colegios y espacios públicos en Costa Rica.”
+
+**Una línea cada uno (~15 s total):**
+
+- **Carla:** “PLC estructurado y listo para campo.”  
+- **Caleb:** “Innovación que se toca con el celular.”  
+- **Edgar:** “Gracias. Quedamos abiertos a preguntas técnicas.”
+
+---
+
+## Frases prohibidas
 
 - “Es como un Arduino pero con Siemens…”  
 - “La página es lo más importante y el PLC es secundario…”  
-- “No alcanzó el tiempo para alarmas/timers…”  
-- “KEPServer es un programa que conecta cosas” *(digan **tags / OPC / `%M`**)*  
+- “KEPServer es un programa que conecta cosas” → digan **tags / OPC / `%M`**  
+- Cualquier “al final tenemos una sorpresa…” **antes** del minuto 12:30  
 
 ## Frases que suman con jurado Siemens
 
@@ -264,56 +256,55 @@ Si se atrasan: corten adornos, **no** corten TIA (20 pts) ni la demo integral.
 
 ---
 
-## Checklist de ensayo (1 corrida cronometrada)
+## Checklist de ensayo (cronometrar en serio)
 
-- [ ] Edgar abre sin leer el celular  
-- [ ] Carla tiene TIA + AS listos (ventanas acomodadas)  
-- [ ] Caleb tiene HMI en pantalla completa y un ciclo demo que no falle  
-- [ ] Cambio de pantalla Edgar→Carla→Caleb &lt; 15 s  
-- [ ] Sorpresa física ensayada (ángulo de cámara)  
-- [ ] Cierre a los 14:50, no a los 16:00  
-- [ ] Preguntas frecuentes listas (abajo)
-
----
-
-## Preguntas típicas del jurado (respuestas cortas)
-
-**1) ¿Por qué web y no solo Comfort Panel?**  
-Porque la estación vive en colegios/parques: el usuario trae el celular; el operador igual puede usar HMI web. El PLC sigue siendo el master.
-
-**2) ¿Qué pasa si se cae internet?**  
-El PLC puede seguir su lógica local; la app/bridge pierde telemetría. En sitio real se prioriza red local + bridge en PC de estación.
-
-**3) ¿Dónde está la seguridad?**  
-Emergencia y stop en lógica; timeout de actuadores; en físico se suma E-stop cableado cuando el hardware lo permita.
-
-**4) ¿Plástico y aluminio nada más?**  
-Alcance deliberado del prototipo (2 materiales). Arquitectura de tags/contadores extensible.
-
-**5) ¿Cuál fue el aporte de cada quien?**  
-Edgar: problema/propuesta/comunicación. Carla: TIA + AS + KEP. Caleb: web/HMI/bridge/innovación.
+- [ ] Edgar bloque completo ≤ **2:25**  
+- [ ] Carla habla+shows ≤ **3:35** (hasta handoff)  
+- [ ] Caleb hasta ciclo integral ≤ **3:00**  
+- [ ] Demo integral ensayada una vez sin guion  
+- [ ] Físico **no** aparece en cámara antes del 12:30  
+- [ ] Cierre a los **14:55**  
 
 ---
 
-## Mini-cue cards (imprimir / segunda pantalla)
+## Preguntas típicas (respuestas de 15–20 s)
+
+**¿Por qué web y no solo Comfort Panel?**  
+Usuario de colegio/parque trae celular; operador igual puede usar HMI web. El PLC sigue siendo el master.
+
+**¿Si se cae internet?**  
+El PLC sigue local; se pierde telemetría/app. En sitio: bridge en PC de estación + red local.
+
+**¿Seguridad?**  
+Stop/emergencia/timeout en lógica; E-stop cableado cuando el hardware lo permita.
+
+**¿Solo plástico y aluminio?**  
+Alcance del prototipo a propósito; tags/contadores extensibles.
+
+**¿Aporte de cada quien?**  
+Edgar: problema/propuesta. Carla: TIA+AS+KEP. Caleb: web/HMI/bridge.
+
+---
+
+## Cue cards (segunda pantalla)
 
 ### Edgar
-1. Hook basura vs contenedor  
-2. 3 fallas: clasificar / medir / incentivar  
-3. Estación modular colegio-parque  
+1. Hook 35s  
+2. 3 fallas 40s  
+3. Estación + 3 capas 45s  
 4. Paso a Carla  
-5. Cierre + sorpresa
+5. *(al final)* ¿Baja a campo? → cierre  
 
 ### Carla
-1. Diagrama AS–KEP–TIA  
-2. 4 FCs + DB_HMI / DatosEstacion  
-3. AUTO//MANUAL, TON, Optimized OFF  
-4. AS 5/2 + sensores 0/100  
-5. Paso a Caleb · refuerzo 1214C
+1. Stack 35s  
+2. 4 FCs + Optimized OFF  
+3. Mostrar LAD 30–40s  
+4. AS 5/2 + 0/100  
+5. Paso a Caleb  
 
 ### Caleb
-1. Innovación = HMI/app real para humanos  
-2. Bridge snap7 + Firestore  
-3. Demo HMI (Start / ciclo)  
-4. Camino a físico 3 pistones  
-5. Una línea de cierre
+1. Por qué web 40s  
+2. HMI + clicks 1:30  
+3. 3 mejoras 25s  
+4. Ciclo + demo integral  
+5. *(solo al final)* mesa física 3 pistones  
