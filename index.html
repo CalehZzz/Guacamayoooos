@@ -447,11 +447,6 @@
     outline: 2px solid #ffd43b;
     outline-offset: 1px;
   }
-  #hmi-real-io-block.show-real{
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
   #hmi-real-io-block .machine-stage{
     margin: 0;
     border-radius: 4px;
@@ -1041,8 +1036,12 @@
     white-space:pre-wrap; word-break:break-all;
   }
   #hmi-sim-block.hidden-real{display:none !important;}
-  #hmi-real-io-block{display:none;}
-  #hmi-real-io-block.show-real{display:block;}
+  /* 3 pistones siempre visibles en el HMI (antes solo en modo real → parecía que “no había”) */
+  #hmi-real-io-block{
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
 
   .section-title{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--forest-soft); font-weight:800; margin:6px 0 10px;}
 
@@ -1145,9 +1144,9 @@
           </div>
         </div>
 
-        <div class="machine-stage" id="machine-stage" aria-label="Animación de estación">
+        <div class="machine-stage triple" id="machine-stage" aria-label="Animación de estación">
           <div class="machine-stage-head">
-            <h3>Estación en vivo</h3>
+            <h3>Estación en vivo · 3 pistones</h3>
             <span class="machine-status-pill" id="machine-pill">Banda parada</span>
           </div>
           <div class="machine-canvas">
@@ -1157,16 +1156,29 @@
             </div>
             <div class="belt-roller right"></div>
             <div class="piece-on-belt" id="piece-on-belt" aria-hidden="true">🥫</div>
-            <div class="bin-slot" title="Canal aluminio"></div>
-            <div class="piston-assy" title="Pistón">
-              <div class="piston-body"></div>
-              <div class="piston-rod"></div>
-              <div class="piston-head"></div>
+            <div class="pistons-row">
+              <div class="piston-unit" id="live-pu-1">
+                <div class="pu-lbl">P1 retenedor</div>
+                <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
+                <div class="pu-state" id="live-pu-1-st">IN</div>
+              </div>
+              <div class="piston-unit" id="live-pu-2">
+                <div class="pu-lbl">P2 plástico</div>
+                <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
+                <div class="pu-state" id="live-pu-2-st">IN</div>
+              </div>
+              <div class="piston-unit" id="live-pu-3">
+                <div class="pu-lbl">P3 aluminio</div>
+                <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
+                <div class="pu-state" id="live-pu-3-st">IN</div>
+              </div>
             </div>
           </div>
           <div class="machine-legend">
             <span>Banda: <b id="machine-banda-lbl">Parada</b></span>
-            <span>Pistón: <b id="machine-piston-lbl">Retráctil</b></span>
+            <span>P1: <b id="live-machine-p1">IN</b></span>
+            <span>P2: <b id="live-machine-p2">IN</b></span>
+            <span>P3: <b id="live-machine-p3">IN</b></span>
             <span>Pieza: <b id="machine-piece-lbl">—</b></span>
           </div>
         </div>
@@ -1215,9 +1227,10 @@
             </div>
             <div class="sp-bezel-actions">
               <div class="sp-bezel-meta">
-                <div>SIBU HMI</div>
-                <div class="sp-model">KTP700 Comfort · 800×480</div>
+                <div>SIBU HMI · 3 pistones</div>
+                <div class="sp-model" id="hmi-bezel-mode">Estación · real / demo</div>
               </div>
+              <button type="button" class="sp-fs-btn" id="hmi-mode-toggle" title="Cambiar estación demo/real">Modo REAL</button>
               <button type="button" class="sp-fs-btn" id="hmi-fullscreen" aria-pressed="false" title="Pantalla completa">Pantalla completa</button>
             </div>
           </div>
@@ -1263,19 +1276,19 @@
                       <div class="lbl">Banda</div>
                       <div class="val" id="hmi-banda">—</div>
                     </div>
-                    <div class="sp-io" id="hmi-chip-piston">
-                      <div class="lbl" id="hmi-piston-lbl">Pistón</div>
+                    <div class="sp-io hidden" id="hmi-chip-piston">
+                      <div class="lbl" id="hmi-piston-lbl">Pistón (OR)</div>
                       <div class="val" id="hmi-piston">—</div>
                     </div>
-                    <div class="sp-io hidden" id="hmi-chip-p1">
+                    <div class="sp-io" id="hmi-chip-p1">
                       <div class="lbl">P1 retenedor</div>
                       <div class="val" id="hmi-p1">—</div>
                     </div>
-                    <div class="sp-io hidden" id="hmi-chip-p2">
+                    <div class="sp-io" id="hmi-chip-p2">
                       <div class="lbl">P2 plástico</div>
                       <div class="val" id="hmi-p2">—</div>
                     </div>
-                    <div class="sp-io hidden" id="hmi-chip-p3">
+                    <div class="sp-io" id="hmi-chip-p3">
                       <div class="lbl">P3 aluminio</div>
                       <div class="val" id="hmi-p3">—</div>
                     </div>
@@ -1349,10 +1362,10 @@
                 </div>
 
                 <div class="sp-col sp-col-wide" id="hmi-real-io-block">
-                  <div class="sp-section-label">Simulación estación real (banda + 3 pistones)</div>
-                  <div class="machine-stage triple" id="hmi-machine-stage" aria-label="Animación PLC real">
+                  <div class="sp-section-label">Banda + 3 pistones (siempre visible)</div>
+                  <div class="machine-stage triple" id="hmi-machine-stage" aria-label="Animación 3 pistones">
                     <div class="machine-stage-head">
-                      <h3>Vista en vivo · 1214C</h3>
+                      <h3>Vista en vivo · P1 / P2 / P3</h3>
                       <span class="machine-status-pill" id="hmi-machine-pill">Banda parada</span>
                     </div>
                     <div class="machine-canvas">
@@ -1863,20 +1876,36 @@ onAuthStateChanged(auth, async (user) => {
 /* -------------------------------------------------------------------------
    7. NAVEGACIÓN ENTRE VISTAS DE LA APP
    ------------------------------------------------------------------------- */
+function applyHmiStationMode(real){
+  hmiModeReal = !!real;
+  HMI_ESTACION_ID = hmiModeReal ? HMI_ESTACION_REAL : HMI_ESTACION_DEMO;
+  hmiAutoPiston = !hmiModeReal;
+  if($("hmi-auto-piston")){
+    $("hmi-auto-piston").classList.toggle("on", hmiAutoPiston);
+    $("hmi-auto-piston").textContent = hmiAutoPiston ? "AUTO" : "MANUAL";
+  }
+  if($("hmi-auto-piston-lbl")){
+    $("hmi-auto-piston-lbl").textContent = hmiAutoPiston ? "AUTO" : "OFF (real)";
+  }
+  if($("hmi-mode-toggle")){
+    $("hmi-mode-toggle").textContent = hmiModeReal ? "Modo REAL" : "Modo DEMO";
+  }
+  if($("hmi-bezel-mode")){
+    $("hmi-bezel-mode").textContent = hmiModeReal
+      ? "1214C · colegio-don-bosco-real"
+      : "DEMO · parque-central";
+  }
+  $("hmi-sim-block")?.classList.toggle("hidden-real", !!hmiModeReal);
+}
+
 document.querySelectorAll(".navpills .pill[data-view]").forEach(btn => {
   btn.onclick = () => {
     const v = btn.dataset.view;
     if(v === "history") renderHistorial();
     if(v === "admin") renderAdmin();
     if(v === "hmi"){
-      hmiModeReal = false;
-      HMI_ESTACION_ID = HMI_ESTACION_DEMO;
-      hmiAutoPiston = true;
-      if($("hmi-auto-piston")){
-        $("hmi-auto-piston").classList.add("on");
-        $("hmi-auto-piston").textContent = "AUTO";
-      }
-      if($("hmi-auto-piston-lbl")) $("hmi-auto-piston-lbl").textContent = "AUTO";
+      // Por defecto REAL (3 pistones). Antes forzaba DEMO y ocultaba todo.
+      applyHmiStationMode(true);
     }
     if(v === "plc-real") ensureRealListen();
     showAppView(v);
@@ -1924,31 +1953,45 @@ function pistonPosLabel(on){
   return on ? "OUT" : "IN";
 }
 
+function resolvePistonStates(plc){
+  // Feedback PLC, o comando HMI local (para ver movimiento al instante)
+  const p1 = !!(plc.piston1 || hmiCmd.ManualPiston1);
+  const p2 = !!(plc.piston2 || hmiCmd.ManualPiston2);
+  const p3 = !!(plc.piston3 || hmiCmd.ManualPiston || (plc.piston && !plc.piston1 && !plc.piston2 && !plc.piston3));
+  return { p1, p2, p3, any: p1 || p2 || p3 || !!plc.piston };
+}
+
 function updateTripleMachineStage(prefix, plc){
-  const stage = $(prefix + "-machine-stage");
+  const stage = $(prefix === "live" ? "machine-stage" : (prefix + "-machine-stage"));
   if(!stage) return;
   const running = !!plc.banda && !plc.emergencia;
+  const ps = resolvePistonStates(plc);
   stage.classList.toggle("running", running);
-  const pill = $(prefix + "-machine-pill");
+  const pill = $(prefix === "live" ? "machine-pill" : (prefix + "-machine-pill"));
   if(pill){
     pill.classList.toggle("on", running);
     pill.textContent = plc.emergencia
       ? "Emergencia"
-      : (running ? "Banda en marcha" : (plc.piston ? "Clasificando" : "Banda parada"));
+      : (running ? "Banda en marcha" : (ps.any ? "Clasificando" : "Banda parada"));
   }
-  if($(prefix + "-machine-banda")) $(prefix + "-machine-banda").textContent = plc.banda ? "Marcha" : "Parada";
-  for(const n of [1, 2, 3]){
-    const on = !!plc["piston" + n];
-    $(prefix + "-pu-" + n)?.classList.toggle("on", on);
-    if($(prefix + "-pu-" + n + "-st")) $(prefix + "-pu-" + n + "-st").textContent = pistonPosLabel(on);
-    if($(prefix + "-machine-p" + n)) $(prefix + "-machine-p" + n).textContent = pistonPosLabel(on);
+  const bandaId = prefix === "live" ? "machine-banda-lbl" : (prefix + "-machine-banda");
+  if($(bandaId)) $(bandaId).textContent = plc.banda ? "Marcha" : "Parada";
+  const states = [ps.p1, ps.p2, ps.p3];
+  for(let i = 0; i < 3; i++){
+    const n = i + 1;
+    const on = states[i];
+    const unitId = (prefix === "live" ? "live" : prefix) + "-pu-" + n;
+    $(unitId)?.classList.toggle("on", on);
+    if($(unitId + "-st")) $(unitId + "-st").textContent = pistonPosLabel(on);
+    const legendId = (prefix === "live" ? "live" : prefix) + "-machine-p" + n;
+    if($(legendId)) $(legendId).textContent = pistonPosLabel(on);
   }
-  const piece = $(prefix + "-piece-on-belt");
+  const piece = $(prefix === "live" ? "piece-on-belt" : (prefix + "-piece-on-belt"));
   if(piece){
     let emoji = "";
     if(plc.ultimoMaterial === "plastico") emoji = "🧴";
     else if(plc.ultimoMaterial === "aluminio") emoji = "🥫";
-    else if(running || plc.piston1 || plc.piston2 || plc.piston3) emoji = "♻️";
+    else if(running || ps.any) emoji = "♻️";
     if(emoji){
       piece.textContent = emoji;
       piece.classList.add("show");
@@ -1990,12 +2033,37 @@ async function setPistonExtend(which, extend){
   else if(which === 2) patch.ManualPiston2 = !!extend;
   else patch.ManualPiston = !!extend; // P3
   await pushHmiCmd(patch);
+  // Feedback visual inmediato (aunque el PLC aún no responda)
+  updateTripleMachineStage("hmi", {
+    banda: !!(hmiCmd.ManualBanda),
+    piston1: !!hmiCmd.ManualPiston1,
+    piston2: !!hmiCmd.ManualPiston2,
+    piston3: !!hmiCmd.ManualPiston
+  });
+  syncRealPistonCmdUi({
+    banda: !!hmiCmd.ManualBanda,
+    piston1: !!hmiCmd.ManualPiston1,
+    piston2: !!hmiCmd.ManualPiston2,
+    piston3: !!hmiCmd.ManualPiston
+  });
   toast((extend ? "Extender" : "Retractar") + " P" + which);
 }
 
 async function setBandaManual(on){
   await setManualModeForActuators();
   await pushHmiCmd({ ModoAuto: false, ManualBanda: !!on });
+  updateTripleMachineStage("hmi", {
+    banda: !!on,
+    piston1: !!hmiCmd.ManualPiston1,
+    piston2: !!hmiCmd.ManualPiston2,
+    piston3: !!hmiCmd.ManualPiston
+  });
+  syncRealPistonCmdUi({
+    banda: !!on,
+    piston1: !!hmiCmd.ManualPiston1,
+    piston2: !!hmiCmd.ManualPiston2,
+    piston3: !!hmiCmd.ManualPiston
+  });
   toast(on ? "Banda marcha" : "Banda parada");
 }
 
@@ -2031,13 +2099,14 @@ function renderHmiFromPlc(data){
   if($("hmi-sistema")) $("hmi-sistema").textContent = plc.sistemaOn ? "ON" : "OFF";
   if($("hmi-modo")) $("hmi-modo").textContent = plc.modoAuto ? "Automático" : "Manual";
   if($("hmi-banda")) $("hmi-banda").textContent = plc.banda ? "Marcha" : "Parada";
-  if($("hmi-piston")) $("hmi-piston").textContent = plc.piston ? "Extendido" : "Retráctil";
-  if($("hmi-p1")) $("hmi-p1").textContent = pistonPosLabel(!!plc.piston1);
-  if($("hmi-p2")) $("hmi-p2").textContent = pistonPosLabel(!!plc.piston2);
-  if($("hmi-p3")) $("hmi-p3").textContent = pistonPosLabel(!!plc.piston3);
-  $("hmi-chip-p1")?.classList.toggle("ok", !!plc.piston1);
-  $("hmi-chip-p2")?.classList.toggle("ok", !!plc.piston2);
-  $("hmi-chip-p3")?.classList.toggle("ok", !!plc.piston3);
+  const ps = resolvePistonStates(plc);
+  if($("hmi-piston")) $("hmi-piston").textContent = ps.any ? "Activo" : "Idle";
+  if($("hmi-p1")) $("hmi-p1").textContent = pistonPosLabel(ps.p1);
+  if($("hmi-p2")) $("hmi-p2").textContent = pistonPosLabel(ps.p2);
+  if($("hmi-p3")) $("hmi-p3").textContent = pistonPosLabel(ps.p3);
+  $("hmi-chip-p1")?.classList.toggle("ok", ps.p1);
+  $("hmi-chip-p2")?.classList.toggle("ok", ps.p2);
+  $("hmi-chip-p3")?.classList.toggle("ok", ps.p3);
   if($("hmi-cont-p")) $("hmi-cont-p").textContent = String(mats.plastico?.piezas ?? 0);
   if($("hmi-cont-a")) $("hmi-cont-a").textContent = String(mats.aluminio?.piezas ?? 0);
   if($("hmi-alarma")) $("hmi-alarma").textContent = plc.alarma ? "ACTIVA" : "OK";
@@ -2046,10 +2115,8 @@ function renderHmiFromPlc(data){
   $("hmi-chip-emergencia")?.classList.toggle("warn", !!plc.emergencia);
   $("hmi-chip-sistema")?.classList.toggle("ok", !!plc.sistemaOn);
 
-  if(hmiModeReal){
-    updateTripleMachineStage("hmi", plc);
-    syncRealPistonCmdUi(plc);
-  }
+  updateTripleMachineStage("hmi", plc);
+  syncRealPistonCmdUi({ ...plc, piston1: ps.p1, piston2: ps.p2, piston3: ps.p3 });
 
   // Solo en demo: simula final de carrera. En PLC real el sensor es I_PistonExtendido.
   if(hmiAutoPiston && !hmiModeReal){
@@ -2068,15 +2135,13 @@ function renderHmiFromPlc(data){
 }
 
 function ensureHmiListen(){
+  applyHmiStationMode(hmiModeReal);
   if($("hmi-estacion-id")) $("hmi-estacion-id").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : " · DEMO");
   if($("hmi-estacion-id-real")) $("hmi-estacion-id-real").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : "");
-  $("hmi-sim-block")?.classList.toggle("hidden-real", !!hmiModeReal);
-  $("hmi-real-io-block")?.classList.toggle("show-real", !!hmiModeReal);
-  // En real: chips P1/P2/P3; en demo: un solo pistón
-  $("hmi-chip-piston")?.classList.toggle("hidden", !!hmiModeReal);
-  $("hmi-chip-p1")?.classList.toggle("hidden", !hmiModeReal);
-  $("hmi-chip-p2")?.classList.toggle("hidden", !hmiModeReal);
-  $("hmi-chip-p3")?.classList.toggle("hidden", !hmiModeReal);
+  // P1/P2/P3 siempre visibles
+  $("hmi-chip-p1")?.classList.remove("hidden");
+  $("hmi-chip-p2")?.classList.remove("hidden");
+  $("hmi-chip-p3")?.classList.remove("hidden");
   syncHmiToggleUi();
   if(unsubHmiSesion){
     try{ unsubHmiSesion(); }catch(e){}
@@ -2256,17 +2321,16 @@ $("btn-real-listen")?.addEventListener("click", () => {
   toast("Escuchando " + HMI_ESTACION_REAL);
 });
 $("btn-real-hmi")?.addEventListener("click", () => {
-  hmiModeReal = true;
-  HMI_ESTACION_ID = HMI_ESTACION_REAL;
-  hmiAutoPiston = false;
-  if($("hmi-auto-piston")){
-    $("hmi-auto-piston").classList.remove("on");
-    $("hmi-auto-piston").textContent = "MANUAL";
-  }
-  if($("hmi-auto-piston-lbl")) $("hmi-auto-piston-lbl").textContent = "OFF (real)";
+  applyHmiStationMode(true);
   ensureRealListen();
   showAppView("hmi");
   toast("HMI en modo PLC real 1214C");
+});
+
+$("hmi-mode-toggle")?.addEventListener("click", () => {
+  applyHmiStationMode(!hmiModeReal);
+  ensureHmiListen();
+  toast(hmiModeReal ? "HMI → estación REAL (3 pistones)" : "HMI → estación DEMO");
 });
 
 /* -------------------------------------------------------------------------
@@ -2422,38 +2486,12 @@ function renderPlcPanel(plc){
   emergChip.classList.toggle("warn", !!p.emergencia);
   emergChip.classList.toggle("ok", !p.emergencia);
 
-  // Animación gráfica banda / pistón (para demo sin banda física en AS)
-  const stage = $("machine-stage");
-  if(stage){
-    const running = !!p.banda && !p.emergencia;
-    stage.classList.toggle("running", running);
-    stage.classList.toggle("piston-on", !!p.piston);
-    const pill = $("machine-pill");
-    if(pill){
-      pill.classList.toggle("on", running);
-      pill.textContent = p.emergencia ? "Emergencia" : (running ? "Banda en marcha" : (p.piston ? "Clasificando" : "Banda parada"));
-    }
-    if($("machine-banda-lbl")) $("machine-banda-lbl").textContent = p.banda ? "Marcha" : "Parada";
-    if($("machine-piston-lbl")) $("machine-piston-lbl").textContent = p.piston ? "Extendido" : "Retráctil";
-    const piece = $("piece-on-belt");
-    const pieceLbl = $("machine-piece-lbl");
-    if(piece){
-      let emoji = "";
-      if(p.ultimoMaterial === "plastico") emoji = MATERIALES.plastico.emoji;
-      else if(p.ultimoMaterial === "aluminio") emoji = MATERIALES.aluminio.emoji;
-      else if(running) emoji = "♻️";
-      if(emoji){
-        piece.textContent = emoji;
-        piece.classList.add("show");
-      }else{
-        piece.classList.remove("show");
-      }
-      if(pieceLbl){
-        pieceLbl.textContent = p.ultimoMaterial && MATERIALES[p.ultimoMaterial]
-          ? MATERIALES[p.ultimoMaterial].nombre
-          : (running ? "en tránsito" : "—");
-      }
-    }
+  // Animación gráfica banda + 3 pistones
+  updateTripleMachineStage("live", p);
+  if($("machine-piece-lbl")){
+    $("machine-piece-lbl").textContent = p.ultimoMaterial && MATERIALES[p.ultimoMaterial]
+      ? MATERIALES[p.ultimoMaterial].nombre
+      : (p.banda ? "en tránsito" : "—");
   }
 }
 
