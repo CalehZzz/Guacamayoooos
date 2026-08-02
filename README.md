@@ -14,6 +14,7 @@ TIA V20 · CPU **1511C-1 PN** · PLCSIM Advanced **V7** · AS **10** · KEPServe
 5. [`tia/LOGICA_LAD_SIM.md`](tia/LOGICA_LAD_SIM.md) — networks (`DB_HMI.*`)  
 5. [`automation_studio/COMPONENTES.md`](automation_studio/COMPONENTES.md) — AS 10  
 6. Resto de guías en [`docs/`](docs/)  
+7. [`docs/GUION_DEFENSA_15MIN.md`](docs/GUION_DEFENSA_15MIN.md) — guion defensa 15 min (Edgar / Carla / Caleb)  
 
 ### Bridge con PLCSIM Advanced (demo)
 
