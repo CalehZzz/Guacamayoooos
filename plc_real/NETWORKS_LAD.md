@@ -1,9 +1,9 @@
-# Networks LAD — PLC real 1214C (3 pistones)
+# Networks LAD — PLC real 1214C (3 pistones · control web)
 
 **Regla:**
-- Sensores / finales de carrera → `I_*`
+- Sensores / finales de carrera → `I_*` (únicos cables de entrada)
 - Actuadores → `Q_*` (`Q_Piston1` retenedor · `Q_Piston2` plástico · `Q_Piston3` aluminio)
-- Operador web → `DB_HMI.*` (OR con pulsadores físicos si existen)
+- **Operador → solo `DB_HMI.*`** (sin pulsadores físicos en la mesa)
 - Espejo web → `DatosEstacion`
 
 Los croquis no se pegan: dibuja contactos/bobinas en TIA.
@@ -22,25 +22,20 @@ Los croquis no se pegan: dibuja contactos/bobinas en TIA.
 
 ## FC_Modos
 
-### NW1 — START (web O físico)
+### NW1 — START (solo web)
 ```
----| DB_HMI.Start |----+----|/ DB_HMI.Stop |----|/ I_Stop |----|/ DB_HMI.Emergencia |----|/ I_Emergencia |----(S M_SistemaOn)
----| I_Start      |----+
+---| DB_HMI.Start |----|/ DB_HMI.Stop |----|/ DB_HMI.Emergencia |----(S M_SistemaOn)
 ```
-Si no cableas `I_Start`/`I_Stop`, omite esos contactos y deja solo `DB_HMI`.
 
-### NW2 — STOP / EMERGENCIA
+### NW2 — STOP / EMERGENCIA (solo web)
 ```
 ---| DB_HMI.Stop       |----+----(R M_SistemaOn)
----| I_Stop            |----+
 ---| DB_HMI.Emergencia |----+
----| I_Emergencia      |----+
 ```
 
-### NW3 — Modo auto (web O selector)
+### NW3 — Modo auto (solo web)
 ```
----| DB_HMI.ModoAuto |----+----( M_ModoAuto )
----| I_ModoAuto      |----+
+---| DB_HMI.ModoAuto |----( M_ModoAuto )
 ```
 
 ### NW4 — Flag “clasificando” (para banda / estado)
@@ -51,13 +46,12 @@ Si no cableas `I_Start`/`I_Stop`, omite esos contactos y deja solo `DB_HMI`.
 
 ### NW5 — Lámpara RUN
 ```
----| M_SistemaOn |---|/ DB_HMI.Emergencia |---|/ I_Emergencia |----( Q_LamparaRun )
+---| M_SistemaOn |---|/ DB_HMI.Emergencia |----( Q_LamparaRun )
 ```
 
 ### NW6 — Lámpara emergencia
 ```
----| DB_HMI.Emergencia |----+----( Q_LamparaEmergencia )
----| I_Emergencia      |----+
+---| DB_HMI.Emergencia |----( Q_LamparaEmergencia )
 ```
 
 ---
@@ -67,22 +61,21 @@ Si no cableas `I_Start`/`I_Stop`, omite esos contactos y deja solo `DB_HMI`.
 ### NW1 — Banda → `Q_Banda`
 ```
   AUTO:
----| M_SistemaOn |---| M_ModoAuto |---|/ DB_HMI.Emergencia |---|/ I_Emergencia |
+---| M_SistemaOn |---| M_ModoAuto |---|/ DB_HMI.Emergencia |
 ---|/ M_Alarma |---|/ M_Clasificando |--+
                                         |
-  MANUAL:                               +----( Q_Banda )
----| M_SistemaOn |---|/ M_ModoAuto |---+----(
----| DB_HMI.ManualBanda |--------------+
+  MANUAL (web):                         +----( Q_Banda )
+---| M_SistemaOn |---|/ M_ModoAuto |---| DB_HMI.ManualBanda |--+
 ```
 
 ### NW2 — P1 retenedor → `Q_Piston1`
 Sujeta la pieza con sistema ON y pieza presente (o mientras clasifica). Una sola bobina:
 ```
   AUTO:
----| M_SistemaOn |---| M_ModoAuto |---|/ DB_HMI.Emergencia |---|/ I_Emergencia |
+---| M_SistemaOn |---| M_ModoAuto |---|/ DB_HMI.Emergencia |
 ---|/ M_Alarma |---+----| I_SensorPieza |----+
                    |----| M_Clasificando |----+----( Q_Piston1 )
-  MANUAL:
+  MANUAL (web):
 ---| M_SistemaOn |---|/ M_ModoAuto |---| DB_HMI.ManualPiston1 |--+
 ```
 
@@ -103,17 +96,17 @@ Sujeta la pieza con sistema ON y pieza presente (o mientras clasifica). Una sola
   AUTO:
 ---| M_ClasifAluminio |---|/ I_Piston3Extendido |--+
                                                     |
-  MANUAL:                                           +----( Q_Piston3 )
+  MANUAL (web):                                     +----( Q_Piston3 )
 ---| M_SistemaOn |---|/ M_ModoAuto |---| DB_HMI.ManualPiston |--+
 ```
-(`ManualPiston` @ 0.7 = manual del pistón de aluminio, el principal de clasificación.)
+(`ManualPiston` @ 0.7 = manual del pistón de aluminio.)
 
 ### NW6 — P2 plástico → `Q_Piston2`
 ```
   AUTO:
 ---| M_ClasifPlastico |---|/ I_Piston2Extendido |--+
                                                     |
-  MANUAL:                                           +----( Q_Piston2 )
+  MANUAL (web):                                     +----( Q_Piston2 )
 ---| M_SistemaOn |---|/ M_ModoAuto |---| DB_HMI.ManualPiston2 |--+
 ```
 
@@ -177,15 +170,14 @@ END_IF;
 ---| M_Alarma |----( Q_LamparaAlarma )
 ```
 
-### NW2
+### NW2 — Reset (solo web)
 ```
 ---| DB_HMI.ResetAlarma |----(R M_Alarma)
 ```
 
-### NW3
+### NW3 — Emergencia (solo web)
 ```
----| DB_HMI.Emergencia |----+----(S M_Alarma)
----| I_Emergencia      |----+
+---| DB_HMI.Emergencia |----(S M_Alarma)
 ```
 
 ---
@@ -195,7 +187,7 @@ END_IF;
 ```scl
 DatosEstacion.SistemaOn    := M_SistemaOn;
 DatosEstacion.ModoAuto     := M_ModoAuto;
-DatosEstacion.Emergencia   := DB_HMI.Emergencia OR I_Emergencia;
+DatosEstacion.Emergencia   := DB_HMI.Emergencia;
 DatosEstacion.Alarma       := M_Alarma;
 DatosEstacion.BandaOn      := Q_Banda;
 // Compat web: “algún pistón activo”
@@ -219,5 +211,3 @@ ELSE
     DatosEstacion.EstadoMaquina := 0;
 END_IF;
 ```
-
-> Si TIA no deja `OR` con tag `I_` en SCL, usa un Bool intermedio en LAD (`M_EmergenciaActiva`) y asígnalo aquí.

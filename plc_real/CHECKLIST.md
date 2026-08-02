@@ -12,9 +12,11 @@
 - [ ] Download software + CPU RUN
 - [ ] Online: forzando `Q_Banda` / `Q_Piston1` / `Q_Piston2` / `Q_Piston3` se oye/ve cada actuador
 
-## Neumática (mesa real)
+## Mesa real (sin botonera)
+- [ ] **Sin** pulsadores Start/Stop/Emergencia/Manual — todo desde HMI web
 - [ ] 3× cilindro doble efecto + 3× válvula 5/2
 - [ ] Sensores 0% y 100% en cada cilindro → `I_PistonNRetractado` / `I_PistonNExtendido`
+- [ ] Sensores pieza / plástico / aluminio / báscula lista
 - [ ] P1 = retenedor · P2 = empuje plástico · P3 = empuje aluminio
 
 ## PC / red
@@ -43,4 +45,4 @@ Estación Firestore: **`colegio-don-bosco-real`**
 2. Pieza física → `Q_Piston1` (retenedor) activo
 3. Pieza + plástico → `Q_Piston2` → sensor 100% → contador plástico
 4. Pieza + aluminio → `Q_Piston3` → sensor 100% → contador aluminio
-5. Emergencia web o seta → paro
+5. Emergencia desde web → paro

@@ -1,8 +1,26 @@
-# I/O y tags — CPU 1214C AC/DC/Rly (3 pistones)
+# I/O y tags — CPU 1214C AC/DC/Rly (3 pistones · control web)
 
 Ajusta direcciones si tu MLFB tiene otro mapa; los **nombres** deben coincidir con el LAD.
 
 La 1214C típica trae **14 DI** y **10 DQ** relé: alcanza para banda + **3 cilindros** + lámparas.
+
+---
+
+## Operador = solo web (sin pulsadores físicos)
+
+**No hay botonera en la mesa.** Start, Stop, Emergencia, modo auto/manual, manual de banda/pistones y reset alarma van por la app → Firestore → bridge → `DB_HMI`.
+
+En el PLC solo cableas:
+- **Sensores de proceso** (`I_Sensor*`, báscula, finales de carrera de pistones)
+- **Actuadores** (`Q_Banda`, `Q_Piston1..3`, lámparas)
+
+```
+  Celular / laptop (HMI web SIBU)
+        ↕ Firestore
+   plc_bridge_real.py
+        ↕ snap7 (DB_HMI + DatosEstacion)
+   CPU 1214C  ←→  sensores + banda + 3 pistones
+```
 
 ---
 
@@ -24,28 +42,24 @@ Cada cilindro: válvula 5/2 + sensor **0%** (retractado) + sensor **100%** (exte
 
 ---
 
-## A) Entradas digitales `%I` (proceso físico)
+## A) Entradas digitales `%I` (solo proceso — no botones)
 
-| Dirección | Nombre | Tipo | Hardware sugerido |
+| Dirección | Nombre | Tipo | Hardware |
 |---|---|---|---|
-| `%I0.0` | `I_Start` | Bool | Pulsador NO arranque (opcional si solo usas web) |
-| `%I0.1` | `I_Stop` | Bool | Pulsador paro |
-| `%I0.2` | `I_Emergencia` | Bool | Seta emergencia (1 = activo) |
-| `%I0.3` | `I_ModoAuto` | Bool | Selector auto (opcional; web también escribe modo) |
-| `%I0.4` | `I_SensorPieza` | Bool | Pieza en estación |
-| `%I0.5` | `I_SensorPlastico` | Bool | Sensor / botón material plástico |
-| `%I0.6` | `I_SensorAluminio` | Bool | Sensor / botón material aluminio |
-| `%I0.7` | `I_BasculaLista` | Bool | Báscula estable / lista |
-| `%I1.0` | `I_Piston1Retractado` | Bool | P1 retenedor @ 0% |
-| `%I1.1` | `I_Piston1Extendido` | Bool | P1 retenedor @ 100% |
-| `%I1.2` | `I_Piston2Retractado` | Bool | P2 plástico @ 0% |
-| `%I1.3` | `I_Piston2Extendido` | Bool | P2 plástico @ 100% |
-| `%I1.4` | `I_Piston3Retractado` | Bool | P3 aluminio @ 0% |
-| `%I1.5` | `I_Piston3Extendido` | Bool | P3 aluminio @ 100% |
+| `%I0.0` | `I_SensorPieza` | Bool | Pieza en estación |
+| `%I0.1` | `I_SensorPlastico` | Bool | Sensor material plástico |
+| `%I0.2` | `I_SensorAluminio` | Bool | Sensor material aluminio |
+| `%I0.3` | `I_BasculaLista` | Bool | Báscula estable / lista |
+| `%I0.4` | `I_Piston1Retractado` | Bool | P1 retenedor @ 0% |
+| `%I0.5` | `I_Piston1Extendido` | Bool | P1 retenedor @ 100% |
+| `%I0.6` | `I_Piston2Retractado` | Bool | P2 plástico @ 0% |
+| `%I0.7` | `I_Piston2Extendido` | Bool | P2 plástico @ 100% |
+| `%I1.0` | `I_Piston3Retractado` | Bool | P3 aluminio @ 0% |
+| `%I1.1` | `I_Piston3Extendido` | Bool | P3 aluminio @ 100% |
 
-> Manual banda / pistones / reset alarma: solo por **`DB_HMI`** (web). Así caben los 6 finales de carrera en los 14 DI.
+`%I1.2`…`%I1.5` quedan libres (reserva).
 
-Si más adelante amplías DI (módulo extra), puedes cablear `I_ManualBanda`, `I_ManualPiston1..3`, `I_ResetAlarma` y ORearlos en el LAD como en la versión de 1 pistón.
+> No uses tags `I_Start` / `I_Stop` / `I_Emergencia` / `I_ModoAuto` / `I_Manual*`: el operador es 100 % web.
 
 ---
 
@@ -70,12 +84,12 @@ Si más adelante amplías DI (módulo extra), puedes cablear `I_ManualBanda`, `I
 | Dirección | Nombre | Uso |
 |---|---|---|
 | `%M0.0` | `M_SistemaOn` | Latch sistema |
-| `%M0.1` | `M_ModoAuto` | Modo auto efectivo |
+| `%M0.1` | `M_ModoAuto` | Modo auto efectivo (`:= DB_HMI.ModoAuto`) |
 | `%M0.2` | `M_Alarma` | Alarma |
 | `%M0.3` | `M_ClasifPlastico` | Secuencia empuje plástico (P2) |
 | `%M0.4` | `M_ClasifAluminio` | Secuencia empuje aluminio (P3) |
-| `%M0.5` | `M_PulsePlastico` | Pulso flanco (opcional; el conteo va al fin de P2) |
-| `%M0.6` | `M_EdgePlastico` | Memoria bobina P (si usas pulso) |
+| `%M0.5` | `M_PulsePlastico` | Reserva / opcional |
+| `%M0.6` | `M_EdgePlastico` | Reserva / opcional |
 | `%M0.7` | `M_Clasificando` | OR de clasificaciones (para banda / espejo) |
 
 `M_Clasificando := M_ClasifPlastico OR M_ClasifAluminio` (network o SCL).
@@ -106,11 +120,9 @@ Ver `DB_CONTRATO_WEB.md`.
 
 ## F) Quién manda qué
 
-| Señal | Origen preferido |
+| Señal | Origen |
 |---|---|
-| Sensores pieza/material/pistones | **`I_*` físicos** |
+| Sensores pieza / material / báscula / pistones | **`I_*` físicos** |
 | Banda / 3 pistones / lámparas | **`Q_*`** |
-| START / STOP / modo / manual desde jurado (web) | **`DB_HMI.*`** |
-| Contadores a la web | **`DatosEstacion`** |
-
-En LAD, operador web y físico se pueden **OR**-ear (ej. Start web O `I_Start`).
+| START / STOP / emergencia / modo / manual / reset | **solo `DB_HMI.*` (web)** |
+| Contadores y estado a la web | **`DatosEstacion`** |

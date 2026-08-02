@@ -4,6 +4,8 @@ Para que `plc_bridge.py` / `plc_bridge_real.py` funcionen sin romper el tamaño 
 
 **Optimized block access = OFF** en ambos DB.
 
+En PLC real el operador es **100 % web**: todo comando entra por `DB_HMI` (no hay pulsadores físicos).
+
 ---
 
 ## `DatosEstacion` — DB **1**
@@ -43,24 +45,23 @@ DatosEstacion.PesoActualKg := DB_HMI.PesoActualKg;
 
 ---
 
-## `DB_HMI` — DB **3**
+## `DB_HMI` — DB **3** (único mando del operador)
 
-Comandos desde la web (jurado / operador remoto).  
-En PLC real **no** uses los bits de sim sensor como fuente de proceso (los sensores son `I_*`).
+Comandos desde la web. En PLC real **no** uses los bits de sim sensor (1.0–1.5) como fuente de proceso: los sensores son `I_*`.
 
 | Offset | Nombre | Tipo | Uso real |
 |---|---|---|---|
-| 0.0 | `Start` | Bool | Arranque remoto |
-| 0.1 | `Stop` | Bool | Paro remoto |
-| 0.2 | `Emergencia` | Bool | Emergencia remota |
-| 0.3 | `ResetAlarma` | Bool | Reset remoto |
-| 0.4 | `ModoAuto` | Bool | Modo |
-| 0.5 | `FinSesion` | Bool | Fin sesión web |
-| 0.6 | `ManualBanda` | Bool | Manual remoto banda |
+| 0.0 | `Start` | Bool | Arranque |
+| 0.1 | `Stop` | Bool | Paro |
+| 0.2 | `Emergencia` | Bool | Emergencia |
+| 0.3 | `ResetAlarma` | Bool | Reset alarma |
+| 0.4 | `ModoAuto` | Bool | Modo auto |
+| 0.5 | `FinSesion` | Bool | Fin sesión |
+| 0.6 | `ManualBanda` | Bool | Manual banda |
 | 0.7 | `ManualPiston` | Bool | Manual **P3 aluminio** |
-| 1.0–1.5 | `BasculaLista`…`PistonExtendido` | Bool | **Reservados / no usar en LAD real** (solo demo) |
+| 1.0–1.5 | `BasculaLista`…`PistonExtendido` | Bool | **No usar en LAD real** (solo demo) |
 | 1.6 | `ManualPiston1` | Bool | Manual **P1 retenedor** |
 | 1.7 | `ManualPiston2` | Bool | Manual **P2 plástico** |
-| 2.0 | `PesoActualKg` | Real | Peso (HMI o báscula→PC→web) |
+| 2.0 | `PesoActualKg` | Real | Peso desde HMI / báscula→PC→web |
 
 Tamaño escritura bridge: **6 bytes**.

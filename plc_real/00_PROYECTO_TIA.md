@@ -56,5 +56,5 @@ Copia `TABLA_IO_1214C.md` — **3 solenoides** + **6 finales de carrera**.
 | Sensores | `DB_HMI.Sensor*` | **`I_Sensor*`** físicos |
 | Pistones | 1 × `M_Piston` | **3 × `Q_Piston1..3`** |
 | Roles | Un cilindro (aluminio) | P1 retenedor · P2 plástico · P3 aluminio |
-| Start web | `DB_HMI.Start` | igual (`DB_HMI`) + opcional `I_Start` |
+| Operador (Start/Stop/manual…) | `DB_HMI` | **solo `DB_HMI`** (sin pulsadores físicos) |
 | AS / KEP | no | no |

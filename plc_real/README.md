@@ -3,20 +3,21 @@
 Proyecto **aparte** del de simulación (1511C + PLCSIM).  
 No reutilices el hardware config del 1511C: crea un proyecto TIA nuevo con CPU **1214C**.
 
-**Actuadores neumáticos (real):** 3 cilindros — P1 retenedor · P2 plástico · P3 aluminio.
+**Actuadores neumáticos (real):** 3 cilindros — P1 retenedor · P2 plástico · P3 aluminio.  
+**Operador:** 100 % desde la web (sin pulsadores físicos). En mesa solo sensores + actuadores.
 
 ```
-Página SIBU (apartado PLC real)
+Página SIBU / HMI web  (Start, Stop, manual, emergencia…)
         ↕ Firestore  (estación: colegio-don-bosco-real)
    plc_bridge.py / plc_bridge_real.py
         ↕ snap7  (IP del 1214C en la red)
-   CPU 1214C AC/DC/Rly  + I/O físicos (banda + 3 pistones)
+   CPU 1214C AC/DC/Rly  + sensores + banda + 3 pistones
 ```
 
-| Modo | Carpeta | CPU | Sensores / actuadores |
+| Modo | Carpeta | CPU | Qué hay en mesa |
 |---|---|---|---|
 | Demo / sim | `tia/` + HMI 🖥️ | 1511C PLCSIM | 1 pistón simulado (`DB_HMI`) |
-| **PLC real** | **`plc_real/`** | **1214C** | **3 pistones** `%I`/`%Q` + HMI web |
+| **PLC real** | **`plc_real/`** | **1214C** | Sensores + **3 pistones**; mando solo web |
 
 ---
 
