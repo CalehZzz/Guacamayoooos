@@ -1,4 +1,4 @@
-# Crear proyecto TIA — CPU 1214C AC/DC/Rly (PLC real)
+# Crear proyecto TIA — CPU 1214C AC/DC/Rly (PLC real · 3 pistones)
 
 El proyecto de **PLCSIM 1511C no sirve** como device del 1214C.  
 Crea un proyecto nuevo.
@@ -27,8 +27,8 @@ Crea (mismos nombres que en sim, distinta lógica de I/O):
 | Bloque | Lenguaje | Rol |
 |---|---|---|
 | `OB1` | LAD | Calls |
-| `FC_Modos` | LAD | Start/Stop/Emergencia |
-| `FC_Secuencia` | LAD | Banda, conteo, pistón |
+| `FC_Modos` | LAD | Start/Stop/Emergencia + `M_Clasificando` |
+| `FC_Secuencia` | LAD | Banda, **P1/P2/P3**, conteo |
 | `FC_Alarmas` | LAD | Alarmas |
 | `FC_EspejoWeb` | SCL | Espejo a `DatosEstacion` |
 
@@ -38,10 +38,10 @@ Crea (mismos nombres que en sim, distinta lógica de I/O):
 | `DatosEstacion` | **1** | **OFF** |
 | `DB_HMI` | **3** | **OFF** |
 
-Estructura: `DB_CONTRATO_WEB.md` (igual que la web/sim).
+Estructura: `DB_CONTRATO_WEB.md` (incluye `Piston1On`/`Piston2On`/`Piston3On` @ 17.x).
 
 ## 6) Tag table
-Copia `TABLA_IO_1214C.md`.
+Copia `TABLA_IO_1214C.md` — **3 solenoides** + **6 finales de carrera**.
 
 ## 7) Download
 1. CPU en STOP o RUN-P según política
@@ -54,6 +54,7 @@ Copia `TABLA_IO_1214C.md`.
 | | Sim (1511C) | Real (1214C) |
 |---|---|---|
 | Sensores | `DB_HMI.Sensor*` | **`I_Sensor*`** físicos |
-| Banda / pistón | `M_Banda` / `M_Piston` | **`Q_Banda` / `Q_Piston`** |
-| Start web | `DB_HMI.Start` | igual (`DB_HMI`) + opcional `I_Start` |
+| Pistones | 1 × `M_Piston` | **3 × `Q_Piston1..3`** |
+| Roles | Un cilindro (aluminio) | P1 retenedor · P2 plástico · P3 aluminio |
+| Operador (Start/Stop/manual…) | `DB_HMI` | **solo `DB_HMI`** (sin pulsadores físicos) |
 | AS / KEP | no | no |

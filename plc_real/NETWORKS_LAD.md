@@ -1,9 +1,9 @@
-# Networks LAD — PLC real 1214C
+# Networks LAD — PLC real 1214C (3 pistones · control web)
 
 **Regla:**
-- Sensores / finales de carrera → `I_*`
-- Actuadores → `Q_*`
-- Operador web → `DB_HMI.*` (OR con pulsadores físicos si existen)
+- Sensores / finales de carrera → `I_*` (únicos cables de entrada)
+- Actuadores → `Q_*` (`Q_Piston1` retenedor · `Q_Piston2` plástico · `Q_Piston3` aluminio)
+- **Operador → solo `DB_HMI.*`** (sin pulsadores físicos en la mesa)
 - Espejo web → `DatosEstacion`
 
 Los croquis no se pegan: dibuja contactos/bobinas en TIA.
@@ -22,37 +22,36 @@ Los croquis no se pegan: dibuja contactos/bobinas en TIA.
 
 ## FC_Modos
 
-### NW1 — START (web O físico)
+### NW1 — START (solo web)
 ```
----| DB_HMI.Start |----+----|/ DB_HMI.Stop |----|/ I_Stop |----|/ DB_HMI.Emergencia |----|/ I_Emergencia |----(S M_SistemaOn)
----| I_Start      |----+
+---| DB_HMI.Start |----|/ DB_HMI.Stop |----|/ DB_HMI.Emergencia |----(S M_SistemaOn)
 ```
-Si no cableas `I_Start`/`I_Stop`, omite esos contactos y deja solo `DB_HMI`.
 
-### NW2 — STOP / EMERGENCIA
+### NW2 — STOP / EMERGENCIA (solo web)
 ```
 ---| DB_HMI.Stop       |----+----(R M_SistemaOn)
----| I_Stop            |----+
 ---| DB_HMI.Emergencia |----+
----| I_Emergencia      |----+
 ```
 
-### NW3 — Modo auto (web O selector)
+### NW3 — Modo auto (solo web)
 ```
----| DB_HMI.ModoAuto |----+----( M_ModoAuto )
----| I_ModoAuto      |----+
-```
-*(Si ambos pueden estar a 1, OR está bien. Si prefieres solo web: solo `DB_HMI.ModoAuto`.)*
-
-### NW4 — Lámpara RUN
-```
----| M_SistemaOn |---|/ DB_HMI.Emergencia |---|/ I_Emergencia |----( Q_LamparaRun )
+---| DB_HMI.ModoAuto |----( M_ModoAuto )
 ```
 
-### NW5 — Lámpara emergencia
+### NW4 — Flag “clasificando” (para banda / estado)
 ```
----| DB_HMI.Emergencia |----+----( Q_LamparaEmergencia )
----| I_Emergencia      |----+
+---| M_ClasifPlastico |----+----( M_Clasificando )
+---| M_ClasifAluminio |----+
+```
+
+### NW5 — Lámpara RUN
+```
+---| M_SistemaOn |---|/ DB_HMI.Emergencia |----( Q_LamparaRun )
+```
+
+### NW6 — Lámpara emergencia
+```
+---| DB_HMI.Emergencia |----( Q_LamparaEmergencia )
 ```
 
 ---
@@ -62,72 +61,102 @@ Si no cableas `I_Start`/`I_Stop`, omite esos contactos y deja solo `DB_HMI`.
 ### NW1 — Banda → `Q_Banda`
 ```
   AUTO:
----| M_SistemaOn |---| M_ModoAuto |---|/ DB_HMI.Emergencia |---|/ I_Emergencia |
+---| M_SistemaOn |---| M_ModoAuto |---|/ DB_HMI.Emergencia |
 ---|/ M_Alarma |---|/ M_Clasificando |--+
                                         |
-  MANUAL:                               +----( Q_Banda )
----| M_SistemaOn |---|/ M_ModoAuto |---+----(
----| DB_HMI.ManualBanda |--------------+
----| I_ManualBanda      |--------------+
+  MANUAL (web):                         +----( Q_Banda )
+---| M_SistemaOn |---|/ M_ModoAuto |---| DB_HMI.ManualBanda |--+
 ```
 
-### NW2 — Pulso plástico
-```
----| M_SistemaOn |---| M_ModoAuto |---| I_SensorPieza |---| I_BasculaLista |
----| I_SensorPlastico |---|/ I_SensorAluminio |----(P M_PulsePlastico)
-```
-Memoria flanco: `M_EdgePlastico`
-
-### NW3 — Contar plástico (SCL)
-```scl
-IF M_PulsePlastico THEN
-    DatosEstacion.ContPlastico := DatosEstacion.ContPlastico + 1;
-    DatosEstacion.PesoPlasticoKg := DatosEstacion.PesoPlasticoKg + DatosEstacion.PesoActualKg;
-    DatosEstacion.UltimoMaterial := 1;
-END_IF;
-```
-
-### NW4 — Aluminio → clasificar
-```
----| M_SistemaOn |---| M_ModoAuto |---| I_SensorPieza |---| I_BasculaLista |
----| I_SensorAluminio |---|/ I_SensorPlastico |----(S M_Clasificando)
-```
-
-### NW5 — Pistón → `Q_Piston`
+### NW2 — P1 retenedor → `Q_Piston1`
+Sujeta la pieza con sistema ON y pieza presente (o mientras clasifica). Una sola bobina:
 ```
   AUTO:
----| M_Clasificando |---|/ I_PistonExtendido |--+
-                                                |
-  MANUAL:                                       +----( Q_Piston )
----| M_SistemaOn |---|/ M_ModoAuto |---+----(
----| DB_HMI.ManualPiston |-------------+
----| I_ManualPiston      |-------------+
+---| M_SistemaOn |---| M_ModoAuto |---|/ DB_HMI.Emergencia |
+---|/ M_Alarma |---+----| I_SensorPieza |----+
+                   |----| M_Clasificando |----+----( Q_Piston1 )
+  MANUAL (web):
+---| M_SistemaOn |---|/ M_ModoAuto |---| DB_HMI.ManualPiston1 |--+
 ```
 
-### NW6 — TON retardo
+### NW3 — Aluminio → latch clasificar P3
 ```
----| M_Clasificando |---| I_PistonExtendido |----[ TON T_RetardoPiston  PT:=T#500ms ]
+---| M_SistemaOn |---| M_ModoAuto |---| I_SensorPieza |---| I_BasculaLista |
+---| I_SensorAluminio |---|/ I_SensorPlastico |---|/ M_ClasifPlastico |----(S M_ClasifAluminio)
 ```
 
-### NW7 — Fin clasificación + contar aluminio
-**LAD:** `---| T_RetardoPiston.Q |----(R M_Clasificando)`
+### NW4 — Plástico → latch clasificar P2
+```
+---| M_SistemaOn |---| M_ModoAuto |---| I_SensorPieza |---| I_BasculaLista |
+---| I_SensorPlastico |---|/ I_SensorAluminio |---|/ M_ClasifAluminio |----(S M_ClasifPlastico)
+```
+
+### NW5 — P3 aluminio → `Q_Piston3`
+```
+  AUTO:
+---| M_ClasifAluminio |---|/ I_Piston3Extendido |--+
+                                                    |
+  MANUAL (web):                                     +----( Q_Piston3 )
+---| M_SistemaOn |---|/ M_ModoAuto |---| DB_HMI.ManualPiston |--+
+```
+(`ManualPiston` @ 0.7 = manual del pistón de aluminio.)
+
+### NW6 — P2 plástico → `Q_Piston2`
+```
+  AUTO:
+---| M_ClasifPlastico |---|/ I_Piston2Extendido |--+
+                                                    |
+  MANUAL (web):                                     +----( Q_Piston2 )
+---| M_SistemaOn |---|/ M_ModoAuto |---| DB_HMI.ManualPiston2 |--+
+```
+
+### NW7 — TON retardo P3 (aluminio)
+```
+---| M_ClasifAluminio |---| I_Piston3Extendido |----[ TON T_RetardoPiston3  PT:=T#500ms ]
+```
+
+### NW8 — Fin clasificación aluminio + contar
+**LAD:** `---| T_RetardoPiston3.Q |----(R M_ClasifAluminio)`
 
 **SCL:**
 ```scl
-IF T_RetardoPiston.Q THEN
+IF T_RetardoPiston3.Q THEN
     DatosEstacion.ContAluminio := DatosEstacion.ContAluminio + 1;
     DatosEstacion.PesoAluminioKg := DatosEstacion.PesoAluminioKg + DatosEstacion.PesoActualKg;
     DatosEstacion.UltimoMaterial := 2;
 END_IF;
 ```
 
-### NW8 — Timeout pistón
+### NW9 — TON retardo P2 (plástico)
 ```
----| M_Clasificando |----[ TON T_TimeoutPiston  PT:=T#3s ]
----| T_TimeoutPiston.Q |---|/ I_PistonExtendido |----(S M_Alarma)
+---| M_ClasifPlastico |---| I_Piston2Extendido |----[ TON T_RetardoPiston2  PT:=T#500ms ]
 ```
 
-### NW9 — Sensores contradictorios
+### NW10 — Fin clasificación plástico + contar
+**LAD:** `---| T_RetardoPiston2.Q |----(R M_ClasifPlastico)`
+
+**SCL:**
+```scl
+IF T_RetardoPiston2.Q THEN
+    DatosEstacion.ContPlastico := DatosEstacion.ContPlastico + 1;
+    DatosEstacion.PesoPlasticoKg := DatosEstacion.PesoPlasticoKg + DatosEstacion.PesoActualKg;
+    DatosEstacion.UltimoMaterial := 1;
+END_IF;
+```
+
+### NW11 — Timeout P3
+```
+---| M_ClasifAluminio |----[ TON T_TimeoutPiston3  PT:=T#3s ]
+---| T_TimeoutPiston3.Q |---|/ I_Piston3Extendido |----(S M_Alarma)
+```
+
+### NW12 — Timeout P2
+```
+---| M_ClasifPlastico |----[ TON T_TimeoutPiston2  PT:=T#3s ]
+---| T_TimeoutPiston2.Q |---|/ I_Piston2Extendido |----(S M_Alarma)
+```
+
+### NW13 — Sensores contradictorios
 ```
 ---| I_SensorPieza |---| I_SensorPlastico |---| I_SensorAluminio |----(S M_Alarma)
 ```
@@ -141,16 +170,14 @@ END_IF;
 ---| M_Alarma |----( Q_LamparaAlarma )
 ```
 
-### NW2
+### NW2 — Reset (solo web)
 ```
----| DB_HMI.ResetAlarma |----+----(R M_Alarma)
----| I_ResetAlarma      |----+
+---| DB_HMI.ResetAlarma |----(R M_Alarma)
 ```
 
-### NW3
+### NW3 — Emergencia (solo web)
 ```
----| DB_HMI.Emergencia |----+----(S M_Alarma)
----| I_Emergencia      |----+
+---| DB_HMI.Emergencia |----(S M_Alarma)
 ```
 
 ---
@@ -160,10 +187,15 @@ END_IF;
 ```scl
 DatosEstacion.SistemaOn    := M_SistemaOn;
 DatosEstacion.ModoAuto     := M_ModoAuto;
-DatosEstacion.Emergencia   := DB_HMI.Emergencia OR I_Emergencia;
+DatosEstacion.Emergencia   := DB_HMI.Emergencia;
 DatosEstacion.Alarma       := M_Alarma;
 DatosEstacion.BandaOn      := Q_Banda;
-DatosEstacion.PistonOn     := Q_Piston;
+// Compat web: “algún pistón activo”
+DatosEstacion.PistonOn     := Q_Piston1 OR Q_Piston2 OR Q_Piston3;
+// Detalle 3 pistones (byte 17 — ver DB_CONTRATO_WEB.md)
+DatosEstacion.Piston1On    := Q_Piston1; // retenedor
+DatosEstacion.Piston2On    := Q_Piston2; // plástico
+DatosEstacion.Piston3On    := Q_Piston3; // aluminio
 DatosEstacion.FinSesion    := DB_HMI.FinSesion;
 DatosEstacion.PesoActualKg := DB_HMI.PesoActualKg;
 
@@ -179,5 +211,3 @@ ELSE
     DatosEstacion.EstadoMaquina := 0;
 END_IF;
 ```
-
-> Si TIA no deja `OR` con tag `I_` en SCL, usa un Bool intermedio en LAD (`M_EmergenciaActiva`) y asígnalo aquí.

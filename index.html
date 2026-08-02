@@ -806,6 +806,8 @@
     white-space:pre-wrap; word-break:break-all;
   }
   #hmi-sim-block.hidden-real{display:none !important;}
+  #hmi-real-io-block{display:none;}
+  #hmi-real-io-block.show-real{display:block;}
 
   .section-title{font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--forest-soft); font-weight:800; margin:6px 0 10px;}
 
@@ -1095,6 +1097,19 @@
                     Flujo: START → 1 Plástico (cuenta) o 2 Aluminio → (AUTO extiende pistón) / 3 manual · Estación <span id="hmi-estacion-id">parque-central</span>
                   </p>
                 </div>
+
+                <div class="sp-col sp-col-wide" id="hmi-real-io-block">
+                  <div class="sp-section-label">Manual · PLC real (3 pistones)</div>
+                  <div class="sp-sim-grid">
+                    <button class="sp-btn sp-btn-blue" id="hmi-real-manual-banda">Banda man.</button>
+                    <button class="sp-btn sp-btn-blue" id="hmi-real-manual-p1">P1 retenedor</button>
+                    <button class="sp-btn sp-btn-blue" id="hmi-real-manual-p2">P2 plástico</button>
+                    <button class="sp-btn sp-btn-blue" id="hmi-real-manual-p3">P3 aluminio</button>
+                  </div>
+                  <p class="sp-footer-note">
+                    Mantén pulsado para energizar. Sensores son físicos (`I_*`). Estación <span id="hmi-estacion-id-real">colegio-don-bosco-real</span>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -1120,7 +1135,7 @@
       <section id="view-plc-real" class="hidden">
         <div class="greeting">
           <h2>PLC real · 1214C</h2>
-          <p>Proyecto TIA aparte (`plc_real/`). Sensores y actuadores físicos — no uses el proyecto de PLCSIM 1511C.</p>
+          <p>Proyecto TIA aparte (`plc_real/`). 3 pistones físicos · mando 100 % desde esta web (sin botonera en mesa).</p>
         </div>
 
         <div class="card real-card">
@@ -1157,7 +1172,10 @@
               <div class="plc-chip">Sistema <b id="real-sistema">—</b></div>
               <div class="plc-chip">Modo <b id="real-modo">—</b></div>
               <div class="plc-chip">Banda <b id="real-banda">—</b></div>
-              <div class="plc-chip">Pistón <b id="real-piston">—</b></div>
+              <div class="plc-chip">P1 retenedor <b id="real-piston1">—</b></div>
+              <div class="plc-chip">P2 plástico <b id="real-piston2">—</b></div>
+              <div class="plc-chip">P3 aluminio <b id="real-piston3">—</b></div>
+              <div class="plc-chip">Pistón (OR) <b id="real-piston">—</b></div>
               <div class="plc-chip">Cont. plástico <b id="real-cont-p">0</b></div>
               <div class="plc-chip">Cont. aluminio <b id="real-cont-a">0</b></div>
               <div class="plc-chip">Alarma <b id="real-alarma">—</b></div>
@@ -1171,8 +1189,8 @@
           <button class="btn btn-primary" id="btn-real-hmi" type="button">Abrir HMI (modo real)</button>
         </div>
         <p style="font-size:12.5px; color:var(--forest-soft); margin-top:10px; line-height:1.45;">
-          En modo real el HMI <b>oculta</b> la simulación de sensores: usa entradas físicas del 1214C.
-          Checklist y networks: carpeta <span class="mono">plc_real/</span> del repo.
+          En modo real el HMI es el <b>único mando</b> (Start/Stop/emergencia/manual). En mesa solo hay sensores
+          y actuadores. Checklist: carpeta <span class="mono">plc_real/</span>.
         </p>
       </section>
 
@@ -1263,6 +1281,9 @@ const PLC_DEFAULT = {
   alarma: false,
   banda: false,
   piston: false,
+  piston1: false,
+  piston2: false,
+  piston3: false,
   estado: "idle",
   ultimoMaterial: null,
   pesoActualKg: 0,
@@ -1281,7 +1302,7 @@ let unsubSesion = null;    // función para dejar de escuchar la sesión en Fire
 
 const FALLBACK_ESTACIONES = [
   { id: "parque-central",  nombre: "Colegio Don Bosco", zona: "DEMO · Simulación PLCSIM 1511C", activa: true },
-  { id: "colegio-don-bosco-real", nombre: "Colegio Don Bosco · PLC real", zona: "CPU 1214C AC/DC/Rly · I/O físico", activa: true }
+  { id: "colegio-don-bosco-real", nombre: "Colegio Don Bosco · PLC real", zona: "CPU 1214C · 3 pistones I/O físico", activa: true }
 ];
 
 const HMI_ESTACION_DEMO = "parque-central";
@@ -1297,6 +1318,8 @@ const HMI_CMD_DEFAULT = {
   FinSesion: false,
   ManualBanda: false,
   ManualPiston: false,
+  ManualPiston1: false,
+  ManualPiston2: false,
   BasculaLista: false,
   SensorPieza: false,
   SensorPlastico: false,
@@ -1550,8 +1573,10 @@ function renderHmiFromPlc(data){
 }
 
 function ensureHmiListen(){
-  $("hmi-estacion-id").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : " · DEMO");
+  if($("hmi-estacion-id")) $("hmi-estacion-id").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : " · DEMO");
+  if($("hmi-estacion-id-real")) $("hmi-estacion-id-real").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : "");
   $("hmi-sim-block")?.classList.toggle("hidden-real", !!hmiModeReal);
+  $("hmi-real-io-block")?.classList.toggle("show-real", !!hmiModeReal);
   syncHmiToggleUi();
   if(unsubHmiSesion){
     try{ unsubHmiSesion(); }catch(e){}
@@ -1624,6 +1649,10 @@ function bindHold(btnId, flag){
 }
 bindHold("hmi-manual-banda", "ManualBanda");
 bindHold("hmi-manual-piston", "ManualPiston");
+bindHold("hmi-real-manual-banda", "ManualBanda");
+bindHold("hmi-real-manual-p1", "ManualPiston1");
+bindHold("hmi-real-manual-p2", "ManualPiston2");
+bindHold("hmi-real-manual-p3", "ManualPiston");
 
 /* Softkeys F1–F6 (mismo efecto que botones de pantalla) */
 function wireSoftkey(skId, targetId){
@@ -1677,7 +1706,11 @@ function renderRealPanel(data){
   if($("real-sistema")) $("real-sistema").textContent = plc.sistemaOn ? "ON" : "OFF";
   if($("real-modo")) $("real-modo").textContent = plc.modoAuto ? "Automático" : "Manual";
   if($("real-banda")) $("real-banda").textContent = plc.banda ? "Marcha" : "Parada";
-  if($("real-piston")) $("real-piston").textContent = plc.piston ? "Extendido" : "Retráctil";
+  const pLbl = (on) => on ? "OUT" : "IN";
+  if($("real-piston1")) $("real-piston1").textContent = pLbl(!!plc.piston1);
+  if($("real-piston2")) $("real-piston2").textContent = pLbl(!!plc.piston2);
+  if($("real-piston3")) $("real-piston3").textContent = pLbl(!!plc.piston3);
+  if($("real-piston")) $("real-piston").textContent = plc.piston ? "Activo" : "Idle";
   if($("real-cont-p")) $("real-cont-p").textContent = String(mats.plastico?.piezas ?? 0);
   if($("real-cont-a")) $("real-cont-a").textContent = String(mats.aluminio?.piezas ?? 0);
   if($("real-alarma")) $("real-alarma").textContent = plc.alarma ? "ACTIVA" : "OK";

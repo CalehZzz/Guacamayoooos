@@ -42,7 +42,7 @@ if __name__ == "__main__":
     print("=== SIBU bridge · PLC REAL 1214C ===")
     print(f"CWD={ROOT}")
     print(f"Args: {' '.join(sys.argv[1:])}")
-    print("Sensores/actuadores: I/Q físicos (ver plc_real/NETWORKS_LAD.md)\n")
+    print("Sensores/actuadores: I/Q físicos · 3 pistones (ver plc_real/NETWORKS_LAD.md)\n")
     from plc_bridge import main
 
     main()

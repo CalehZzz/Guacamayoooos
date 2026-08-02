@@ -47,13 +47,15 @@ BOOL_MAP = [
     ("ModoAuto", 0, 4),
     ("FinSesion", 0, 5),
     ("ManualBanda", 0, 6),
-    ("ManualPiston", 0, 7),
+    ("ManualPiston", 0, 7),       # real: manual P3 aluminio
     ("BasculaLista", 1, 0),
     ("SensorPieza", 1, 1),
     ("SensorPlastico", 1, 2),
     ("SensorAluminio", 1, 3),
     ("PistonRetractado", 1, 4),
     ("PistonExtendido", 1, 5),
+    ("ManualPiston1", 1, 6),      # real: manual P1 retenedor
+    ("ManualPiston2", 1, 7),      # real: manual P2 plástico
 ]
 
 
@@ -134,6 +136,10 @@ def leer_datos_estacion(client: snap7.client.Client, db_number: int) -> dict:
             "alarma": bool(get_bool(raw, 16, 5)),
             "banda": bool(get_bool(raw, 16, 6)),
             "piston": bool(get_bool(raw, 16, 7)),
+            # Detalle 3 pistones (PLC real @ byte 17; en demo quedan en 0)
+            "piston1": bool(get_bool(raw, 17, 0)),  # retenedor
+            "piston2": bool(get_bool(raw, 17, 1)),  # plástico
+            "piston3": bool(get_bool(raw, 17, 2)),  # aluminio
             "estado": ESTADO_TXT.get(estado, "idle"),
             "ultimoMaterial": MATERIAL_TXT.get(ultimo),
             "pesoActualKg": round(float(get_real(raw, 12)), 4),
