@@ -1897,6 +1897,17 @@ function showAuthError(id, msg){
    ------------------------------------------------------------------------- */
 onAuthStateChanged(auth, async (user) => {
   $("view-loading")?.classList.add("hidden");
+  /* Preview local de la HMI sin login: ?preview=hmi */
+  if(!user && new URLSearchParams(location.search).get("preview") === "hmi"){
+    currentUser = null;
+    isAdmin = false;
+    $("app-shell")?.classList.remove("hidden");
+    $("btn-logout")?.classList.add("hidden");
+    $("nav-admin")?.classList.add("hidden");
+    ["view-loading","view-login"].forEach(v => $(v)?.classList.add("hidden"));
+    showAppView("hmi");
+    return;
+  }
   if(user){
     currentUser = user;
     try{
