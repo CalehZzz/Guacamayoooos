@@ -1818,6 +1818,15 @@ wireSoftkey("hmi-sk-reset", "hmi-reset-alarma");
 wireSoftkey("hmi-sk-e", "hmi-emergencia");
 wireSoftkey("hmi-sk-clear", "hmi-clear-e");
 
+$("hmi-fullscreen")?.addEventListener("click", () => { toggleHmiFullscreen(); });
+document.addEventListener("fullscreenchange", syncHmiFullscreenBtn);
+document.addEventListener("webkitfullscreenchange", syncHmiFullscreenBtn);
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape" && document.body.classList.contains("hmi-immersive")){
+    exitHmiFullscreen();
+  }
+});
+
 function tickHmiClock(){
   const el = $("hmi-clock");
   if(!el) return;
