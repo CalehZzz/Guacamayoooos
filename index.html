@@ -684,11 +684,102 @@
   .sp-led.on{ background: #40c057; box-shadow: 0 0 6px #40c057; }
   .sp-led.alarm{ background: #fa5252; box-shadow: 0 0 6px #fa5252; }
 
+  .sp-fs-btn{
+    appearance: none;
+    border: 1px solid #0d0f14;
+    background: linear-gradient(180deg, #6a7382, #3e4654);
+    color: #e9ecef;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    padding: 8px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+    flex-shrink: 0;
+  }
+  .sp-fs-btn:active{ filter: brightness(1.15); }
+  .sp-bezel-actions{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Pantalla completa: panel cubre todo el viewport */
+  .siemens-panel:fullscreen,
+  .siemens-panel:-webkit-full-screen,
+  .siemens-panel.hmi-fs{
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px 12px;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #4a5160 0%, #2c313c 18%, #1a1e26 100%);
+  }
+  .siemens-panel:fullscreen .sp-screen-frame,
+  .siemens-panel:-webkit-full-screen .sp-screen-frame,
+  .siemens-panel.hmi-fs .sp-screen-frame{
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .siemens-panel:fullscreen .sp-lcd,
+  .siemens-panel:-webkit-full-screen .sp-lcd,
+  .siemens-panel.hmi-fs .sp-lcd{
+    aspect-ratio: auto;
+    max-height: none;
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+  }
+  .siemens-panel:fullscreen .sp-softkeys,
+  .siemens-panel:-webkit-full-screen .sp-softkeys,
+  .siemens-panel.hmi-fs .sp-softkeys{
+    margin-top: 12px;
+    flex-shrink: 0;
+  }
+  /* Fallback inmersivo (si el browser bloquea Fullscreen API) */
+  body.hmi-immersive{
+    overflow: hidden;
+  }
+  body.hmi-immersive .demo-banner,
+  body.hmi-immersive .topbar{
+    display: none !important;
+  }
+  body.hmi-immersive #app,
+  body.hmi-immersive #app-shell{
+    max-width: none !important;
+  }
+  body.hmi-immersive main{
+    padding: 0 !important;
+  }
+  body.hmi-immersive .siemens-panel.hmi-fs{
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+  }
+
   @media (max-width: 640px){
     .sp-lcd{
       aspect-ratio: auto;
       max-height: none;
       min-height: 520px;
+    }
+    .siemens-panel:fullscreen .sp-lcd,
+    .siemens-panel:-webkit-full-screen .sp-lcd,
+    .siemens-panel.hmi-fs .sp-lcd{
+      min-height: 0;
     }
     .sp-body{
       grid-template-columns: 1fr;
@@ -696,6 +787,7 @@
     .sp-header-logo{ height: 32px; }
     .sp-siemens-logo{ height: 30px; }
     .sp-sim-grid{ grid-template-columns: 1fr 1fr; }
+    .sp-bezel-top{ flex-wrap: wrap; }
   }
 
   .peso-input-row{
@@ -978,9 +1070,12 @@
                   font-size="26" font-weight="800" letter-spacing="2.2">SIEMENS</text>
               </svg>
             </div>
-            <div class="sp-bezel-meta">
-              <div>SIBU HMI</div>
-              <div class="sp-model">KTP700 Comfort · 800×480</div>
+            <div class="sp-bezel-actions">
+              <div class="sp-bezel-meta">
+                <div>SIBU HMI</div>
+                <div class="sp-model">KTP700 Comfort · 800×480</div>
+              </div>
+              <button type="button" class="sp-fs-btn" id="hmi-fullscreen" aria-pressed="false" title="Pantalla completa">Pantalla completa</button>
             </div>
           </div>
 
@@ -1353,8 +1448,60 @@ function showAppView(viewName){
   });
   $("app")?.classList.toggle("hmi-mode", viewName === "hmi");
   $("app-shell")?.classList.toggle("hmi-mode", viewName === "hmi");
+  if(viewName !== "hmi") exitHmiFullscreen();
   if(viewName === "hmi") ensureHmiListen();
   if(viewName === "plc-real") updateRealBridgeCmd();
+}
+
+function hmiPanelEl(){
+  return document.querySelector("#view-hmi .siemens-panel");
+}
+
+function isHmiFullscreen(){
+  const panel = hmiPanelEl();
+  const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+  return (fsEl && panel && fsEl === panel) || !!panel?.classList.contains("hmi-fs");
+}
+
+function syncHmiFullscreenBtn(){
+  const btn = $("hmi-fullscreen");
+  if(!btn) return;
+  const on = isHmiFullscreen();
+  btn.textContent = on ? "Salir pantalla completa" : "Pantalla completa";
+  btn.setAttribute("aria-pressed", on ? "true" : "false");
+}
+
+async function enterHmiFullscreen(){
+  const panel = hmiPanelEl();
+  if(!panel) return;
+  const req = panel.requestFullscreen || panel.webkitRequestFullscreen;
+  if(req){
+    try{
+      await req.call(panel);
+      syncHmiFullscreenBtn();
+      return;
+    }catch(e){ /* fallback abajo */ }
+  }
+  panel.classList.add("hmi-fs");
+  document.body.classList.add("hmi-immersive");
+  syncHmiFullscreenBtn();
+}
+
+async function exitHmiFullscreen(){
+  const panel = hmiPanelEl();
+  panel?.classList.remove("hmi-fs");
+  document.body.classList.remove("hmi-immersive");
+  const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+  if(fsEl){
+    const exit = document.exitFullscreen || document.webkitExitFullscreen;
+    try{ if(exit) await exit.call(document); }catch(e){}
+  }
+  syncHmiFullscreenBtn();
+}
+
+async function toggleHmiFullscreen(){
+  if(isHmiFullscreen()) await exitHmiFullscreen();
+  else await enterHmiFullscreen();
 }
 
 function toast(msg){
@@ -1670,6 +1817,15 @@ wireSoftkey("hmi-sk-auto", "hmi-modo-auto");
 wireSoftkey("hmi-sk-reset", "hmi-reset-alarma");
 wireSoftkey("hmi-sk-e", "hmi-emergencia");
 wireSoftkey("hmi-sk-clear", "hmi-clear-e");
+
+$("hmi-fullscreen")?.addEventListener("click", () => { toggleHmiFullscreen(); });
+document.addEventListener("fullscreenchange", syncHmiFullscreenBtn);
+document.addEventListener("webkitfullscreenchange", syncHmiFullscreenBtn);
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape" && document.body.classList.contains("hmi-immersive")){
+    exitHmiFullscreen();
+  }
+});
 
 function tickHmiClock(){
   const el = $("hmi-clock");
