@@ -23,13 +23,13 @@
     --shadow: 0 8px 24px rgba(31,59,45,0.10);
     --shadow-sm: 0 4px 10px rgba(31,59,45,0.08);
     --radius: 22px;
-    /* Siemens Comfort / KTP look */
-    --sx-bezel:#2a2f36;
-    --sx-bezel-hi:#3d4450;
+    /* Siemens KTP700 Basic DP look */
+    --sx-bezel:#b8bec6;
+    --sx-bezel-hi:#cfd3d8;
     --sx-screen:#cfd4db;
     --sx-screen-2:#b8bfc9;
-    --sx-header:#007a78;
-    --sx-header-2:#005e5c;
+    --sx-header:#009999;
+    --sx-header-2:#007a78;
     --sx-field:#f4f6f8;
     --sx-ink:#1a1f26;
     --sx-muted:#4a5562;
@@ -477,133 +477,159 @@
     .piston-unit .piston-head{ transition: none; }
   }
 
-  /* ---------- HMI virtual — Comfort Panel / KTP700 rectangular ---------- */
+  /* ---------- HMI virtual — KTP700 Basic DP (6AV2123-2GA03-0AX0) ---------- */
   #app-shell.hmi-mode,
   #app.hmi-mode{
-    max-width: 960px;
+    max-width: 920px;
   }
   #app.hmi-mode #app-shell{
-    max-width: 960px;
+    max-width: 920px;
   }
   #app.hmi-mode main{
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
   #view-hmi{
     margin: 0;
   }
-  .siemens-panel{
-    background: linear-gradient(180deg, #4a5160 0%, #2c313c 18%, #1a1e26 100%);
-    border-radius: 4px;
-    padding: 10px 14px 12px;
-    box-shadow:
-      0 0 0 1px #0d0f14,
-      0 0 0 3px #5a6270,
-      0 22px 48px rgba(0,0,0,.45);
-    width: 100%;
-  }
-  .sp-bezel-top{
+  .hmi-toolbar{
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    padding: 4px 4px 10px;
+    gap: 8px;
+    margin-bottom: 8px;
   }
-  .sp-siemens-mark{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-width: 0;
-  }
-  .sp-siemens-logo{
-    height: 40px;
-    width: auto;
-    display: block;
-    flex-shrink: 0;
-  }
-  .sp-bezel-meta{
-    text-align: right;
-    color: #c8ced8;
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
+  .hmi-toolbar-meta{
     font-size: 11px;
-    line-height: 1.25;
+    font-weight: 800;
+    color: var(--forest-soft);
+    letter-spacing: .04em;
   }
-  .sp-bezel-meta .sp-model{
-    opacity: .75;
-    font-size: 10px;
-    letter-spacing: .06em;
+  .hmi-toolbar-actions{
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* Carcasa frontal realista: Basic Panel 2nd gen, plástico gris claro (214×158 mm) */
+  .siemens-panel{
+    background:
+      linear-gradient(165deg, #e0e3e7 0%, #c5cad1 42%, #aeb4bc 100%);
+    border-radius: 6px;
+    padding: 12px 10px 10px;
+    box-shadow:
+      0 0 0 1px #8a9098,
+      0 0 0 2px #c2c7ce,
+      0 16px 32px rgba(0,0,0,.26),
+      inset 0 1px 0 rgba(255,255,255,.65),
+      inset 0 -1px 0 rgba(0,0,0,.08);
+    width: 100%;
+    position: relative;
+  }
+  .siemens-panel::before,
+  .siemens-panel::after{
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #d8dce0, #6a7078 70%);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.35);
+    opacity: .85;
+  }
+  .siemens-panel::before{ top: 10px; left: 10px; }
+  .siemens-panel::after{ top: 10px; right: 10px; }
+  .ktp-face{
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 10px 86px;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .ktp-label-guide{
+    background:
+      repeating-linear-gradient(
+        180deg,
+        #9aa1a9 0 1px,
+        transparent 1px 12.5%
+      ),
+      linear-gradient(90deg, #b8bec6, #a4abb4);
+    border-radius: 2px;
+    border: 1px solid #7d848c;
+    box-shadow: inset 0 0 4px rgba(0,0,0,.18);
+    min-height: 100%;
   }
   .sp-screen-frame{
-    background: #0f1218;
-    border-radius: 2px;
-    padding: 5px;
+    background: #1a1d22;
+    border-radius: 3px;
+    padding: 4px;
     box-shadow:
       inset 0 0 0 1px #000,
-      0 0 0 1px #3a404c;
+      0 0 0 1px #949aa1,
+      inset 0 0 8px rgba(0,0,0,.55);
+    min-width: 0;
   }
   .sp-lcd{
-    background: #d5d9e0;
+    background: #e4e7ec;
     border-radius: 1px;
     overflow: hidden;
     aspect-ratio: 800 / 480;
-    max-height: min(62vh, 520px);
     width: 100%;
+    max-height: min(58vh, 480px);
     display: flex;
     flex-direction: column;
-    font-family: 'Rajdhani', sans-serif;
+    font-family: 'Rajdhani', 'Segoe UI', sans-serif;
     color: var(--sx-ink);
+    /* 64K colors feel: slightly posterized industrial LCD */
+    image-rendering: auto;
   }
   .sp-header{
-    background: linear-gradient(180deg, #00a3a0 0%, #007a78 40%, #005c5a 100%);
+    background: linear-gradient(180deg, #009999 0%, #007a78 55%, #006663 100%);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 10px 6px 8px;
-    gap: 10px;
-    border-bottom: 2px solid #003d3c;
+    padding: 5px 8px;
+    gap: 8px;
+    border-bottom: 1px solid #004c4a;
     flex-shrink: 0;
-    min-height: 52px;
+    min-height: 44px;
   }
   .sp-header-brand{
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     min-width: 0;
   }
   .sp-header-logo{
-    height: 42px;
+    height: 28px;
     width: auto;
     display: block;
     flex-shrink: 0;
-    filter: drop-shadow(0 1px 0 rgba(0,0,0,.25));
   }
   .sp-header-left{
     display:flex; flex-direction:column; gap:0; min-width:0;
   }
   .sp-header-left .sp-product{
-    font-size: 10px; font-weight: 600; letter-spacing: .16em; opacity: .92;
+    font-size: 9px; font-weight: 700; letter-spacing: .14em; opacity: .95;
     text-transform: uppercase;
   }
   .sp-header-left .sp-title{
-    font-size: 17px; font-weight: 700; letter-spacing: .05em; line-height: 1.05;
+    font-size: 15px; font-weight: 700; letter-spacing: .04em; line-height: 1.05;
   }
   .sp-header-right{
     text-align: right; font-family: 'Share Tech Mono', monospace;
-    font-size: 11px; line-height: 1.3; white-space: nowrap;
+    font-size: 10px; line-height: 1.25; white-space: nowrap;
   }
   .sp-alarm{
-    min-height: 24px;
-    padding: 3px 10px;
-    font-size: 12px;
+    min-height: 22px;
+    padding: 2px 8px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: .03em;
-    background: #8a9099;
+    background: #9aa1a8;
     color: #1a1f26;
-    border-bottom: 1px solid #6d747e;
+    border-bottom: 1px solid #7a8188;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -629,24 +655,24 @@
   .sp-body{
     flex: 1;
     min-height: 0;
-    padding: 8px 8px 6px;
+    padding: 6px 7px 5px;
     display: grid;
     grid-template-columns: 1.15fr 1fr;
     grid-template-rows: auto 1fr auto;
-    gap: 8px 10px;
+    gap: 6px 8px;
     overflow: auto;
   }
   .sp-col{
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     min-width: 0;
   }
   .sp-col-wide{
     grid-column: 1 / -1;
   }
   .sp-section-label{
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     letter-spacing: .1em;
     text-transform: uppercase;
@@ -656,17 +682,17 @@
   .sp-io-grid{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 5px;
+    gap: 4px;
   }
   .sp-io{
-    background: #f7f8fa;
-    border: 1px solid #7d8694;
+    background: #f4f6f8;
+    border: 1px solid #8b939c;
     box-shadow: inset 0 1px 0 #fff;
-    padding: 4px 7px 3px;
-    min-height: 38px;
+    padding: 3px 6px 2px;
+    min-height: 34px;
   }
   .sp-io .lbl{
-    font-size: 9px;
+    font-size: 8px;
     font-weight: 700;
     letter-spacing: .06em;
     text-transform: uppercase;
@@ -674,7 +700,7 @@
   }
   .sp-io .val{
     font-family: 'Share Tech Mono', monospace;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
     color: var(--sx-ink);
     margin-top: 1px;
@@ -685,7 +711,7 @@
   .sp-mode-row{
     display: flex;
     align-items: stretch;
-    gap: 6px;
+    gap: 5px;
   }
   .sp-mode-row .sp-io{ flex: 1; }
   .sp-toggle{
@@ -695,10 +721,10 @@
     color: var(--sx-ink);
     font-family: 'Rajdhani', sans-serif;
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: .04em;
-    padding: 0 10px;
-    min-width: 78px;
+    padding: 0 8px;
+    min-width: 70px;
     cursor: pointer;
     box-shadow: inset 0 1px 0 #fff;
   }
@@ -711,7 +737,7 @@
   .sp-btn-grid{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 5px;
+    gap: 4px;
   }
   .sp-btn{
     appearance: none;
@@ -719,10 +745,10 @@
     border-radius: 1px;
     font-family: 'Rajdhani', sans-serif;
     font-weight: 700;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: .05em;
     text-transform: uppercase;
-    padding: 9px 4px;
+    padding: 8px 3px;
     cursor: pointer;
     color: #fff;
     box-shadow:
@@ -756,13 +782,13 @@
   .sp-peso-row{
     display: flex;
     align-items: center;
-    gap: 6px;
-    background: #f7f8fa;
-    border: 1px solid #7d8694;
-    padding: 5px 6px;
+    gap: 5px;
+    background: #f4f6f8;
+    border: 1px solid #8b939c;
+    padding: 4px 5px;
   }
   .sp-peso-row label{
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     letter-spacing: .06em;
     text-transform: uppercase;
@@ -774,9 +800,9 @@
     border: 1px solid #6b7280;
     background: #fff;
     font-family: 'Share Tech Mono', monospace;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
-    padding: 5px 6px;
+    padding: 4px 5px;
     color: var(--sx-ink);
     min-width: 0;
   }
@@ -784,45 +810,93 @@
   .sp-sim-grid{
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 5px;
+    gap: 4px;
   }
   .sp-footer-note{
-    font-size: 9px;
+    font-size: 8px;
     color: var(--sx-muted);
     font-family: 'Share Tech Mono', monospace;
     padding: 0;
     margin: 0;
   }
+
+  /* 8 function keys — lado derecho, 2×4 (KTP700 Basic 2ª gen) */
   .sp-softkeys{
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    margin-top: 10px;
-    padding: 0 2px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(4, 1fr);
+    gap: 5px;
+    margin: 0;
+    padding: 0;
+    align-content: stretch;
   }
   .sp-softkey{
     appearance: none;
-    border: 1px solid #0d0f14;
-    background: linear-gradient(180deg, #6a7382, #3e4654);
-    color: #e9ecef;
+    border: 1px solid #6f767e;
+    background:
+      linear-gradient(180deg, #f4f5f7 0%, #d2d6db 52%, #b6bcc4 100%);
+    color: #1f242a;
     font-family: 'Rajdhani', sans-serif;
     font-weight: 700;
-    font-size: 11px;
-    letter-spacing: .04em;
+    font-size: 9px;
+    letter-spacing: .02em;
     text-transform: uppercase;
-    padding: 11px 2px 9px;
-    border-radius: 2px;
+    padding: 4px 2px;
+    border-radius: 4px;
     cursor: pointer;
-    line-height: 1.15;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+    line-height: 1.05;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.9),
+      0 1px 2px rgba(0,0,0,.2);
+    min-height: 0;
   }
   .sp-softkey small{
     display: block;
-    font-size: 9px;
-    opacity: .65;
+    font-size: 8px;
+    opacity: .75;
+    font-weight: 700;
+    color: #006666;
+  }
+  .sp-softkey:active{
+    filter: brightness(.94);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.22);
+  }
+  .ktp-foot{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 0 4px;
+    color: #3a4148;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  .ktp-foot .ktp-siemens{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .ktp-foot .ktp-siemens b{
+    background: #009999;
+    color: #fff;
+    padding: 2px 7px;
+    font-size: 11px;
+    letter-spacing: .12em;
+  }
+  .ktp-foot .ktp-ports{
+    opacity: .78;
+    font-size: 8px;
+    letter-spacing: .03em;
+    text-align: right;
+    line-height: 1.35;
+    text-transform: none;
     font-weight: 600;
   }
-  .sp-softkey:active{ filter: brightness(1.15); }
   .sp-led{
     width: 8px; height: 8px; border-radius: 50%;
     background: #6b7280;
@@ -834,27 +908,18 @@
 
   .sp-fs-btn{
     appearance: none;
-    border: 1px solid #0d0f14;
-    background: linear-gradient(180deg, #6a7382, #3e4654);
-    color: #e9ecef;
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: .05em;
-    text-transform: uppercase;
+    border: 1px solid rgba(31,59,45,.2);
+    background: var(--cream-2);
+    color: var(--forest);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
     padding: 8px 12px;
-    border-radius: 2px;
+    border-radius: 999px;
     cursor: pointer;
     white-space: nowrap;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
-    flex-shrink: 0;
   }
-  .sp-fs-btn:active{ filter: brightness(1.15); }
-  .sp-bezel-actions{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
+  .sp-fs-btn:active{ transform: scale(.97); }
 
   /* Pantalla completa: panel cubre todo el viewport */
   .siemens-panel:fullscreen,
@@ -867,9 +932,15 @@
     box-shadow: none;
     display: flex;
     flex-direction: column;
-    padding: 10px 14px 12px;
+    padding: 16px 18px 14px;
     box-sizing: border-box;
-    background: linear-gradient(180deg, #4a5160 0%, #2c313c 18%, #1a1e26 100%);
+    background: linear-gradient(165deg, #e0e3e7 0%, #c5cad1 42%, #aeb4bc 100%);
+  }
+  .siemens-panel:fullscreen .ktp-face,
+  .siemens-panel:-webkit-full-screen .ktp-face,
+  .siemens-panel.hmi-fs .ktp-face{
+    flex: 1;
+    min-height: 0;
   }
   .siemens-panel:fullscreen .sp-screen-frame,
   .siemens-panel:-webkit-full-screen .sp-screen-frame,
@@ -891,15 +962,19 @@
   .siemens-panel:fullscreen .sp-softkeys,
   .siemens-panel:-webkit-full-screen .sp-softkeys,
   .siemens-panel.hmi-fs .sp-softkeys{
-    margin-top: 12px;
-    flex-shrink: 0;
+    height: 100%;
   }
-  /* Fallback inmersivo (si el browser bloquea Fullscreen API) */
+  .siemens-panel:fullscreen .ktp-label-guide,
+  .siemens-panel:-webkit-full-screen .ktp-label-guide,
+  .siemens-panel.hmi-fs .ktp-label-guide{
+    align-self: stretch;
+  }
   body.hmi-immersive{
     overflow: hidden;
   }
   body.hmi-immersive .demo-banner,
-  body.hmi-immersive .topbar{
+  body.hmi-immersive .topbar,
+  body.hmi-immersive .hmi-toolbar{
     display: none !important;
   }
   body.hmi-immersive #app,
@@ -918,11 +993,26 @@
     height: 100dvh;
   }
 
-  @media (max-width: 640px){
+  @media (max-width: 720px){
+    .ktp-face{
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+    }
+    .ktp-label-guide{
+      display: none;
+    }
+    .sp-softkeys{
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-rows: auto auto;
+    }
+    .sp-softkey{
+      min-height: 44px;
+      font-size: 10px;
+    }
     .sp-lcd{
-      aspect-ratio: auto;
+      aspect-ratio: 800 / 480;
       max-height: none;
-      min-height: 520px;
+      min-height: 280px;
     }
     .siemens-panel:fullscreen .sp-lcd,
     .siemens-panel:-webkit-full-screen .sp-lcd,
@@ -932,10 +1022,7 @@
     .sp-body{
       grid-template-columns: 1fr;
     }
-    .sp-header-logo{ height: 32px; }
-    .sp-siemens-logo{ height: 30px; }
     .sp-sim-grid{ grid-template-columns: 1fr 1fr; }
-    .sp-bezel-top{ flex-wrap: wrap; }
   }
 
   .peso-input-row{
@@ -1223,207 +1310,209 @@
         </div>
       </section>
 
-      <!-- ---------- HMI VIRTUAL — Comfort Panel / KTP700 rectangular ---------- -->
+      <!-- ---------- HMI VIRTUAL — KTP700 Basic DP ---------- -->
       <section id="view-hmi" class="hidden">
-        <div class="siemens-panel">
-          <div class="sp-bezel-top">
-            <div class="sp-siemens-mark">
-              <svg class="sp-siemens-logo" viewBox="0 0 260 40" xmlns="http://www.w3.org/2000/svg" aria-label="SIEMENS" role="img">
-                <rect width="260" height="40" fill="#009999"/>
-                <text x="130" y="29" text-anchor="middle" fill="#ffffff"
-                  font-family="Arial Black, Arial, Helvetica, sans-serif"
-                  font-size="26" font-weight="800" letter-spacing="2.2">SIEMENS</text>
-              </svg>
-            </div>
-            <div class="sp-bezel-actions">
-              <div class="sp-bezel-meta">
-                <div>SIBU HMI · 3 pistones</div>
-                <div class="sp-model" id="hmi-bezel-mode">Estación · real / demo</div>
-              </div>
-              <button type="button" class="sp-fs-btn" id="hmi-mode-toggle" title="Cambiar estación demo/real">Modo REAL</button>
-              <button type="button" class="sp-fs-btn" id="hmi-fullscreen" aria-pressed="false" title="Pantalla completa">Pantalla completa</button>
-            </div>
+        <div class="hmi-toolbar">
+          <div class="hmi-toolbar-meta">
+            SIMATIC HMI · <span id="hmi-bezel-mode">KTP700 Basic DP</span>
           </div>
+          <div class="hmi-toolbar-actions">
+            <button type="button" class="sp-fs-btn" id="hmi-mode-toggle" title="Cambiar estación demo/real">Modo REAL</button>
+            <button type="button" class="sp-fs-btn" id="hmi-fullscreen" aria-pressed="false" title="Pantalla completa">Pantalla completa</button>
+          </div>
+        </div>
 
-          <div class="sp-screen-frame">
-            <div class="sp-lcd">
-              <div class="sp-header">
-                <div class="sp-header-brand">
-                  <svg class="sp-header-logo" viewBox="0 0 210 36" xmlns="http://www.w3.org/2000/svg" aria-label="SIEMENS" role="img">
-                    <text x="0" y="28" fill="#ffffff"
-                      font-family="Arial Black, Arial, Helvetica, sans-serif"
-                      font-size="30" font-weight="800" letter-spacing="2.5">SIEMENS</text>
-                  </svg>
-                  <div class="sp-header-left">
-                    <span class="sp-product">WinCC Comfort</span>
-                    <span class="sp-title">SIBU · Clasificación</span>
+        <div class="siemens-panel" role="img" aria-label="SIMATIC HMI KTP700 Basic DP 7 pulgadas">
+          <div class="ktp-face">
+            <div class="sp-screen-frame">
+              <div class="sp-lcd">
+                <div class="sp-header">
+                  <div class="sp-header-brand">
+                    <svg class="sp-header-logo" viewBox="0 0 210 36" xmlns="http://www.w3.org/2000/svg" aria-label="SIEMENS" role="img">
+                      <text x="0" y="28" fill="#ffffff"
+                        font-family="Arial Black, Arial, Helvetica, sans-serif"
+                        font-size="30" font-weight="800" letter-spacing="2.5">SIEMENS</text>
+                    </svg>
+                    <div class="sp-header-left">
+                      <span class="sp-product">WinCC Basic · KTP700</span>
+                      <span class="sp-title">SIBU · Clasificación</span>
+                    </div>
                   </div>
-                </div>
-                <div class="sp-header-right">
-                  <div id="hmi-clock">--:--:--</div>
-                  <div id="hmi-link-text">Sin datos</div>
-                </div>
-              </div>
-
-              <div class="sp-alarm ok" id="hmi-alarm-bar">
-                <span class="sp-led on" id="hmi-dot"></span>
-                <span id="hmi-alarm-text">Sistema listo — sin alarmas</span>
-              </div>
-
-              <div class="sp-body">
-                <div class="sp-col">
-                  <div class="sp-section-label">Estado de proceso</div>
-                  <div class="sp-io-grid">
-                    <div class="sp-io" id="hmi-chip-sistema">
-                      <div class="lbl">Sistema</div>
-                      <div class="val" id="hmi-sistema">—</div>
-                    </div>
-                    <div class="sp-io" id="hmi-chip-modo">
-                      <div class="lbl">Modo</div>
-                      <div class="val" id="hmi-modo">—</div>
-                    </div>
-                    <div class="sp-io">
-                      <div class="lbl">Banda</div>
-                      <div class="val" id="hmi-banda">—</div>
-                    </div>
-                    <div class="sp-io hidden" id="hmi-chip-piston">
-                      <div class="lbl" id="hmi-piston-lbl">Pistón (OR)</div>
-                      <div class="val" id="hmi-piston">—</div>
-                    </div>
-                    <div class="sp-io" id="hmi-chip-p1">
-                      <div class="lbl">P1 retenedor</div>
-                      <div class="val" id="hmi-p1">—</div>
-                    </div>
-                    <div class="sp-io" id="hmi-chip-p2">
-                      <div class="lbl">P2 plástico</div>
-                      <div class="val" id="hmi-p2">—</div>
-                    </div>
-                    <div class="sp-io" id="hmi-chip-p3">
-                      <div class="lbl">P3 aluminio</div>
-                      <div class="val" id="hmi-p3">—</div>
-                    </div>
-                    <div class="sp-io">
-                      <div class="lbl">Cont. plástico</div>
-                      <div class="val" id="hmi-cont-p">0</div>
-                    </div>
-                    <div class="sp-io">
-                      <div class="lbl">Cont. aluminio</div>
-                      <div class="val" id="hmi-cont-a">0</div>
-                    </div>
-                    <div class="sp-io" id="hmi-chip-alarma">
-                      <div class="lbl">Alarma</div>
-                      <div class="val" id="hmi-alarma">—</div>
-                    </div>
-                    <div class="sp-io" id="hmi-chip-emergencia">
-                      <div class="lbl">Emergencia</div>
-                      <div class="val" id="hmi-emergencia-st">—</div>
-                    </div>
+                  <div class="sp-header-right">
+                    <div id="hmi-clock">--:--:--</div>
+                    <div id="hmi-link-text">Sin datos</div>
                   </div>
                 </div>
 
-                <div class="sp-col">
-                  <div class="sp-section-label">Modo de operación</div>
-                  <div class="sp-mode-row">
-                    <div class="sp-io">
-                      <div class="lbl">Selector</div>
-                      <div class="val" id="hmi-modo-label">Automático</div>
-                    </div>
-                    <button type="button" class="sp-toggle on" id="hmi-modo-auto" aria-label="Modo automático">AUTO</button>
-                  </div>
-
-                  <div class="sp-section-label">Comandos operador</div>
-                  <div class="sp-btn-grid">
-                    <button class="sp-btn sp-btn-start" id="hmi-start">Start</button>
-                    <button class="sp-btn sp-btn-stop" id="hmi-stop">Stop</button>
-                    <button class="sp-btn sp-btn-e" id="hmi-emergencia">Emerg.</button>
-                    <button class="sp-btn sp-btn-fn" id="hmi-reset-alarma">Reset</button>
-                    <button class="sp-btn sp-btn-fn" id="hmi-fin-sesion">Fin ses.</button>
-                    <button class="sp-btn sp-btn-blue" id="hmi-clear-e">Quit. E</button>
-                  </div>
-
-                  <div class="sp-section-label">Peso actual</div>
-                  <div class="sp-peso-row">
-                    <label for="hmi-peso-actual">kg</label>
-                    <input type="number" step="0.001" min="0" id="hmi-peso-actual" value="0.040">
-                    <button class="sp-btn sp-btn-blue" id="hmi-peso-apply" style="padding:8px 12px;">OK</button>
-                  </div>
+                <div class="sp-alarm ok" id="hmi-alarm-bar">
+                  <span class="sp-led on" id="hmi-dot"></span>
+                  <span id="hmi-alarm-text">Sistema listo — sin alarmas</span>
                 </div>
 
-                <div class="sp-col sp-col-wide" id="hmi-sim-block">
-                  <div class="sp-section-label">Simulación proceso (reemplaza AS / KEP)</div>
-                  <div class="sp-sim-grid">
-                    <button class="sp-btn sp-btn-fn" id="hmi-sim-plastico">1 · Plástico</button>
-                    <button class="sp-btn sp-btn-fn" id="hmi-sim-aluminio">2 · Aluminio</button>
-                    <button class="sp-btn sp-btn-fn" id="hmi-sim-extendido">3 · Pistón 100%</button>
-                    <button class="sp-btn sp-btn-fn" id="hmi-sim-clear">Limpiar sensores</button>
-                    <button class="sp-btn sp-btn-blue" id="hmi-manual-banda">Banda man.</button>
-                    <button class="sp-btn sp-btn-blue" id="hmi-manual-piston">Pistón man.</button>
-                  </div>
-                  <div class="sp-mode-row" style="margin-top:6px;">
-                    <div class="sp-io">
-                      <div class="lbl">Feedback pistón</div>
-                      <div class="val" id="hmi-auto-piston-lbl">AUTO</div>
-                    </div>
-                    <button type="button" class="sp-toggle on" id="hmi-auto-piston" aria-label="Auto feedback pistón">AUTO</button>
-                  </div>
-                  <p class="sp-footer-note">
-                    Flujo: START → 1 Plástico (cuenta) o 2 Aluminio → (AUTO extiende pistón) / 3 manual · Estación <span id="hmi-estacion-id">parque-central</span>
-                  </p>
-                </div>
-
-                <div class="sp-col sp-col-wide" id="hmi-real-io-block">
-                  <div class="sp-section-label">Banda (modo MANUAL)</div>
-                  <div class="sp-piston-row">
-                    <div class="sp-piston-info" id="hmi-banda-info">
-                      <div class="lbl">Banda</div>
-                      <div class="val" id="hmi-banda-cmd-st">Parada</div>
-                    </div>
-                    <button type="button" class="sp-btn sp-btn-extend" id="hmi-banda-on">Marcha</button>
-                    <button type="button" class="sp-btn sp-btn-retract" id="hmi-banda-off">Parada</button>
-                  </div>
-
-                  <div class="sp-section-label">Pistones — Extender / Retractar</div>
-                  <div class="sp-piston-controls">
-                    <div class="sp-piston-row">
-                      <div class="sp-piston-info" id="hmi-p1-info">
+                <div class="sp-body">
+                  <div class="sp-col">
+                    <div class="sp-section-label">Estado de proceso</div>
+                    <div class="sp-io-grid">
+                      <div class="sp-io" id="hmi-chip-sistema">
+                        <div class="lbl">Sistema</div>
+                        <div class="val" id="hmi-sistema">—</div>
+                      </div>
+                      <div class="sp-io" id="hmi-chip-modo">
+                        <div class="lbl">Modo</div>
+                        <div class="val" id="hmi-modo">—</div>
+                      </div>
+                      <div class="sp-io">
+                        <div class="lbl">Banda</div>
+                        <div class="val" id="hmi-banda">—</div>
+                      </div>
+                      <div class="sp-io hidden" id="hmi-chip-piston">
+                        <div class="lbl" id="hmi-piston-lbl">Pistón (OR)</div>
+                        <div class="val" id="hmi-piston">—</div>
+                      </div>
+                      <div class="sp-io" id="hmi-chip-p1">
                         <div class="lbl">P1 retenedor</div>
-                        <div class="val" id="hmi-p1-cmd-st">Retráctil</div>
+                        <div class="val" id="hmi-p1">—</div>
                       </div>
-                      <button type="button" class="sp-btn sp-btn-extend" id="hmi-p1-extend">Extender</button>
-                      <button type="button" class="sp-btn sp-btn-retract" id="hmi-p1-retract">Retractar</button>
-                    </div>
-                    <div class="sp-piston-row">
-                      <div class="sp-piston-info" id="hmi-p2-info">
+                      <div class="sp-io" id="hmi-chip-p2">
                         <div class="lbl">P2 plástico</div>
-                        <div class="val" id="hmi-p2-cmd-st">Retráctil</div>
+                        <div class="val" id="hmi-p2">—</div>
                       </div>
-                      <button type="button" class="sp-btn sp-btn-extend" id="hmi-p2-extend">Extender</button>
-                      <button type="button" class="sp-btn sp-btn-retract" id="hmi-p2-retract">Retractar</button>
-                    </div>
-                    <div class="sp-piston-row">
-                      <div class="sp-piston-info" id="hmi-p3-info">
+                      <div class="sp-io" id="hmi-chip-p3">
                         <div class="lbl">P3 aluminio</div>
-                        <div class="val" id="hmi-p3-cmd-st">Retráctil</div>
+                        <div class="val" id="hmi-p3">—</div>
                       </div>
-                      <button type="button" class="sp-btn sp-btn-extend" id="hmi-p3-extend">Extender</button>
-                      <button type="button" class="sp-btn sp-btn-retract" id="hmi-p3-retract">Retractar</button>
+                      <div class="sp-io">
+                        <div class="lbl">Cont. plástico</div>
+                        <div class="val" id="hmi-cont-p">0</div>
+                      </div>
+                      <div class="sp-io">
+                        <div class="lbl">Cont. aluminio</div>
+                        <div class="val" id="hmi-cont-a">0</div>
+                      </div>
+                      <div class="sp-io" id="hmi-chip-alarma">
+                        <div class="lbl">Alarma</div>
+                        <div class="val" id="hmi-alarma">—</div>
+                      </div>
+                      <div class="sp-io" id="hmi-chip-emergencia">
+                        <div class="lbl">Emergencia</div>
+                        <div class="val" id="hmi-emergencia-st">—</div>
+                      </div>
                     </div>
                   </div>
-                  <p class="sp-footer-note">
-                    Pulsa Extender o Retractar (pasa a MANUAL solo). Sensores físicos `I_*`. Estación <span id="hmi-estacion-id-real">colegio-don-bosco-real</span>
-                  </p>
+
+                  <div class="sp-col">
+                    <div class="sp-section-label">Modo de operación</div>
+                    <div class="sp-mode-row">
+                      <div class="sp-io">
+                        <div class="lbl">Selector</div>
+                        <div class="val" id="hmi-modo-label">Automático</div>
+                      </div>
+                      <button type="button" class="sp-toggle on" id="hmi-modo-auto" aria-label="Modo automático">AUTO</button>
+                    </div>
+
+                    <div class="sp-section-label">Comandos operador</div>
+                    <div class="sp-btn-grid">
+                      <button class="sp-btn sp-btn-start" id="hmi-start">Start</button>
+                      <button class="sp-btn sp-btn-stop" id="hmi-stop">Stop</button>
+                      <button class="sp-btn sp-btn-e" id="hmi-emergencia">Emerg.</button>
+                      <button class="sp-btn sp-btn-fn" id="hmi-reset-alarma">Reset</button>
+                      <button class="sp-btn sp-btn-fn" id="hmi-fin-sesion">Fin ses.</button>
+                      <button class="sp-btn sp-btn-blue" id="hmi-clear-e">Quit. E</button>
+                    </div>
+
+                    <div class="sp-section-label">Peso actual</div>
+                    <div class="sp-peso-row">
+                      <label for="hmi-peso-actual">kg</label>
+                      <input type="number" step="0.001" min="0" id="hmi-peso-actual" value="0.040">
+                      <button class="sp-btn sp-btn-blue" id="hmi-peso-apply" style="padding:8px 12px;">OK</button>
+                    </div>
+                  </div>
+
+                  <div class="sp-col sp-col-wide" id="hmi-sim-block">
+                    <div class="sp-section-label">Simulación proceso (reemplaza AS / KEP)</div>
+                    <div class="sp-sim-grid">
+                      <button class="sp-btn sp-btn-fn" id="hmi-sim-plastico">1 · Plástico</button>
+                      <button class="sp-btn sp-btn-fn" id="hmi-sim-aluminio">2 · Aluminio</button>
+                      <button class="sp-btn sp-btn-fn" id="hmi-sim-extendido">3 · Pistón 100%</button>
+                      <button class="sp-btn sp-btn-fn" id="hmi-sim-clear">Limpiar sensores</button>
+                      <button class="sp-btn sp-btn-blue" id="hmi-manual-banda">Banda man.</button>
+                      <button class="sp-btn sp-btn-blue" id="hmi-manual-piston">Pistón man.</button>
+                    </div>
+                    <div class="sp-mode-row" style="margin-top:6px;">
+                      <div class="sp-io">
+                        <div class="lbl">Feedback pistón</div>
+                        <div class="val" id="hmi-auto-piston-lbl">AUTO</div>
+                      </div>
+                      <button type="button" class="sp-toggle on" id="hmi-auto-piston" aria-label="Auto feedback pistón">AUTO</button>
+                    </div>
+                    <p class="sp-footer-note">
+                      Flujo: START → 1 Plástico (cuenta) o 2 Aluminio → (AUTO extiende pistón) / 3 manual · Estación <span id="hmi-estacion-id">parque-central</span>
+                    </p>
+                  </div>
+
+                  <div class="sp-col sp-col-wide" id="hmi-real-io-block">
+                    <div class="sp-section-label">Banda (modo MANUAL)</div>
+                    <div class="sp-piston-row">
+                      <div class="sp-piston-info" id="hmi-banda-info">
+                        <div class="lbl">Banda</div>
+                        <div class="val" id="hmi-banda-cmd-st">Parada</div>
+                      </div>
+                      <button type="button" class="sp-btn sp-btn-extend" id="hmi-banda-on">Marcha</button>
+                      <button type="button" class="sp-btn sp-btn-retract" id="hmi-banda-off">Parada</button>
+                    </div>
+
+                    <div class="sp-section-label">Pistones — Extender / Retractar</div>
+                    <div class="sp-piston-controls">
+                      <div class="sp-piston-row">
+                        <div class="sp-piston-info" id="hmi-p1-info">
+                          <div class="lbl">P1 retenedor</div>
+                          <div class="val" id="hmi-p1-cmd-st">Retráctil</div>
+                        </div>
+                        <button type="button" class="sp-btn sp-btn-extend" id="hmi-p1-extend">Extender</button>
+                        <button type="button" class="sp-btn sp-btn-retract" id="hmi-p1-retract">Retractar</button>
+                      </div>
+                      <div class="sp-piston-row">
+                        <div class="sp-piston-info" id="hmi-p2-info">
+                          <div class="lbl">P2 plástico</div>
+                          <div class="val" id="hmi-p2-cmd-st">Retráctil</div>
+                        </div>
+                        <button type="button" class="sp-btn sp-btn-extend" id="hmi-p2-extend">Extender</button>
+                        <button type="button" class="sp-btn sp-btn-retract" id="hmi-p2-retract">Retractar</button>
+                      </div>
+                      <div class="sp-piston-row">
+                        <div class="sp-piston-info" id="hmi-p3-info">
+                          <div class="lbl">P3 aluminio</div>
+                          <div class="val" id="hmi-p3-cmd-st">Retráctil</div>
+                        </div>
+                        <button type="button" class="sp-btn sp-btn-extend" id="hmi-p3-extend">Extender</button>
+                        <button type="button" class="sp-btn sp-btn-retract" id="hmi-p3-retract">Retractar</button>
+                      </div>
+                    </div>
+                    <p class="sp-footer-note">
+                      Pulsa Extender o Retractar (pasa a MANUAL solo). Sensores físicos `I_*`. Estación <span id="hmi-estacion-id-real">colegio-don-bosco-real</span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <div class="ktp-label-guide" aria-hidden="true" title="Guía de tiras de etiquetas"></div>
+
+            <div class="sp-softkeys" aria-label="8 function keys KTP700 Basic">
+              <button type="button" class="sp-softkey" id="hmi-sk-start"><small>F1</small>Start</button>
+              <button type="button" class="sp-softkey" id="hmi-sk-stop"><small>F2</small>Stop</button>
+              <button type="button" class="sp-softkey" id="hmi-sk-auto"><small>F3</small>Auto</button>
+              <button type="button" class="sp-softkey" id="hmi-sk-reset"><small>F4</small>Reset</button>
+              <button type="button" class="sp-softkey" id="hmi-sk-e"><small>F5</small>Emerg</button>
+              <button type="button" class="sp-softkey" id="hmi-sk-clear"><small>F6</small>Quit E</button>
+              <button type="button" class="sp-softkey" id="hmi-sk-fin"><small>F7</small>Fin</button>
+              <button type="button" class="sp-softkey" id="hmi-sk-fs"><small>F8</small>Full</button>
+            </div>
           </div>
 
-          <div class="sp-softkeys">
-            <button type="button" class="sp-softkey" id="hmi-sk-start"><small>F1</small>Start</button>
-            <button type="button" class="sp-softkey" id="hmi-sk-stop"><small>F2</small>Stop</button>
-            <button type="button" class="sp-softkey" id="hmi-sk-auto"><small>F3</small>Auto</button>
-            <button type="button" class="sp-softkey" id="hmi-sk-reset"><small>F4</small>Reset</button>
-            <button type="button" class="sp-softkey" id="hmi-sk-e"><small>F5</small>Emerg</button>
-            <button type="button" class="sp-softkey" id="hmi-sk-clear"><small>F6</small>Quit E</button>
+          <div class="ktp-foot">
+            <div class="ktp-siemens"><b>SIEMENS</b> KTP700 Basic DP</div>
+            <div class="ktp-ports">6AV2123-2GA03-0AX0 · 7&quot; TFT 800×480 · 64K · Key+Touch<br>1× MPI/PROFIBUS DP · 1× USB</div>
           </div>
         </div>
       </section>
@@ -2183,7 +2272,7 @@ $("hmi-p2-retract")?.addEventListener("click", () => setPistonExtend(2, false));
 $("hmi-p3-extend")?.addEventListener("click", () => setPistonExtend(3, true));
 $("hmi-p3-retract")?.addEventListener("click", () => setPistonExtend(3, false));
 
-/* Softkeys F1–F6 (mismo efecto que botones de pantalla) */
+/* Softkeys F1–F8 (mismo efecto que botones de pantalla / fullscreen) */
 function wireSoftkey(skId, targetId){
   const sk = $(skId);
   const target = $(targetId);
@@ -2199,6 +2288,11 @@ wireSoftkey("hmi-sk-auto", "hmi-modo-auto");
 wireSoftkey("hmi-sk-reset", "hmi-reset-alarma");
 wireSoftkey("hmi-sk-e", "hmi-emergencia");
 wireSoftkey("hmi-sk-clear", "hmi-clear-e");
+wireSoftkey("hmi-sk-fin", "hmi-fin-sesion");
+$("hmi-sk-fs")?.addEventListener("click", (e) => {
+  e.preventDefault();
+  toggleHmiFullscreen();
+});
 
 $("hmi-fullscreen")?.addEventListener("click", () => { toggleHmiFullscreen(); });
 document.addEventListener("fullscreenchange", syncHmiFullscreenBtn);
