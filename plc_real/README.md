@@ -3,7 +3,7 @@
 Proyecto **aparte** del de simulación (1511C + PLCSIM).  
 No reutilices el hardware config del 1511C: crea un proyecto TIA nuevo con CPU **1214C**.
 
-**Actuadores neumáticos (real):** 3 cilindros — P1 retenedor · P2 plástico · P3 aluminio.  
+**Actuadores neumáticos (real):** 3 cilindros — P1 plástico · P2 latas · P3 vidrio.  
 **Operador:** 100 % desde la web (sin pulsadores físicos). En mesa solo sensores + actuadores.
 
 ```

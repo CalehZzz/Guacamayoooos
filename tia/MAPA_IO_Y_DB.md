@@ -2,13 +2,12 @@
 
 Copia estos nombres **exactamente** en TIA Portal (PLC tags + DB). Así el bridge Python y la web coinciden.
 
-> **Simulación actual (solo HMI virtual):** no uses botonera `%I` ni un solo pistón.  
-> Operador + sensores → **`DB_HMI`**. Actuadores → **`M_Banda` / `M_Piston1` / `M_Piston2` / `M_Piston3`**.  
-> Guía: `tia/TABLA_TAGS_DESDE_CERO.md` · `tia/NETWORKS_WEB_ONLY.md` · `docs/11_SIN_AS_SOLO_WEB.md`.
+> **Simulación (solo HMI):** operador + sensores → **`DB_HMI`**.  
+> Actuadores → **`M_Banda` / `M_Piston1` (plástico) / `M_Piston2` (latas) / `M_Piston3` (vidrio)**.  
+> Guía: `tia/NETWORKS_WEB_ONLY.md` · `docs/11_SIN_AS_SOLO_WEB.md`.
 
 ```
-  [Sim] → báscula → banda → P1 retenedor → P2 plástico | P3 aluminio
-         (3 cilindros simple efecto · 1 sensor Extendido c/u vía DB_HMI)
+  [Sim] → báscula → banda → P1 plástico | P2 latas | P3 vidrio
 ```
 
 ---
@@ -31,9 +30,9 @@ Para el **PLC real 1214C** ver `plc_real/TABLA_IO_1214C.md` (7 DI proceso + 7 DQ
 | Nombre | Ejemplo | Descripción |
 |---|---|---|
 | `M_Banda` | `%M3.0` | Marcha banda |
-| `M_Piston1` | `%M3.1` | Retenedor (simple efecto) |
-| `M_Piston2` | `%M3.2` | Empuje plástico |
-| `M_Piston3` | `%M3.3` | Empuje aluminio |
+| `M_Piston1` | `%M3.1` | Empuje plástico |
+| `M_Piston2` | `%M3.2` | Empuje latas |
+| `M_Piston3` | `%M3.3` | Empuje vidrio |
 | `M_LamparaRun` | `%M3.4` | Piloto marcha |
 | `M_LamparaAlarma` | `%M3.5` | Piloto alarma |
 | `M_LamparaEmergencia` | `%M3.6` | Piloto emergencia |
@@ -78,11 +77,13 @@ Crea un **Data Block** global llamado `DatosEstacion` (número DB1).
 | 16.5 | `Alarma` | Bool | Espejo alarma |
 | 16.6 | `BandaOn` | Bool | Espejo `M_Banda` |
 | 16.7 | `PistonOn` | Bool | OR de P1/P2/P3 |
-| 17.0 | `Piston1On` | Bool | Retenedor |
-| 17.1 | `Piston2On` | Bool | Plástico |
-| 17.2 | `Piston3On` | Bool | Aluminio |
+| 17.0 | `Piston1On` | Bool | Plástico |
+| 17.1 | `Piston2On` | Bool | Latas |
+| 17.2 | `Piston3On` | Bool | Vidrio |
 | 18.0 | `EstadoMaquina` | **Int** | 0 idle, 1 running, 2 clasificando, 3 alarma, 4 emergencia |
-| 20.0 | `UltimoMaterial` | **Int** | 0 ninguno, 1 plástico, 2 aluminio |
+| 20.0 | `UltimoMaterial` | **Int** | 0 ninguno, 1 plástico, 2 aluminio, 3 vidrio |
+| 22.0 | `ContVidrio` | Int | Piezas vidrio |
+| 24.0 | `PesoVidrioKg` | Real | kg vidrio |
 
 ### Offsets que NO sirven para la web
 
@@ -119,18 +120,13 @@ Rangos típicos de prueba:
 
 ---
 
-## 6. Lógica de clasificación (3 pistones · simple efecto)
+## 6. Lógica de clasificación
 
-Cuando `DB_HMI.SensorPieza` = 1 y báscula lista:
-
-| Sensor plástico | Sensor aluminio | Acción |
+| Sensor | Pistón | Contador |
 |---|---|---|
-| 1 | 0 | P2 extiende → cuenta plástico → retracta (resorte) |
-| 0 | 1 | P3 extiende → cuenta aluminio → retracta |
-| 1 | 1 | **Alarma** (lectura inválida) |
-| 0 | 0 | Esperar / no contar |
-
-P1 retenedor sujeta mientras hay pieza o clasificación en curso.
+| Plástico | P1 | ContPlastico |
+| Latas (aluminio) | P2 | ContAluminio |
+| Vidrio | P3 | ContVidrio |
 
 ---
 
@@ -155,6 +151,8 @@ Piston2On         = get_bool(db, 17, 1)
 Piston3On         = get_bool(db, 17, 2)
 EstadoMaquina     = get_int(db, 18)
 UltimoMaterial    = get_int(db, 20)
+ContVidrio        = get_int(db, 22)
+PesoVidrioKg      = get_real(db, 24)
 ```
 
-Tamaño mínimo a leer: **22 bytes**.
+Tamaño mínimo a leer: **28 bytes**.

@@ -496,7 +496,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 8px;
     margin-bottom: 8px;
   }
@@ -1199,7 +1199,6 @@
       <div class="brand"><span class="logo">♻️</span><span>SIBU</span></div>
       <div class="navpills">
         <button class="pill" data-view="stations">🏠</button>
-        <button class="pill" data-view="hmi">🖥️</button>
         <button class="pill" data-view="plc-real">🔌</button>
         <button class="pill" data-view="history">📜</button>
         <button class="pill hidden" id="nav-admin" data-view="admin">⚙️</button>
@@ -1221,7 +1220,7 @@
       <section id="view-live" class="hidden">
         <div class="live-title">
           <h2 id="live-station-name">Separando en...</h2>
-          <p>La báscula pesa · el sensor clasifica · P1 retiene · P2/P3 separan. Todo llega desde el PLC.</p>
+          <p>Báscula · sensores · P1 plástico · P2 latas · P3 vidrio.</p>
         </div>
 
         <div class="plc-panel" id="plc-panel">
@@ -1233,9 +1232,9 @@
             <div class="plc-chip">Sistema <b id="plc-sistema">—</b></div>
             <div class="plc-chip">Modo <b id="plc-modo">—</b></div>
             <div class="plc-chip">Banda <b id="plc-banda">—</b></div>
-            <div class="plc-chip">P1 retenedor <b id="plc-piston1">—</b></div>
-            <div class="plc-chip">P2 plástico <b id="plc-piston2">—</b></div>
-            <div class="plc-chip">P3 aluminio <b id="plc-piston3">—</b></div>
+            <div class="plc-chip">P1 plástico <b id="plc-piston1">—</b></div>
+            <div class="plc-chip">P2 latas <b id="plc-piston2">—</b></div>
+            <div class="plc-chip">P3 vidrio <b id="plc-piston3">—</b></div>
             <div class="plc-chip">Último material <b id="plc-ultimo">—</b></div>
             <div class="plc-chip">Peso actual <b id="plc-peso-actual">—</b></div>
             <div class="plc-chip" id="plc-chip-alarma">Alarma <b id="plc-alarma">—</b></div>
@@ -1245,7 +1244,7 @@
 
         <div class="machine-stage triple" id="machine-stage" aria-label="Animación de estación">
           <div class="machine-stage-head">
-            <h3>Banda · P1 → P2 → P3</h3>
+            <h3>Banda · P1 plástico · P2 latas · P3 vidrio</h3>
             <span class="machine-status-pill" id="machine-pill">Banda parada</span>
           </div>
           <div class="machine-canvas">
@@ -1257,17 +1256,17 @@
             <div class="piece-on-belt" id="piece-on-belt" aria-hidden="true">🥫</div>
             <div class="pistons-row">
               <div class="piston-unit" id="live-pu-1">
-                <div class="pu-lbl">P1 retenedor</div>
+                <div class="pu-lbl">P1 plástico</div>
                 <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
                 <div class="pu-state" id="live-pu-1-st">IN</div>
               </div>
               <div class="piston-unit" id="live-pu-2">
-                <div class="pu-lbl">P2 plástico</div>
+                <div class="pu-lbl">P2 latas</div>
                 <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
                 <div class="pu-state" id="live-pu-2-st">IN</div>
               </div>
               <div class="piston-unit" id="live-pu-3">
-                <div class="pu-lbl">P3 aluminio</div>
+                <div class="pu-lbl">P3 vidrio</div>
                 <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
                 <div class="pu-state" id="live-pu-3-st">IN</div>
               </div>
@@ -1316,11 +1315,7 @@
       <!-- ---------- HMI VIRTUAL — KTP700 Basic DP ---------- -->
       <section id="view-hmi" class="hidden">
         <div class="hmi-toolbar">
-          <div class="hmi-toolbar-meta">
-            SIMATIC HMI · <span id="hmi-bezel-mode">KTP700 Basic DP</span>
-          </div>
           <div class="hmi-toolbar-actions">
-            <button type="button" class="sp-fs-btn" id="hmi-mode-toggle" title="Cambiar estación demo/real">Modo REAL</button>
             <button type="button" class="sp-fs-btn" id="hmi-fullscreen" aria-pressed="false" title="Pantalla completa">Pantalla completa</button>
           </div>
         </div>
@@ -1354,7 +1349,6 @@
 
                 <div class="sp-body">
                   <div class="sp-col">
-                    <div class="sp-section-label">Estado de proceso</div>
                     <div class="sp-io-grid">
                       <div class="sp-io" id="hmi-chip-sistema">
                         <div class="lbl">Sistema</div>
@@ -1369,19 +1363,19 @@
                         <div class="val" id="hmi-banda">—</div>
                       </div>
                       <div class="sp-io hidden" id="hmi-chip-piston">
-                        <div class="lbl" id="hmi-piston-lbl">Pistón (OR)</div>
+                        <div class="lbl" id="hmi-piston-lbl">Pistón</div>
                         <div class="val" id="hmi-piston">—</div>
                       </div>
                       <div class="sp-io" id="hmi-chip-p1">
-                        <div class="lbl">P1 retenedor</div>
+                        <div class="lbl">P1 plástico</div>
                         <div class="val" id="hmi-p1">—</div>
                       </div>
                       <div class="sp-io" id="hmi-chip-p2">
-                        <div class="lbl">P2 plástico</div>
+                        <div class="lbl">P2 latas</div>
                         <div class="val" id="hmi-p2">—</div>
                       </div>
                       <div class="sp-io" id="hmi-chip-p3">
-                        <div class="lbl">P3 aluminio</div>
+                        <div class="lbl">P3 vidrio</div>
                         <div class="val" id="hmi-p3">—</div>
                       </div>
                       <div class="sp-io">
@@ -1389,8 +1383,12 @@
                         <div class="val" id="hmi-cont-p">0</div>
                       </div>
                       <div class="sp-io">
-                        <div class="lbl">Cont. aluminio</div>
+                        <div class="lbl">Cont. latas</div>
                         <div class="val" id="hmi-cont-a">0</div>
+                      </div>
+                      <div class="sp-io">
+                        <div class="lbl">Cont. vidrio</div>
+                        <div class="val" id="hmi-cont-v">0</div>
                       </div>
                       <div class="sp-io" id="hmi-chip-alarma">
                         <div class="lbl">Alarma</div>
@@ -1404,7 +1402,6 @@
                   </div>
 
                   <div class="sp-col">
-                    <div class="sp-section-label">Modo de operación</div>
                     <div class="sp-mode-row">
                       <div class="sp-io">
                         <div class="lbl">Selector</div>
@@ -1413,7 +1410,6 @@
                       <button type="button" class="sp-toggle on" id="hmi-modo-auto" aria-label="Modo automático">AUTO</button>
                     </div>
 
-                    <div class="sp-section-label">Comandos operador</div>
                     <div class="sp-btn-grid">
                       <button class="sp-btn sp-btn-start" id="hmi-start">Start</button>
                       <button class="sp-btn sp-btn-stop" id="hmi-stop">Stop</button>
@@ -1423,7 +1419,6 @@
                       <button class="sp-btn sp-btn-blue" id="hmi-clear-e">Quit. E</button>
                     </div>
 
-                    <div class="sp-section-label">Peso actual</div>
                     <div class="sp-peso-row">
                       <label for="hmi-peso-actual">kg</label>
                       <input type="number" step="0.001" min="0" id="hmi-peso-actual" value="0.040">
@@ -1432,29 +1427,26 @@
                   </div>
 
                   <div class="sp-col sp-col-wide" id="hmi-sim-block">
-                    <div class="sp-section-label">Simulación sensores (PLCSIM · sin AS)</div>
                     <div class="sp-sim-grid">
-                      <button class="sp-btn sp-btn-fn" id="hmi-sim-plastico">1 · Plástico</button>
-                      <button class="sp-btn sp-btn-fn" id="hmi-sim-aluminio">2 · Aluminio</button>
-                      <button class="sp-btn sp-btn-fn" id="hmi-sim-clear">Limpiar sensores</button>
-                      <button class="sp-btn sp-btn-blue" id="hmi-sim-p1-ext">FC P1 100%</button>
-                      <button class="sp-btn sp-btn-blue" id="hmi-sim-p2-ext">FC P2 100%</button>
-                      <button class="sp-btn sp-btn-blue" id="hmi-sim-p3-ext">FC P3 100%</button>
+                      <button class="sp-btn sp-btn-fn" id="hmi-sim-plastico">Plástico</button>
+                      <button class="sp-btn sp-btn-fn" id="hmi-sim-aluminio">Latas</button>
+                      <button class="sp-btn sp-btn-fn" id="hmi-sim-vidrio">Vidrio</button>
+                      <button class="sp-btn sp-btn-fn" id="hmi-sim-clear">Limpiar</button>
+                      <button class="sp-btn sp-btn-blue" id="hmi-sim-p1-ext">FC P1</button>
+                      <button class="sp-btn sp-btn-blue" id="hmi-sim-p2-ext">FC P2</button>
+                      <button class="sp-btn sp-btn-blue" id="hmi-sim-p3-ext">FC P3</button>
                     </div>
                     <div class="sp-mode-row" style="margin-top:6px;">
                       <div class="sp-io">
-                        <div class="lbl">Feedback FC (simple efecto)</div>
+                        <div class="lbl">Feedback FC</div>
                         <div class="val" id="hmi-auto-piston-lbl">AUTO</div>
                       </div>
                       <button type="button" class="sp-toggle on" id="hmi-auto-piston" aria-label="Auto feedback pistones">AUTO</button>
                     </div>
-                    <p class="sp-footer-note">
-                      Flujo: START → 1 Plástico (P2) o 2 Aluminio (P3) · P1 retiene · FC AUTO o manual · Estación <span id="hmi-estacion-id">parque-central</span>
-                    </p>
+                    <span id="hmi-estacion-id" class="hidden">parque-central</span>
                   </div>
 
                   <div class="sp-col sp-col-wide" id="hmi-real-io-block">
-                    <div class="sp-section-label">Banda (modo MANUAL)</div>
                     <div class="sp-piston-row">
                       <div class="sp-piston-info" id="hmi-banda-info">
                         <div class="lbl">Banda</div>
@@ -1464,11 +1456,10 @@
                       <button type="button" class="sp-btn sp-btn-retract" id="hmi-banda-off">Parada</button>
                     </div>
 
-                    <div class="sp-section-label">Pistones P1–P3 — Extender / Retractar (simple efecto)</div>
                     <div class="sp-piston-controls">
                       <div class="sp-piston-row">
                         <div class="sp-piston-info" id="hmi-p1-info">
-                          <div class="lbl">P1 retenedor</div>
+                          <div class="lbl">P1 plástico</div>
                           <div class="val" id="hmi-p1-cmd-st">Retráctil</div>
                         </div>
                         <button type="button" class="sp-btn sp-btn-extend" id="hmi-p1-extend">Extender</button>
@@ -1476,7 +1467,7 @@
                       </div>
                       <div class="sp-piston-row">
                         <div class="sp-piston-info" id="hmi-p2-info">
-                          <div class="lbl">P2 plástico</div>
+                          <div class="lbl">P2 latas</div>
                           <div class="val" id="hmi-p2-cmd-st">Retráctil</div>
                         </div>
                         <button type="button" class="sp-btn sp-btn-extend" id="hmi-p2-extend">Extender</button>
@@ -1484,16 +1475,14 @@
                       </div>
                       <div class="sp-piston-row">
                         <div class="sp-piston-info" id="hmi-p3-info">
-                          <div class="lbl">P3 aluminio</div>
+                          <div class="lbl">P3 vidrio</div>
                           <div class="val" id="hmi-p3-cmd-st">Retráctil</div>
                         </div>
                         <button type="button" class="sp-btn sp-btn-extend" id="hmi-p3-extend">Extender</button>
                         <button type="button" class="sp-btn sp-btn-retract" id="hmi-p3-retract">Retractar</button>
                       </div>
                     </div>
-                    <p class="sp-footer-note">
-                      Igual en DEMO (PLCSIM) y REAL (1214C). Extender/Retractar → MANUAL. Estación <span id="hmi-estacion-id-real">—</span>
-                    </p>
+                    <span id="hmi-estacion-id-real" class="hidden">—</span>
                   </div>
                 </div>
               </div>
@@ -1567,9 +1556,9 @@
               <div class="plc-chip">Sistema <b id="real-sistema">—</b></div>
               <div class="plc-chip">Modo <b id="real-modo">—</b></div>
               <div class="plc-chip">Banda <b id="real-banda">—</b></div>
-              <div class="plc-chip">P1 retenedor <b id="real-piston1">—</b></div>
-              <div class="plc-chip">P2 plástico <b id="real-piston2">—</b></div>
-              <div class="plc-chip">P3 aluminio <b id="real-piston3">—</b></div>
+              <div class="plc-chip">P1 plástico <b id="real-piston1">—</b></div>
+              <div class="plc-chip">P2 latas <b id="real-piston2">—</b></div>
+              <div class="plc-chip">P3 vidrio <b id="real-piston3">—</b></div>
               <div class="plc-chip">Pistón (OR) <b id="real-piston">—</b></div>
               <div class="plc-chip">Cont. plástico <b id="real-cont-p">0</b></div>
               <div class="plc-chip">Cont. aluminio <b id="real-cont-a">0</b></div>
@@ -1590,17 +1579,17 @@
               <div class="piece-on-belt" id="real-piece-on-belt" aria-hidden="true">♻️</div>
               <div class="pistons-row">
                 <div class="piston-unit" id="real-pu-1">
-                  <div class="pu-lbl">P1 retenedor</div>
+                  <div class="pu-lbl">P1 plástico</div>
                   <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
                   <div class="pu-state" id="real-pu-1-st">IN</div>
                 </div>
                 <div class="piston-unit" id="real-pu-2">
-                  <div class="pu-lbl">P2 plástico</div>
+                  <div class="pu-lbl">P2 latas</div>
                   <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
                   <div class="pu-state" id="real-pu-2-st">IN</div>
                 </div>
                 <div class="piston-unit" id="real-pu-3">
-                  <div class="pu-lbl">P3 aluminio</div>
+                  <div class="pu-lbl">P3 vidrio</div>
                   <div class="piston-assy"><div class="piston-body"></div><div class="piston-rod"></div><div class="piston-head"></div></div>
                   <div class="pu-state" id="real-pu-3-st">IN</div>
                 </div>
@@ -1700,9 +1689,10 @@ const googleProvider = new GoogleAuthProvider();
    ------------------------------------------------------------------------- */
 const MATERIALES = {
   plastico: { nombre: "Plástico", emoji: "🥤", color: "#5AA9E6", pesoMin: 0.02, pesoMax: 0.06, cap: 3 },
-  aluminio: { nombre: "Aluminio", emoji: "🥫", color: "#9AA6C4", pesoMin: 0.01, pesoMax: 0.03, cap: 1.5 }
+  aluminio: { nombre: "Latas", emoji: "🥫", color: "#9AA6C4", pesoMin: 0.01, pesoMax: 0.03, cap: 1.5 },
+  vidrio:   { nombre: "Vidrio", emoji: "🍾", color: "#7BC67E", pesoMin: 0.15, pesoMax: 0.45, cap: 5 }
 };
-const PRECIOS_POR_DEFECTO = { plastico: 250, aluminio: 650 }; // ₡ por kg (CRC)
+const PRECIOS_POR_DEFECTO = { plastico: 250, aluminio: 650, vidrio: 80 }; // ₡ por kg (CRC)
 
 const PLC_DEFAULT = {
   conectado: false,
@@ -1732,8 +1722,8 @@ let sesion = null;        // sesión de pesaje activa
 let unsubSesion = null;    // función para dejar de escuchar la sesión en Firestore
 
 const FALLBACK_ESTACIONES = [
-  { id: "parque-central",  nombre: "Colegio Don Bosco", zona: "DEMO · PLCSIM 1511C · 3 pistones sim HMI", activa: true },
-  { id: "colegio-don-bosco-real", nombre: "Colegio Don Bosco · PLC real", zona: "CPU 1214C · 3 pistones I/O físico", activa: true }
+  { id: "parque-central",  nombre: "Colegio Don Bosco", zona: "DEMO · PLCSIM · P1 plástico · P2 latas · P3 vidrio", activa: true },
+  { id: "colegio-don-bosco-real", nombre: "Colegio Don Bosco · PLC real", zona: "CPU 1214C · 3 pistones", activa: true }
 ];
 
 const HMI_ESTACION_DEMO = "parque-central";
@@ -1755,6 +1745,7 @@ const HMI_CMD_DEFAULT = {
   SensorPieza: false,
   SensorPlastico: false,
   SensorAluminio: false,
+  SensorVidrio: false,
   Piston1Extendido: false,
   Piston2Extendido: false,
   Piston3Extendido: false,
@@ -1966,17 +1957,8 @@ function applyHmiStationMode(real, estacionId){
     $("hmi-auto-piston").textContent = hmiAutoPiston ? "AUTO" : "MANUAL";
   }
   if($("hmi-auto-piston-lbl")){
-    $("hmi-auto-piston-lbl").textContent = hmiAutoPiston ? "AUTO" : "OFF (real I_*)";
+    $("hmi-auto-piston-lbl").textContent = hmiAutoPiston ? "AUTO" : "OFF";
   }
-  if($("hmi-mode-toggle")){
-    $("hmi-mode-toggle").textContent = hmiModeReal ? "Modo REAL" : "Modo DEMO";
-  }
-  if($("hmi-bezel-mode")){
-    $("hmi-bezel-mode").textContent = hmiModeReal
-      ? ("1214C · " + HMI_ESTACION_ID)
-      : ("DEMO · " + HMI_ESTACION_ID);
-  }
-  // Controles P1–P3 siempre; bloque sim sensores solo en DEMO
   $("hmi-sim-block")?.classList.toggle("hidden-real", !!hmiModeReal);
   $("hmi-real-io-block")?.classList.remove("hidden");
 }
@@ -1995,14 +1977,6 @@ document.querySelectorAll(".navpills .pill[data-view]").forEach(btn => {
     const v = btn.dataset.view;
     if(v === "history") renderHistorial();
     if(v === "admin") renderAdmin();
-    if(v === "hmi"){
-      // Si hay sesión abierta, HMI de esa estación; si no, DEMO por defecto
-      if(sesion && sesion.estacionId){
-        openHmiForStation(sesion.estacionId);
-        return;
-      }
-      applyHmiStationMode(false, HMI_ESTACION_DEMO);
-    }
     if(v === "plc-real") ensureRealListen();
     showAppView(v);
   };
@@ -2087,6 +2061,7 @@ function updateTripleMachineStage(prefix, plc){
     let emoji = "";
     if(plc.ultimoMaterial === "plastico") emoji = "🧴";
     else if(plc.ultimoMaterial === "aluminio") emoji = "🥫";
+    else if(plc.ultimoMaterial === "vidrio") emoji = "🍾";
     else if(running || ps.any) emoji = "♻️";
     if(emoji){
       piece.textContent = emoji;
@@ -2192,6 +2167,7 @@ function renderHmiFromPlc(data){
   $("hmi-chip-p3")?.classList.toggle("ok", ps.p3);
   if($("hmi-cont-p")) $("hmi-cont-p").textContent = String(mats.plastico?.piezas ?? 0);
   if($("hmi-cont-a")) $("hmi-cont-a").textContent = String(mats.aluminio?.piezas ?? 0);
+  if($("hmi-cont-v")) $("hmi-cont-v").textContent = String(mats.vidrio?.piezas ?? 0);
   if($("hmi-alarma")) $("hmi-alarma").textContent = plc.alarma ? "ACTIVA" : "OK";
   if($("hmi-emergencia-st")) $("hmi-emergencia-st").textContent = plc.emergencia ? "ACTIVA" : "OK";
   $("hmi-chip-alarma")?.classList.toggle("warn", !!plc.alarma);
@@ -2261,33 +2237,44 @@ $("hmi-peso-apply").onclick = () => {
 };
 $("hmi-sim-plastico").onclick = async () => {
   await pushHmiCmd({
-    BasculaLista: true, SensorPieza: true, SensorPlastico: true, SensorAluminio: false
+    BasculaLista: true, SensorPieza: true,
+    SensorPlastico: true, SensorAluminio: false, SensorVidrio: false
   });
-  toast("Sim plástico → PLC (P2)");
+  toast("Sim plástico → P1");
   setTimeout(() => pushHmiCmd({
-    BasculaLista: false, SensorPieza: false, SensorPlastico: false, SensorAluminio: false
+    BasculaLista: false, SensorPieza: false,
+    SensorPlastico: false, SensorAluminio: false, SensorVidrio: false
   }), 600);
 };
 $("hmi-sim-aluminio").onclick = async () => {
   await pushHmiCmd({
-    BasculaLista: true, SensorPieza: true, SensorPlastico: false, SensorAluminio: true
+    BasculaLista: true, SensorPieza: true,
+    SensorPlastico: false, SensorAluminio: true, SensorVidrio: false
   });
-  toast(hmiAutoPiston ? "Sim aluminio — P3 + FC AUTO" : "Sim aluminio — pulsa FC P3 100%");
+  toast(hmiAutoPiston ? "Sim latas → P2 + FC AUTO" : "Sim latas → FC P2");
 };
+$("hmi-sim-vidrio")?.addEventListener("click", async () => {
+  await pushHmiCmd({
+    BasculaLista: true, SensorPieza: true,
+    SensorPlastico: false, SensorAluminio: false, SensorVidrio: true
+  });
+  toast(hmiAutoPiston ? "Sim vidrio → P3 + FC AUTO" : "Sim vidrio → FC P3");
+});
 $("hmi-sim-p1-ext")?.addEventListener("click", () => {
   pushHmiCmd({ Piston1Extendido: true });
-  toast("FC P1 100% → PLC");
+  toast("FC P1");
 });
 $("hmi-sim-p2-ext")?.addEventListener("click", () => {
   pushHmiCmd({ Piston2Extendido: true });
-  toast("FC P2 100% → PLC");
+  toast("FC P2");
 });
 $("hmi-sim-p3-ext")?.addEventListener("click", () => {
   pushHmiCmd({ Piston3Extendido: true });
-  toast("FC P3 100% → PLC");
+  toast("FC P3");
 });
 $("hmi-sim-clear").onclick = () => pushHmiCmd({
-  BasculaLista: false, SensorPieza: false, SensorPlastico: false, SensorAluminio: false,
+  BasculaLista: false, SensorPieza: false,
+  SensorPlastico: false, SensorAluminio: false, SensorVidrio: false,
   Piston1Extendido: false, Piston2Extendido: false, Piston3Extendido: false
 });
 $("hmi-auto-piston").onclick = () => {
@@ -2295,7 +2282,6 @@ $("hmi-auto-piston").onclick = () => {
   $("hmi-auto-piston").classList.toggle("on", hmiAutoPiston);
   $("hmi-auto-piston").textContent = hmiAutoPiston ? "AUTO" : "MANUAL";
   if($("hmi-auto-piston-lbl")) $("hmi-auto-piston-lbl").textContent = hmiAutoPiston ? "AUTO" : "MANUAL";
-  toast(hmiAutoPiston ? "Feedback FC AUTO (P1–P3)" : "Feedback FC MANUAL (botones FC 100%)");
 };
 function bindHold(btnId, flag){
   const el = $(btnId);
@@ -2426,14 +2412,6 @@ $("btn-real-hmi")?.addEventListener("click", () => {
   openHmiForStation(HMI_ESTACION_REAL);
 });
 
-$("hmi-mode-toggle")?.addEventListener("click", () => {
-  const nextReal = !hmiModeReal;
-  const nextId = nextReal ? HMI_ESTACION_REAL : HMI_ESTACION_DEMO;
-  applyHmiStationMode(nextReal, nextId);
-  ensureHmiListen();
-  toast(hmiModeReal ? "HMI → estación REAL (3 pistones)" : "HMI → estación DEMO (3 pistones sim)");
-});
-
 $("btn-open-hmi")?.addEventListener("click", () => {
   if(!sesion || !sesion.estacionId){
     toast("Conecta una estación primero");
@@ -2509,7 +2487,8 @@ async function iniciarSesion(estacion){
     estacionNombre: estacion.nombre,
     materiales: {
       plastico: { piezas: 0, pesoKg: 0 },
-      aluminio: { piezas: 0, pesoKg: 0 }
+      aluminio: { piezas: 0, pesoKg: 0 },
+      vidrio: { piezas: 0, pesoKg: 0 }
     },
     plc: { ...PLC_DEFAULT }
   };

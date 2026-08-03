@@ -17,7 +17,7 @@
 - [ ] 3× cilindro doble efecto + 3× válvula 5/2
 - [ ] Sensores 0% y 100% en cada cilindro → `I_PistonNRetractado` / `I_PistonNExtendido`
 - [ ] Sensores pieza / plástico / aluminio / báscula lista
-- [ ] P1 = retenedor · P2 = empuje plástico · P3 = empuje aluminio
+- [ ] P1 = plástico · P2 = latas · P3 = vidrio
 
 ## PC / red
 - [ ] PC en la misma subnet que el PLC
@@ -42,7 +42,7 @@ Estación Firestore: **`colegio-don-bosco-real`**
 
 ## Prueba
 1. START desde web → `M_SistemaOn` / `Q_LamparaRun`
-2. Pieza física → `Q_Piston1` (retenedor) activo
+2. Pieza plástica → `Q_Piston1` activo
 3. Pieza + plástico → `Q_Piston2` → sensor 100% → contador plástico
 4. Pieza + aluminio → `Q_Piston3` → sensor 100% → contador aluminio
 5. Emergencia desde web → paro
