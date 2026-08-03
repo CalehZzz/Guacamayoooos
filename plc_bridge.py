@@ -30,9 +30,8 @@ SERVICE_ACCOUNT_PATH = "serviceAccountKey.json"
 # DatosEstacion termina en UltimoMaterial (Int @ 20.0) → tamaño real 22 bytes (0..21).
 # Pedir 24 provoca Invalid address (0x05) si el DB no está rellenado.
 DB_READ_SIZE = 22
-# DB_HMI: bools en 0..1 + Real PesoActualKg en 2.0 → mínimo 6 bytes.
-# Escribimos 6; si tu DB_HMI aún es más chico, amplíalo en TIA (ver MAPA_DB_HMI.md).
-DB_HMI_SIZE = 6
+# DB_HMI: bools 0..1 + Real PesoActualKg @ 2.0 + Piston3Extendido @ 6.0 → 7 bytes.
+DB_HMI_SIZE = 7
 PESO_OFFSET = 2  # si tu DB_HMI muestra otro offset al compilar, cámbialo aquí
 
 ESTADO_TXT = {0: "idle", 1: "running", 2: "clasificando", 3: "alarma", 4: "emergencia"}
@@ -47,15 +46,16 @@ BOOL_MAP = [
     ("ModoAuto", 0, 4),
     ("FinSesion", 0, 5),
     ("ManualBanda", 0, 6),
-    ("ManualPiston", 0, 7),       # real: manual P3 aluminio
+    ("ManualPiston", 0, 7),       # manual P3 aluminio
     ("BasculaLista", 1, 0),
     ("SensorPieza", 1, 1),
     ("SensorPlastico", 1, 2),
     ("SensorAluminio", 1, 3),
-    ("PistonRetractado", 1, 4),
-    ("PistonExtendido", 1, 5),
-    ("ManualPiston1", 1, 6),      # real: manual P1 retenedor
-    ("ManualPiston2", 1, 7),      # real: manual P2 plástico
+    ("Piston1Extendido", 1, 4),   # sim FC P1 (simple efecto)
+    ("Piston2Extendido", 1, 5),   # sim FC P2
+    ("ManualPiston1", 1, 6),      # manual P1 retenedor
+    ("ManualPiston2", 1, 7),      # manual P2 plástico
+    ("Piston3Extendido", 6, 0),   # sim FC P3 (después del Real)
 ]
 
 
@@ -100,7 +100,7 @@ def diagnostico_dbs(client: snap7.client.Client, db_datos: int, db_hmi: int) -> 
     for dbn, label, need in ((db_datos, "DatosEstacion", DB_READ_SIZE), (db_hmi, "DB_HMI", DB_HMI_SIZE)):
         ok = False
         max_ok = 0
-        for sz in (2, 4, 8, 16, 20, 22, 24, 32):
+        for sz in (2, 4, 6, 7, 8, 16, 20, 22, 24, 32):
             try:
                 client.db_read(dbn, 0, sz)
                 max_ok = sz
@@ -136,7 +136,7 @@ def leer_datos_estacion(client: snap7.client.Client, db_number: int) -> dict:
             "alarma": bool(get_bool(raw, 16, 5)),
             "banda": bool(get_bool(raw, 16, 6)),
             "piston": bool(get_bool(raw, 16, 7)),
-            # Detalle 3 pistones (PLC real @ byte 17; en demo quedan en 0)
+            # Detalle 3 pistones (@ byte 17)
             "piston1": bool(get_bool(raw, 17, 0)),  # retenedor
             "piston2": bool(get_bool(raw, 17, 1)),  # plástico
             "piston3": bool(get_bool(raw, 17, 2)),  # aluminio
@@ -174,7 +174,8 @@ def escribir_db_hmi(client: snap7.client.Client, db_hmi: int, cmd: dict) -> None
         raise RuntimeError(
             f"DB_HMI (DB{db_hmi}) es demasiado pequeño para peso. "
             "Se escribieron solo bools (2 bytes). "
-            "En TIA agrega PesoActualKg Real → Download (probe debe decir ≥6 bytes)."
+            "En TIA agrega PesoActualKg Real + Piston3Extendido @6.0 → Download "
+            "(probe debe decir ≥7 bytes)."
         ) from None
 
 

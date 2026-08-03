@@ -66,22 +66,25 @@ Crea **todos** estos campos en TIA (mismo layout que el demo). Así el bridge es
 
 | Offset | Nombre | Tipo | Uso en PLC real |
 |---|---|---|---|
-| 1.0 | `BasculaLista` | Bool | **No usar en LAD real** — en demo simula báscula; en real la báscula es `I_BasculaLista` |
-| 1.1 | `SensorPieza` | Bool | **No usar en LAD real** — en demo simula pieza; en real es `I_SensorPieza` |
-| 1.2 | `SensorPlastico` | Bool | **No usar en LAD real** — en demo simula plástico; en real es `I_SensorPlastico` |
-| 1.3 | `SensorAluminio` | Bool | **No usar en LAD real** — en demo simula aluminio; en real es `I_SensorAluminio` |
-| 1.4 | `PistonRetractado` | Bool | **No usar en LAD real** — en demo simula 0%; en real son `I_PistonNRetractado` |
-| 1.5 | `PistonExtendido` | Bool | **No usar en LAD real** — en demo simula 100%; en real son `I_PistonNExtendido` |
+| 1.0 | `BasculaLista` | Bool | **Sim:** báscula · **Real:** ignorar → `I_BasculaLista` |
+| 1.1 | `SensorPieza` | Bool | **Sim:** pieza · **Real:** ignorar → `I_SensorPieza` |
+| 1.2 | `SensorPlastico` | Bool | **Sim:** plástico · **Real:** ignorar → `I_SensorPlastico` |
+| 1.3 | `SensorAluminio` | Bool | **Sim:** aluminio · **Real:** ignorar → `I_SensorAluminio` |
+| 1.4 | `Piston1Extendido` | Bool | **Sim:** FC P1 (simple efecto) · **Real:** ignorar → `I_Piston1Extendido` |
+| 1.5 | `Piston2Extendido` | Bool | **Sim:** FC P2 · **Real:** ignorar → `I_Piston2Extendido` |
 | 1.6 | `ManualPiston1` | Bool | **Sí** — manual **P1 retenedor** |
 | 1.7 | `ManualPiston2` | Bool | **Sí** — manual **P2 plástico** |
 
-¿Por qué existen 1.0–1.5 si el real no los lee?  
-Porque el **mismo DB** lo usa la demo (1511C) para simular sensores desde la web. En el proyecto 1214C los **creas igual** (mismo contrato / mismos offsets), pero el LAD real **ignora** esos bits y lee los `I_*` físicos.
+### Desde offset 2 — peso + FC P3 sim
 
-### Desde offset 2 — peso
-
-| Offset | Nombre | Tipo | Uso en PLC real |
+| Offset | Nombre | Tipo | Uso |
 |---|---|---|---|
-| 2.0 | `PesoActualKg` | Real | Peso desde HMI / báscula→PC→web |
+| 2.0 | `PesoActualKg` | Real | Peso desde HMI |
+| 6.0 | `Piston3Extendido` | Bool | **Sim:** FC P3 · **Real:** ignorar → `I_Piston3Extendido` |
 
-Tamaño escritura bridge: **6 bytes**.
+Tamaño escritura bridge: **7 bytes**.
+
+¿Por qué 1.0–1.5 y 6.0 si el real no los lee?  
+Porque el **mismo DB** lo usa la demo (1511C, solo HMI) para simular sensores. En el 1214C los creas igual (mismo contrato), pero el LAD real lee los `I_*`.
+
+Cilindros **simple efecto**: un sensor de extendido por pistón (sin `*Retractado`).
