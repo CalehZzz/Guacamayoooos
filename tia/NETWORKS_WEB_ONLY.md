@@ -1,16 +1,15 @@
-# Networks — solo Web (sin AS) · 3 pistones simple efecto
+# Networks — solo Web · 3 materiales (plástico / latas / vidrio)
 
 **Regla:** sensores + operador = `DB_HMI.*`.  
-Actuadores internos = `M_Banda`, `M_Piston1` (retenedor), `M_Piston2` (plástico), `M_Piston3` (aluminio).
+Actuadores = `M_Banda`, `M_Piston1` (plástico), `M_Piston2` (latas/aluminio), `M_Piston3` (vidrio).
 
-Igual que el PLC real (`plc_real/NETWORKS_LAD.md`), pero todo simulado vía HMI virtual.
-
-Ver: `docs/11_SIN_AS_SOLO_WEB.md` · tags: `tia/TABLA_TAGS_DESDE_CERO.md` · DB: `tia/MAPA_DB_HMI.md`.
+Cilindros **simple efecto** · 1 FC `PistonNExtendido` por pistón.
 
 ```
-  [Sim entrada] → [Báscula DB_HMI] → [Banda] → [P1 retenedor + sensores]
-                                                ├─ plástico  → P2
-                                                └─ aluminio  → P3
+  [Sim] → báscula → banda → sensores material
+                              ├─ plástico → P1
+                              ├─ latas    → P2
+                              └─ vidrio   → P3
 ```
 
 ---
@@ -28,151 +27,89 @@ Ver: `docs/11_SIN_AS_SOLO_WEB.md` · tags: `tia/TABLA_TAGS_DESDE_CERO.md` · DB:
 
 ## FC_Modos
 
-### NW1 START → Set `M_SistemaOn`
 ```
-[ DB_HMI.Start ]──[/ DB_HMI.Stop ]──[/ DB_HMI.Emergencia ]──(S) M_SistemaOn
-```
-
-### NW2 STOP / EMERGENCIA → Reset
-```
-[ DB_HMI.Stop       ]──┐
-                       ├──(R) M_SistemaOn
-[ DB_HMI.Emergencia ]──┘
-```
-
-### NW3 Modo
-```
+[ DB_HMI.Start ]──[/ Stop ]──[/ Emergencia ]──(S) M_SistemaOn
+[ Stop ]──┐
+          ├──(R) M_SistemaOn
+[ Emerg ]─┘
 [ DB_HMI.ModoAuto ]──( ) M_ModoAuto
-```
-
-### NW4 / NW5 Lámparas (opcionales)
-```
-[ M_SistemaOn ]──[/ DB_HMI.Emergencia ]──( ) M_LamparaRun
-[ DB_HMI.Emergencia ]──( ) M_LamparaEmergencia
 ```
 
 ---
 
 ## FC_Secuencia
 
-### NW1 Banda → `M_Banda`
+### Banda → `M_Banda`
 ```
-AUTO:
-[ M_SistemaOn ]─[ M_ModoAuto ]─[/ Emerg ]─[/ Alarma ]─[/ M_Clasificando ]─┐
-                                                                         ├──( ) M_Banda
-MANUAL:                                                                  │
-[ M_SistemaOn ]─[/ M_ModoAuto ]─[ DB_HMI.ManualBanda ]───────────────────┘
+AUTO:  On · Auto · /Emerg · /Alarma · /Clasificando → M_Banda
+MANUAL: On · /Auto · ManualBanda → M_Banda
 ```
 
-### NW2 P1 retenedor → `M_Piston1`
+### Latch plástico → `(S) M_ClasifPlastico` → P1
 ```
-[ M_SistemaOn ]─[ M_ModoAuto ]─[/ Emerg ]─[/ Alarma ]─[ DB_HMI.SensorPieza ]─┐
-[ M_SistemaOn ]─[ M_ModoAuto ]─[/ Emerg ]─[/ Alarma ]─[ M_Clasificando ]─────┼──( ) M_Piston1
-[ M_SistemaOn ]─[/ M_ModoAuto ]─[ DB_HMI.ManualPiston1 ]────────────────────┘
-```
-
-### NW3 Latch aluminio → `(S) M_ClasifAluminio`
-```
-[ On ]─[ Auto ]─[ SensorPieza ]─[ BasculaLista ]─[ SensorAluminio ]
-─[/ SensorPlastico ]─[/ M_ClasifPlastico ]─(S) M_ClasifAluminio
-```
-(todos los sensores = `DB_HMI.*`)
-
-### NW4 Latch plástico → `(S) M_ClasifPlastico`
-```
-[ On ]─[ Auto ]─[ SensorPieza ]─[ BasculaLista ]─[ SensorPlastico ]
-─[/ SensorAluminio ]─[/ M_ClasifAluminio ]─(S) M_ClasifPlastico
+On · Auto · Pieza · Bascula · SensorPlastico
+· /SensorAluminio · /SensorVidrio · /ClasifAluminio · /ClasifVidrio → (S) M_ClasifPlastico
 ```
 
-### NW5 P3 aluminio → `M_Piston3` (simple efecto)
+### Latch latas → `(S) M_ClasifAluminio` → P2
 ```
-[ M_ClasifAluminio ]─[/ DB_HMI.Piston3Extendido ]─┐
-                                                   ├──( ) M_Piston3
-[ M_SistemaOn ]─[/ ModoAuto ]─[ DB_HMI.ManualPiston ]─┘
-```
-
-### NW6 P2 plástico → `M_Piston2`
-```
-[ M_ClasifPlastico ]─[/ DB_HMI.Piston2Extendido ]─┐
-                                                  ├──( ) M_Piston2
-[ M_SistemaOn ]─[/ ModoAuto ]─[ DB_HMI.ManualPiston2 ]─┘
+On · Auto · Pieza · Bascula · SensorAluminio
+· /SensorPlastico · /SensorVidrio · /ClasifPlastico · /ClasifVidrio → (S) M_ClasifAluminio
 ```
 
-### NW7 Retardo + contar aluminio
+### Latch vidrio → `(S) M_ClasifVidrio` → P3
 ```
-[ M_ClasifAluminio ]─[ DB_HMI.Piston3Extendido ]─[ TON T_RetardoPiston3  PT:=T#500ms ]
-[ T_RetardoPiston3.Q ]─(R) M_ClasifAluminio
-```
-SCL al disparo del TON:
-```scl
-IF T_RetardoPiston3.Q THEN
-    DatosEstacion.ContAluminio := DatosEstacion.ContAluminio + 1;
-    DatosEstacion.PesoAluminioKg := DatosEstacion.PesoAluminioKg + DatosEstacion.PesoActualKg;
-    DatosEstacion.UltimoMaterial := 2;
-END_IF;
+On · Auto · Pieza · Bascula · SensorVidrio
+· /SensorPlastico · /SensorAluminio · /ClasifPlastico · /ClasifAluminio → (S) M_ClasifVidrio
 ```
 
-### NW8 Retardo + contar plástico
+### P1 plástico → `M_Piston1`
 ```
-[ M_ClasifPlastico ]─[ DB_HMI.Piston2Extendido ]─[ TON T_RetardoPiston2  PT:=T#500ms ]
-[ T_RetardoPiston2.Q ]─(R) M_ClasifPlastico
-```
-```scl
-IF T_RetardoPiston2.Q THEN
-    DatosEstacion.ContPlastico := DatosEstacion.ContPlastico + 1;
-    DatosEstacion.PesoPlasticoKg := DatosEstacion.PesoPlasticoKg + DatosEstacion.PesoActualKg;
-    DatosEstacion.UltimoMaterial := 1;
-END_IF;
+[ ClasifPlastico ]─[/ Piston1Extendido ]─┐
+                                         ├──( ) M_Piston1
+[ On ]─[/ Auto ]─[ ManualPiston1 ]───────┘
 ```
 
-### NW9 / NW10 Timeouts → alarma
+### P2 latas → `M_Piston2`
 ```
-[ M_ClasifAluminio ]─[ TON T_TimeoutPiston3  PT:=T#3s ]
-[ T_TimeoutPiston3.Q ]─[/ DB_HMI.Piston3Extendido ]─(S) M_Alarma
-
-[ M_ClasifPlastico ]─[ TON T_TimeoutPiston2  PT:=T#3s ]
-[ T_TimeoutPiston2.Q ]─[/ DB_HMI.Piston2Extendido ]─(S) M_Alarma
+[ ClasifAluminio ]─[/ Piston2Extendido ]─┐
+                                         ├──( ) M_Piston2
+[ On ]─[/ Auto ]─[ ManualPiston2 ]───────┘
 ```
 
-### NW11 Contradicción sensores
+### P3 vidrio → `M_Piston3`
 ```
-[ DB_HMI.SensorPieza ]─[ DB_HMI.SensorPlastico ]─[ DB_HMI.SensorAluminio ]─(S) M_Alarma
+[ ClasifVidrio ]─[/ Piston3Extendido ]─┐
+                                       ├──( ) M_Piston3
+[ On ]─[/ Auto ]─[ ManualPiston ]──────┘
 ```
 
-### Auxiliar
+### Retardo + contar (cada material)
 ```
-M_Clasificando := M_ClasifPlastico OR M_ClasifAluminio;
+ClasifPlastico · Piston1Extendido → TON T_RetardoPiston1 → (R) Clasif + ContPlastico++
+ClasifAluminio · Piston2Extendido → TON T_RetardoPiston2 → (R) Clasif + ContAluminio++
+ClasifVidrio   · Piston3Extendido → TON T_RetardoPiston3 → (R) Clasif + ContVidrio++
+```
+`UltimoMaterial`: 1 plástico · 2 aluminio · 3 vidrio.
+
+### Timeouts
+```
+ClasifX · TON Timeout → /PistonNExtendido → (S) M_Alarma
+```
+
+```
+M_Clasificando := ClasifPlastico OR ClasifAluminio OR ClasifVidrio;
 ```
 
 ---
 
-## FC_Alarmas
-
-```
-[ M_Alarma ]─( ) M_LamparaAlarma
-[ DB_HMI.ResetAlarma ]─(R) M_Alarma
-[ DB_HMI.Emergencia ]─(S) M_Alarma
-```
-
----
-
-## FC_EspejoWeb (SCL)
+## FC_EspejoWeb
 
 ```scl
-DatosEstacion.BandaOn      := M_Banda;
-DatosEstacion.PistonOn     := M_Piston1 OR M_Piston2 OR M_Piston3;
-DatosEstacion.Piston1On    := M_Piston1;
-DatosEstacion.Piston2On    := M_Piston2;
-DatosEstacion.Piston3On    := M_Piston3;
-DatosEstacion.SistemaOn    := M_SistemaOn;
-DatosEstacion.ModoAuto     := M_ModoAuto;
-DatosEstacion.Emergencia   := DB_HMI.Emergencia;
-DatosEstacion.Alarma       := M_Alarma;
+DatosEstacion.BandaOn   := M_Banda;
+DatosEstacion.PistonOn  := M_Piston1 OR M_Piston2 OR M_Piston3;
+DatosEstacion.Piston1On := M_Piston1;  // plástico
+DatosEstacion.Piston2On := M_Piston2;  // latas
+DatosEstacion.Piston3On := M_Piston3;  // vidrio
 DatosEstacion.PesoActualKg := DB_HMI.PesoActualKg;
 ```
-
----
-
-## Feedback de sensores en sim (HMI)
-
-La HMI virtual, con “Feedback AUTO”, escribe `Piston1/2/3Extendido` ~450 ms después de ver el actuador ON en `DatosEstacion` (simula el final de carrera de simple efecto). En el 1214C real eso lo hacen los `I_PistonNExtendido` cableados.

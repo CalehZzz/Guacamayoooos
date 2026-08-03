@@ -2,7 +2,7 @@
 
 ## Qué estás construyendo
 
-Una **estación automatizada de clasificación y pesaje** de botellas plásticas y latas de aluminio, con:
+Una **estación automatizada de clasificación y pesaje** de **plástico, latas (aluminio) y vidrio**, con:
 
 | Pieza del reto | Herramienta | Rol |
 |---|---|---|
@@ -11,21 +11,16 @@ Una **estación automatizada de clasificación y pesaje** de botellas plásticas
 | HMI | **WinCC** dentro de TIA Portal | Pantalla industrial: ON/OFF, manual/auto, contadores, alarmas |
 | Innovación | **App web Guacamayos** | Cualquier persona se conecta y ve lo acumulado en vivo |
 
-## Flujo físico (simulación HMI · 3 pistones simple efecto)
+## Flujo físico (3 materiales)
 
 ```
-  [Entrada] → [Báscula] → [Banda] → [P1 retenedor + sensores]
-                                      ├─ Plástico  → P2 → contenedor A
-                                      └─ Aluminio  → P3 → contenedor B
+  [Entrada] → [Báscula] → [Banda] → sensores
+                                      ├─ Plástico → P1
+                                      ├─ Latas    → P2
+                                      └─ Vidrio   → P3
 ```
 
-1. La pieza se simula / se coloca → báscula (`DB_HMI` en sim, `I_*` en real).
-2. La **banda** avanza.
-3. **P1** retiene; sensores identifican plástico o aluminio.
-4. **P2** o **P3** extiende (simple efecto) y cuenta.
-5. La **app / HMI** muestra contadores en vivo (Firestore ← bridge ← `DatosEstacion`).
-
-En simulación **solo HMI virtual** (sin AS): ver `docs/11_SIN_AS_SOLO_WEB.md`.
+HMI solo desde la estación conectada (botón Abrir HMI).
 
 ## Cómo se conecta TODO (importante)
 

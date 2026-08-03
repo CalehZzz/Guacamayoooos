@@ -2,13 +2,12 @@
 
 Copia estos nombres **exactamente** en TIA Portal (PLC tags + DB). Así el bridge Python y la web coinciden.
 
-> **Simulación actual (solo HMI virtual):** no uses botonera `%I` ni un solo pistón.  
-> Operador + sensores → **`DB_HMI`**. Actuadores → **`M_Banda` / `M_Piston1` / `M_Piston2` / `M_Piston3`**.  
-> Guía: `tia/TABLA_TAGS_DESDE_CERO.md` · `tia/NETWORKS_WEB_ONLY.md` · `docs/11_SIN_AS_SOLO_WEB.md`.
+> **Simulación (solo HMI):** operador + sensores → **`DB_HMI`**.  
+> Actuadores → **`M_Banda` / `M_Piston1` (plástico) / `M_Piston2` (latas) / `M_Piston3` (vidrio)**.  
+> Guía: `tia/NETWORKS_WEB_ONLY.md` · `docs/11_SIN_AS_SOLO_WEB.md`.
 
 ```
-  [Sim] → báscula → banda → P1 retenedor → P2 plástico | P3 aluminio
-         (3 cilindros simple efecto · 1 sensor Extendido c/u vía DB_HMI)
+  [Sim] → báscula → banda → P1 plástico | P2 latas | P3 vidrio
 ```
 
 ---
@@ -31,9 +30,9 @@ Para el **PLC real 1214C** ver `plc_real/TABLA_IO_1214C.md` (7 DI proceso + 7 DQ
 | Nombre | Ejemplo | Descripción |
 |---|---|---|
 | `M_Banda` | `%M3.0` | Marcha banda |
-| `M_Piston1` | `%M3.1` | Retenedor (simple efecto) |
-| `M_Piston2` | `%M3.2` | Empuje plástico |
-| `M_Piston3` | `%M3.3` | Empuje aluminio |
+| `M_Piston1` | `%M3.1` | Empuje plástico |
+| `M_Piston2` | `%M3.2` | Empuje latas |
+| `M_Piston3` | `%M3.3` | Empuje vidrio |
 | `M_LamparaRun` | `%M3.4` | Piloto marcha |
 | `M_LamparaAlarma` | `%M3.5` | Piloto alarma |
 | `M_LamparaEmergencia` | `%M3.6` | Piloto emergencia |
@@ -119,18 +118,13 @@ Rangos típicos de prueba:
 
 ---
 
-## 6. Lógica de clasificación (3 pistones · simple efecto)
+## 6. Lógica de clasificación
 
-Cuando `DB_HMI.SensorPieza` = 1 y báscula lista:
-
-| Sensor plástico | Sensor aluminio | Acción |
+| Sensor | Pistón | Contador |
 |---|---|---|
-| 1 | 0 | P2 extiende → cuenta plástico → retracta (resorte) |
-| 0 | 1 | P3 extiende → cuenta aluminio → retracta |
-| 1 | 1 | **Alarma** (lectura inválida) |
-| 0 | 0 | Esperar / no contar |
-
-P1 retenedor sujeta mientras hay pieza o clasificación en curso.
+| Plástico | P1 | ContPlastico |
+| Latas (aluminio) | P2 | ContAluminio |
+| Vidrio | P3 | ContVidrio |
 
 ---
 

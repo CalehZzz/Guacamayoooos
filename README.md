@@ -22,7 +22,7 @@ pip install firebase-admin python-snap7
 python plc_bridge.py parque-central --ip 192.168.0.1 --db 1 --db-hmi 3
 ```
 
-En la app: icono **🖥️** = HMI demo · **🔌** = PLC real (1214C) · **🏠** = usuario.
+En la app: conectar estación → **Abrir HMI** · **🔌** = panel PLC real · **🏠** = estaciones.
 
 ### PLC real (S7-1200 1214C) — carpeta aparte
 
@@ -33,12 +33,12 @@ python plc_real/plc_bridge_real.py --ip 192.168.0.10
 ```
 
 Estación Firestore: `colegio-don-bosco-real`.  
-Hardware real: **3 pistones** (P1 retenedor · P2 plástico · P3 aluminio).  
-Operador: **solo web** (sin pulsadores físicos) — ver `plc_real/TABLA_IO_1214C.md`.
+Hardware: **3 pistones** — P1 plástico · P2 latas · P3 vidrio.  
+Operador: **solo web** — ver `plc_real/TABLA_IO_1214C.md`.
 
 ## App
 
-- `index.html` — interfaz para el usuario en la estación (plástico + aluminio en vivo)
+- `index.html` — usuario en estación (plástico + latas + vidrio) + HMI desde la estación
 - `plc_simulador.py` — genera datos sin PLC (para probar la web)
 - `plc_bridge.py` — lee el PLC virtual con snap7 y publica a Firestore
 - `index.js` — Cloud Function auxiliar para roles admin

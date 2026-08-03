@@ -2,7 +2,7 @@
 
 **Reglas:**
 - Sensores / finales de carrera → `I_*`
-- Actuadores → `Q_*` (P1 retenedor · P2 plástico · P3 aluminio)
+- Actuadores → `Q_*` (P1 plástico · P2 latas · P3 vidrio)
 - Operador → **solo** `DB_HMI.*` (sin botonera física)
 - Espejo a la web → `DatosEstacion`
 

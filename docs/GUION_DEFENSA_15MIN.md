@@ -212,7 +212,7 @@ Si algo falla: pasen al siguiente material; no depuren en vivo más de 20 s.
 
 **Caleb (~40–50 s, cámara a la mesa / video corto):**
 
-> “Sí. Estamos montando SIBU en **físico**: banda, sensores y **tres pistones** — retenedor, plástico, aluminio — con mando desde la misma web.  
+> “Sí. Estamos montando SIBU en **físico**: banda, sensores y **tres pistones** — plástico, latas, vidrio — con mando desde la misma web.  
 > Sin botonera en mesa: opera el HMI.”
 
 **Carla (~10–15 s):**
