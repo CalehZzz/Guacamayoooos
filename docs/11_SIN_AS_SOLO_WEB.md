@@ -1,16 +1,18 @@
-# Sin Automation Studio — solo Web ↔ TIA
+# Sin Automation Studio — solo Web ↔ TIA (3 pistones)
 
 ```
-Página SIBU (HMI + simulación gráfica)
-        ↕ Firestore
+Página SIBU (HMI virtual KTP700 + simulación gráfica)
+        ↕ Firestore  (estación elegida)
    plc_bridge.py (snap7)
         ↕
    PLC 1511C (PLCSIM Advanced)
+   · M_Banda · M_Piston1 · M_Piston2 · M_Piston3
+   · sensores sim en DB_HMI (simple efecto)
 ```
 
 **Eliminado:** Automation Studio, KEPServer, mapeo `%M2.x` hacia AS.
 
-Networks LAD detalladas: `tia/NETWORKS_WEB_ONLY.md`.
+Networks LAD: `tia/NETWORKS_WEB_ONLY.md` · Tags: `tia/TABLA_TAGS_DESDE_CERO.md`.
 
 ---
 
@@ -18,56 +20,60 @@ Networks LAD detalladas: `tia/NETWORKS_WEB_ONLY.md`.
 
 | Rol | Tags | Quién escribe |
 |---|---|---|
-| Comandos + sensores simulados | `DB_HMI.*` (DB3) | Web → bridge |
-| Lógica / actuadores internos | `M_SistemaOn`, `M_Banda`, `M_Piston`… | PLC |
-| Estado a la web | `DatosEstacion` (DB1) | PLC → bridge → web |
+| Comandos + sensores simulados | `DB_HMI.*` (DB3, ≥7 bytes) | Web → bridge |
+| Lógica / actuadores | `M_SistemaOn`, `M_Banda`, `M_Piston1/2/3`… | PLC |
+| Estado a la web | `DatosEstacion` (DB1, 22 bytes) | PLC → bridge → web |
+
+```
+  Entrada sim → báscula → banda → P1 retenedor
+                                   ├─ plástico → P2
+                                   └─ aluminio → P3
+```
+
+Cilindros **simple efecto**: 1 sensor `PistonNExtendido` por pistón (en `DB_HMI`).
 
 ---
 
-## Cambio obligatorio en TIA (FC_Secuencia)
+## Cambio en TIA (FC_Secuencia)
 
-Sustituye contactos:
-
-| Antes (AS) | Ahora (web) |
+| Antes (1 pistón / AS) | Ahora (3 pistones · web) |
 |---|---|
-| `M_SensorPieza` | `DB_HMI.SensorPieza` |
-| `M_SensorPlastico` | `DB_HMI.SensorPlastico` |
-| `M_SensorAluminio` | `DB_HMI.SensorAluminio` |
-| `M_BasculaLista` | `DB_HMI.BasculaLista` |
-| `M_PistonExtendido` | `DB_HMI.PistonExtendido` |
-| `M_PistonRetractado` | `DB_HMI.PistonRetractado` |
+| `M_Sensor*` / `I_*` | `DB_HMI.Sensor*` / `BasculaLista` |
+| `M_Piston` / `Q_Piston` | `M_Piston1` · `M_Piston2` · `M_Piston3` |
+| `M_PistonExtendido` | `DB_HMI.Piston1/2/3Extendido` |
+| Un solo TON | `T_RetardoPiston2/3` + `T_TimeoutPiston2/3` |
 
-**No tocar:** `DB_HMI.Start/Stop/…`, `M_SistemaOn`, `M_Banda`, `M_Piston`, `DatosEstacion`, timers.
+**No tocar la idea de:** `DB_HMI.Start/Stop/…`, `M_SistemaOn`, `DatosEstacion`.
 
 Después: compilar → Download → RUN.
 
 ---
 
-## Tags que puedes dejar de usar
+## Controles en la HMI virtual
 
-`M_SensorPieza`, `M_SensorPlastico`, `M_SensorAluminio`, `M_BasculaLista`,  
-`M_PistonRetractado`, `M_PistonExtendido` (versión `%M`) — ya no hacen falta sin AS.
-
-Sigue usando **`M_Banda`** y **`M_Piston`** (internos; la web los anima vía `DatosEstacion`).
-
----
-
-## Controles en la web (DB_HMI)
-
-| Botón HMI | Campos |
+| Botón HMI | Campos DB_HMI |
 |---|---|
 | START / STOP / Emergencia | `.Start` `.Stop` `.Emergencia` |
 | AUTO | `.ModoAuto` |
-| Sim plástico | Pieza + Plástico + Báscula |
-| Sim aluminio | Pieza + Aluminio + Báscula |
-| Pistón 100% | `.PistonExtendido=1` |
-| Limpiar | sensores sim = 0 |
-| Manual banda/pistón | `.ManualBanda` / `.ManualPiston` |
+| Marcha / Parada banda | `.ManualBanda` (+ modo manual) |
+| Extender / Retractar P1–P3 | `.ManualPiston1` / `.ManualPiston2` / `.ManualPiston` |
+| Sim plástico / aluminio | Pieza + material + Báscula |
+| Sim FC 100% P1/P2/P3 | `.Piston1/2/3Extendido` |
 | Peso | `.PesoActualKg` |
+
+Feedback AUTO (solo sim): ~450 ms después de ver el pistón ON en `DatosEstacion`, la web escribe el bit `*Extendido`.
 
 ---
 
-## Bridge (igual)
+## Acceso desde la estación
+
+1. App → elegir estación → **Conectar**
+2. En la vista en vivo → **Abrir HMI**
+3. La HMI usa `hmi_comandos/{idEstacion}` y `sesiones_activas/{idEstacion}`
+
+---
+
+## Bridge
 
 ```powershell
 py plc_bridge.py parque-central --ip 192.168.0.1 --db 1 --db-hmi 3

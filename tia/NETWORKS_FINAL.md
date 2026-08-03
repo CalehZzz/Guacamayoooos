@@ -1,9 +1,9 @@
 # Networks FINAL — sin confusión
 
-> **Actualización:** sin Automation Studio usa **`tia/NETWORKS_WEB_ONLY.md`**  
-> (sensores = `DB_HMI.*`, no `M_Sensor*`).
+> **Modo actual:** simulación **solo HMI · 3 pistones simple efecto** → **`tia/NETWORKS_WEB_ONLY.md`**.  
+> Este archivo describe el esquema anterior (1 pistón). No lo uses para el proyecto sim actual.
 
-**Regla única (modo web-only):**
+**Regla única (modo web-only · legado 1 pistón):**
 - `DB_HMI.*` = botones **y sensores simulados** de la web
 - `M_Banda` / `M_Piston` / latches = lógica interna PLC
 - `DatosEstacion` = espejo a la web

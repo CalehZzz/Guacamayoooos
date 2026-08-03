@@ -2,66 +2,59 @@
 
 Copia estos nombres **exactamente** en TIA Portal (PLC tags + DB). Así el bridge Python y la web coinciden.
 
----
+> **Simulación actual (solo HMI virtual):** no uses botonera `%I` ni un solo pistón.  
+> Operador + sensores → **`DB_HMI`**. Actuadores → **`M_Banda` / `M_Piston1` / `M_Piston2` / `M_Piston3`**.  
+> Guía: `tia/TABLA_TAGS_DESDE_CERO.md` · `tia/NETWORKS_WEB_ONLY.md` · `docs/11_SIN_AS_SOLO_WEB.md`.
 
-## 1. Entradas digitales (`%I`)
-
-| Dirección | Nombre simbólico | Tipo | Descripción |
-|---|---|---|---|
-| `%I0.0` | `I_Start` | Bool | Pulsador arranque (NO) |
-| `%I0.1` | `I_Stop` | Bool | Pulsador paro (NC lógico: en simulación lo tratamos activo en 1 = pedir paro) |
-| `%I0.2` | `I_Emergencia` | Bool | Paro de emergencia (1 = activado / peligro) |
-| `%I0.3` | `I_ModoAuto` | Bool | 1 = automático, 0 = manual (o selector HMI) |
-| `%I0.4` | `I_SensorPieza` | Bool | Pieza presente en zona de clasificación |
-| `%I0.5` | `I_SensorPlastico` | Bool | Material = plástico (botella) |
-| `%I0.6` | `I_SensorAluminio` | Bool | Material = aluminio (lata) |
-| `%I0.7` | `I_BasculaLista` | Bool | Báscula terminó de estabilizar peso |
-| `%I1.0` | `I_PistonRetractado` | Bool | Cilindro en casa (sensor magnético) |
-| `%I1.1` | `I_PistonExtendido` | Bool | Cilindro extendido |
-| `%I1.2` | `I_FinSesion` | Bool | Botón físico “terminar sesión usuario” |
-| `%I1.3` | `I_ManualBanda` | Bool | En modo manual: pedir marcha banda |
-| `%I1.4` | `I_ManualPiston` | Bool | En modo manual: pedir pistón |
-
-> En HMI puedes mapear Start/Stop/Modo/FinSesión a bits de memoria en vez de entradas físicas. Para PLCSIM es más fácil usar **tags de memoria** (`M`) controlados desde la HMI.
+```
+  [Sim] → báscula → banda → P1 retenedor → P2 plástico | P3 aluminio
+         (3 cilindros simple efecto · 1 sensor Extendido c/u vía DB_HMI)
+```
 
 ---
 
-## 2. Salidas digitales (`%Q`)
+## 1. Entradas digitales (`%I`) — opcional / legado
+
+En el modo **web-only** el operador **no** usa estas `%I`. Se dejan documentadas solo si alguien cablea PLCSIM clásico.
 
 | Dirección | Nombre simbólico | Tipo | Descripción |
 |---|---|---|---|
-| `%Q0.0` | `Q_Banda` | Bool | Motor / marcha de banda |
-| `%Q0.1` | `Q_Piston` | Bool | Electroválvula: extender pistón (empuja aluminio) |
-| `%Q0.2` | `Q_LamparaRun` | Bool | Indicador sistema en marcha |
-| `%Q0.3` | `Q_LamparaAlarma` | Bool | Indicador alarma |
-| `%Q0.4` | `Q_LamparaEmergencia` | Bool | Indicador emergencia |
+| — | *(sin botonera)* | — | Start/Stop/Emergencia/Manual → `DB_HMI` |
+| — | Sensores proceso | — | `DB_HMI.Sensor*` / `DB_HMI.PistonNExtendido` |
+
+Para el **PLC real 1214C** ver `plc_real/TABLA_IO_1214C.md` (7 DI proceso + 7 DQ).
+
+---
+
+## 2. Actuadores simulados (`%M`, no `%Q`)
+
+| Nombre | Ejemplo | Descripción |
+|---|---|---|
+| `M_Banda` | `%M3.0` | Marcha banda |
+| `M_Piston1` | `%M3.1` | Retenedor (simple efecto) |
+| `M_Piston2` | `%M3.2` | Empuje plástico |
+| `M_Piston3` | `%M3.3` | Empuje aluminio |
+| `M_LamparaRun` | `%M3.4` | Piloto marcha |
+| `M_LamparaAlarma` | `%M3.5` | Piloto alarma |
+| `M_LamparaEmergencia` | `%M3.6` | Piloto emergencia |
 
 ---
 
 ## 3. Memorias internas (`%M`) y temporizadores
 
-Los `%M` concretos (M0.0, M0.6…) **no tienen que ser iguales a los de nadie**. Lo importante es que **no se repitan** y que el **nombre** coincida con el programa.
-
 | Nombre | Tipo | Ejemplo OK | Uso |
 |---|---|---|---|
 | `M_SistemaOn` | Bool | `%M0.0` | Latch de sistema energizado |
-| `M_ModoAuto` | Bool | `%M0.1` | Copia del modo (HMI o selector) |
+| `M_ModoAuto` | Bool | `%M0.1` | Copia del modo (DB_HMI) |
 | `M_Alarma` | Bool | `%M0.2` | Alarma activa |
-| `M_Clasificando` | Bool | `%M0.3` | Secuencia aluminio en curso |
-| `M_PulsePieza` | Bool | `%M0.4` | Flanco genérico (opcional) |
-| `M_ResetContadores` | Bool | `%M0.5` | Reset pedido desde HMI |
-| `M_PulsePlastico` | Bool | `%M0.6` | Resultado del flanco (1 ciclo) |
-| `M_EdgePlastico` | Bool | `%M1.0` | **Solo** memoria interna de la bobina/contacto P (no usar en otra red) |
-| `M_ResetAlarma` | Bool | `%M0.7` | Botón HMI para borrar alarma |
-| `T_RetardoPiston` | Instancia TON (IEC) | DB de instancia auto | Espera con pistón extendido antes de contar |
-| `T_TimeoutPiston` | Instancia TON (IEC) | DB de instancia auto | Alarma si el pistón no llega a tiempo |
+| `M_ClasifPlastico` | Bool | `%M0.3` | Secuencia P2 |
+| `M_ClasifAluminio` | Bool | `%M0.4` | Secuencia P3 |
+| `M_Clasificando` | Bool | `%M0.7` | OR clasif (banda / P1) |
+| `T_RetardoPiston2` / `T_RetardoPiston3` | TON IEC | auto | Espera extendido antes de contar |
+| `T_TimeoutPiston2` / `T_TimeoutPiston3` | TON IEC | auto | Alarma si no llega a 100% |
 
-> En S7-1200 **no uses** un tag `%T0` de la tag table para esto.  
-> Inserta el bloque **TON**, y en el `???` de arriba escribe `T_RetardoPiston` para que TIA cree su DB.  
-> Para contactos usa `T_RetardoPiston.Q` (ver `docs/06_COMO_USAR_TON.md`).
-
-> Orden completo de networks: `tia/LOGICA_LAD.md`.
-
+> Inserta el bloque **TON** y nombra la instancia (`T_RetardoPiston2`…). Contactos: `T_RetardoPiston2.Q`.  
+> Networks: `tia/NETWORKS_WEB_ONLY.md`.
 ---
 
 ## 4. DB1 — `DatosEstacion` (contrato con la web)
@@ -83,8 +76,11 @@ Crea un **Data Block** global llamado `DatosEstacion` (número DB1).
 | 16.3 | `ModoAuto` | Bool | Espejo modo |
 | 16.4 | `Emergencia` | Bool | Espejo emergencia |
 | 16.5 | `Alarma` | Bool | Espejo alarma |
-| 16.6 | `BandaOn` | Bool | Espejo salida banda |
-| 16.7 | `PistonOn` | Bool | Espejo salida pistón |
+| 16.6 | `BandaOn` | Bool | Espejo `M_Banda` |
+| 16.7 | `PistonOn` | Bool | OR de P1/P2/P3 |
+| 17.0 | `Piston1On` | Bool | Retenedor |
+| 17.1 | `Piston2On` | Bool | Plástico |
+| 17.2 | `Piston3On` | Bool | Aluminio |
 | 18.0 | `EstadoMaquina` | **Int** | 0 idle, 1 running, 2 clasificando, 3 alarma, 4 emergencia |
 | 20.0 | `UltimoMaterial` | **Int** | 0 ninguno, 1 plástico, 2 aluminio |
 
@@ -123,16 +119,18 @@ Rangos típicos de prueba:
 
 ---
 
-## 6. Lógica de clasificación (regla simple)
+## 6. Lógica de clasificación (3 pistones · simple efecto)
 
-Cuando `I_SensorPieza` = 1 y báscula lista:
+Cuando `DB_HMI.SensorPieza` = 1 y báscula lista:
 
 | Sensor plástico | Sensor aluminio | Acción |
 |---|---|---|
-| 1 | 0 | ContPlastico++, sumar PesoActual a PesoPlastico; pistón **NO** |
-| 0 | 1 | ContAluminio++, sumar PesoActual a PesoAluminio; pistón **SÍ** (extender → esperar → retraer) |
+| 1 | 0 | P2 extiende → cuenta plástico → retracta (resorte) |
+| 0 | 1 | P3 extiende → cuenta aluminio → retracta |
 | 1 | 1 | **Alarma** (lectura inválida) |
 | 0 | 0 | Esperar / no contar |
+
+P1 retenedor sujeta mientras hay pieza o clasificación en curso.
 
 ---
 
@@ -152,8 +150,11 @@ Emergencia        = get_bool(db, 16, 4)
 Alarma            = get_bool(db, 16, 5)
 BandaOn           = get_bool(db, 16, 6)
 PistonOn          = get_bool(db, 16, 7)
+Piston1On         = get_bool(db, 17, 0)
+Piston2On         = get_bool(db, 17, 1)
+Piston3On         = get_bool(db, 17, 2)
 EstadoMaquina     = get_int(db, 18)
 UltimoMaterial    = get_int(db, 20)
 ```
 
-Tamaño mínimo a leer: **22 bytes** (lee 24 para alinear).
+Tamaño mínimo a leer: **22 bytes**.

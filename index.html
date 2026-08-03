@@ -1221,7 +1221,7 @@
       <section id="view-live" class="hidden">
         <div class="live-title">
           <h2 id="live-station-name">Separando en...</h2>
-          <p>La báscula pesa · el sensor clasifica · el pistón separa. Todo llega desde el PLC.</p>
+          <p>La báscula pesa · el sensor clasifica · P1 retiene · P2/P3 separan. Todo llega desde el PLC.</p>
         </div>
 
         <div class="plc-panel" id="plc-panel">
@@ -1233,7 +1233,9 @@
             <div class="plc-chip">Sistema <b id="plc-sistema">—</b></div>
             <div class="plc-chip">Modo <b id="plc-modo">—</b></div>
             <div class="plc-chip">Banda <b id="plc-banda">—</b></div>
-            <div class="plc-chip">Pistón <b id="plc-piston">—</b></div>
+            <div class="plc-chip">P1 retenedor <b id="plc-piston1">—</b></div>
+            <div class="plc-chip">P2 plástico <b id="plc-piston2">—</b></div>
+            <div class="plc-chip">P3 aluminio <b id="plc-piston3">—</b></div>
             <div class="plc-chip">Último material <b id="plc-ultimo">—</b></div>
             <div class="plc-chip">Peso actual <b id="plc-peso-actual">—</b></div>
             <div class="plc-chip" id="plc-chip-alarma">Alarma <b id="plc-alarma">—</b></div>
@@ -1287,6 +1289,7 @@
           <div class="sub" id="live-peso">0.00 kg en total</div>
         </div>
         <div class="btn-row">
+          <button class="btn btn-outline" id="btn-open-hmi" type="button">🖥️ Abrir HMI</button>
           <button class="btn btn-danger" id="btn-cancel-session">Desconectar</button>
           <button class="btn btn-primary" id="btn-finish-session">✅ Finalizar y guardar</button>
         </div>
@@ -1429,24 +1432,24 @@
                   </div>
 
                   <div class="sp-col sp-col-wide" id="hmi-sim-block">
-                    <div class="sp-section-label">Simulación proceso (reemplaza AS / KEP)</div>
+                    <div class="sp-section-label">Simulación sensores (PLCSIM · sin AS)</div>
                     <div class="sp-sim-grid">
                       <button class="sp-btn sp-btn-fn" id="hmi-sim-plastico">1 · Plástico</button>
                       <button class="sp-btn sp-btn-fn" id="hmi-sim-aluminio">2 · Aluminio</button>
-                      <button class="sp-btn sp-btn-fn" id="hmi-sim-extendido">3 · Pistón 100%</button>
                       <button class="sp-btn sp-btn-fn" id="hmi-sim-clear">Limpiar sensores</button>
-                      <button class="sp-btn sp-btn-blue" id="hmi-manual-banda">Banda man.</button>
-                      <button class="sp-btn sp-btn-blue" id="hmi-manual-piston">Pistón man.</button>
+                      <button class="sp-btn sp-btn-blue" id="hmi-sim-p1-ext">FC P1 100%</button>
+                      <button class="sp-btn sp-btn-blue" id="hmi-sim-p2-ext">FC P2 100%</button>
+                      <button class="sp-btn sp-btn-blue" id="hmi-sim-p3-ext">FC P3 100%</button>
                     </div>
                     <div class="sp-mode-row" style="margin-top:6px;">
                       <div class="sp-io">
-                        <div class="lbl">Feedback pistón</div>
+                        <div class="lbl">Feedback FC (simple efecto)</div>
                         <div class="val" id="hmi-auto-piston-lbl">AUTO</div>
                       </div>
-                      <button type="button" class="sp-toggle on" id="hmi-auto-piston" aria-label="Auto feedback pistón">AUTO</button>
+                      <button type="button" class="sp-toggle on" id="hmi-auto-piston" aria-label="Auto feedback pistones">AUTO</button>
                     </div>
                     <p class="sp-footer-note">
-                      Flujo: START → 1 Plástico (cuenta) o 2 Aluminio → (AUTO extiende pistón) / 3 manual · Estación <span id="hmi-estacion-id">parque-central</span>
+                      Flujo: START → 1 Plástico (P2) o 2 Aluminio (P3) · P1 retiene · FC AUTO o manual · Estación <span id="hmi-estacion-id">parque-central</span>
                     </p>
                   </div>
 
@@ -1461,7 +1464,7 @@
                       <button type="button" class="sp-btn sp-btn-retract" id="hmi-banda-off">Parada</button>
                     </div>
 
-                    <div class="sp-section-label">Pistones — Extender / Retractar</div>
+                    <div class="sp-section-label">Pistones P1–P3 — Extender / Retractar (simple efecto)</div>
                     <div class="sp-piston-controls">
                       <div class="sp-piston-row">
                         <div class="sp-piston-info" id="hmi-p1-info">
@@ -1489,7 +1492,7 @@
                       </div>
                     </div>
                     <p class="sp-footer-note">
-                      Pulsa Extender o Retractar (pasa a MANUAL solo). Sensores físicos `I_*`. Estación <span id="hmi-estacion-id-real">colegio-don-bosco-real</span>
+                      Igual en DEMO (PLCSIM) y REAL (1214C). Extender/Retractar → MANUAL. Estación <span id="hmi-estacion-id-real">—</span>
                     </p>
                   </div>
                 </div>
@@ -1729,7 +1732,7 @@ let sesion = null;        // sesión de pesaje activa
 let unsubSesion = null;    // función para dejar de escuchar la sesión en Firestore
 
 const FALLBACK_ESTACIONES = [
-  { id: "parque-central",  nombre: "Colegio Don Bosco", zona: "DEMO · Simulación PLCSIM 1511C", activa: true },
+  { id: "parque-central",  nombre: "Colegio Don Bosco", zona: "DEMO · PLCSIM 1511C · 3 pistones sim HMI", activa: true },
   { id: "colegio-don-bosco-real", nombre: "Colegio Don Bosco · PLC real", zona: "CPU 1214C · 3 pistones I/O físico", activa: true }
 ];
 
@@ -1752,15 +1755,16 @@ const HMI_CMD_DEFAULT = {
   SensorPieza: false,
   SensorPlastico: false,
   SensorAluminio: false,
-  PistonRetractado: true,
-  PistonExtendido: false,
+  Piston1Extendido: false,
+  Piston2Extendido: false,
+  Piston3Extendido: false,
   PesoActualKg: 0.04
 };
 let hmiCmd = { ...HMI_CMD_DEFAULT };
 let unsubHmiSesion = null;
 let hmiAutoPiston = true;
-let hmiPrevPiston = false;
-let hmiPistonTimer = null;
+let hmiPrevPistons = { p1: false, p2: false, p3: false };
+let hmiPistonTimers = { p1: null, p2: null, p3: null };
 
 /* -------------------------------------------------------------------------
    4. HELPERS DE NAVEGACIÓN Y UI
@@ -1949,26 +1953,41 @@ onAuthStateChanged(auth, async (user) => {
 /* -------------------------------------------------------------------------
    7. NAVEGACIÓN ENTRE VISTAS DE LA APP
    ------------------------------------------------------------------------- */
-function applyHmiStationMode(real){
+function applyHmiStationMode(real, estacionId){
   hmiModeReal = !!real;
-  HMI_ESTACION_ID = hmiModeReal ? HMI_ESTACION_REAL : HMI_ESTACION_DEMO;
+  if(estacionId){
+    HMI_ESTACION_ID = estacionId;
+  }else{
+    HMI_ESTACION_ID = hmiModeReal ? HMI_ESTACION_REAL : HMI_ESTACION_DEMO;
+  }
   hmiAutoPiston = !hmiModeReal;
   if($("hmi-auto-piston")){
     $("hmi-auto-piston").classList.toggle("on", hmiAutoPiston);
     $("hmi-auto-piston").textContent = hmiAutoPiston ? "AUTO" : "MANUAL";
   }
   if($("hmi-auto-piston-lbl")){
-    $("hmi-auto-piston-lbl").textContent = hmiAutoPiston ? "AUTO" : "OFF (real)";
+    $("hmi-auto-piston-lbl").textContent = hmiAutoPiston ? "AUTO" : "OFF (real I_*)";
   }
   if($("hmi-mode-toggle")){
     $("hmi-mode-toggle").textContent = hmiModeReal ? "Modo REAL" : "Modo DEMO";
   }
   if($("hmi-bezel-mode")){
     $("hmi-bezel-mode").textContent = hmiModeReal
-      ? "1214C · colegio-don-bosco-real"
-      : "DEMO · parque-central";
+      ? ("1214C · " + HMI_ESTACION_ID)
+      : ("DEMO · " + HMI_ESTACION_ID);
   }
+  // Controles P1–P3 siempre; bloque sim sensores solo en DEMO
   $("hmi-sim-block")?.classList.toggle("hidden-real", !!hmiModeReal);
+  $("hmi-real-io-block")?.classList.remove("hidden");
+}
+
+function openHmiForStation(estacionId){
+  const id = estacionId || (sesion && sesion.estacionId) || HMI_ESTACION_DEMO;
+  const real = id === HMI_ESTACION_REAL;
+  applyHmiStationMode(real, id);
+  showAppView("hmi");
+  ensureHmiListen();
+  toast("HMI · " + id);
 }
 
 document.querySelectorAll(".navpills .pill[data-view]").forEach(btn => {
@@ -1977,8 +1996,12 @@ document.querySelectorAll(".navpills .pill[data-view]").forEach(btn => {
     if(v === "history") renderHistorial();
     if(v === "admin") renderAdmin();
     if(v === "hmi"){
-      // Por defecto REAL (3 pistones). Antes forzaba DEMO y ocultaba todo.
-      applyHmiStationMode(true);
+      // Si hay sesión abierta, HMI de esa estación; si no, DEMO por defecto
+      if(sesion && sesion.estacionId){
+        openHmiForStation(sesion.estacionId);
+        return;
+      }
+      applyHmiStationMode(false, HMI_ESTACION_DEMO);
     }
     if(v === "plc-real") ensureRealListen();
     showAppView(v);
@@ -2177,30 +2200,38 @@ function renderHmiFromPlc(data){
 
   syncRealPistonCmdUi({ ...plc, piston1: ps.p1, piston2: ps.p2, piston3: ps.p3 });
 
-  // Solo en demo: simula final de carrera. En PLC real el sensor es I_PistonExtendido.
+  // DEMO: simula finales de carrera simple efecto (1 sensor Extendido por pistón)
   if(hmiAutoPiston && !hmiModeReal){
-    if(plc.piston && !hmiPrevPiston){
-      if(hmiPistonTimer) clearTimeout(hmiPistonTimer);
-      hmiPistonTimer = setTimeout(() => {
-        pushHmiCmd({ PistonExtendido: true, PistonRetractado: false });
-      }, 450);
+    const now = { p1: ps.p1, p2: ps.p2, p3: ps.p3 };
+    const keys = [
+      { k: "p1", bit: "Piston1Extendido" },
+      { k: "p2", bit: "Piston2Extendido" },
+      { k: "p3", bit: "Piston3Extendido" }
+    ];
+    for(const { k, bit } of keys){
+      if(now[k] && !hmiPrevPistons[k]){
+        if(hmiPistonTimers[k]) clearTimeout(hmiPistonTimers[k]);
+        hmiPistonTimers[k] = setTimeout(() => {
+          pushHmiCmd({ [bit]: true });
+        }, 450);
+      }
+      if(!now[k] && hmiPrevPistons[k]){
+        if(hmiPistonTimers[k]) clearTimeout(hmiPistonTimers[k]);
+        pushHmiCmd({ [bit]: false });
+      }
     }
-    if(!plc.piston && hmiPrevPiston){
-      if(hmiPistonTimer) clearTimeout(hmiPistonTimer);
-      pushHmiCmd({ PistonExtendido: false, PistonRetractado: true });
-    }
+    hmiPrevPistons = now;
   }
-  hmiPrevPiston = !!plc.piston;
 }
 
 function ensureHmiListen(){
-  applyHmiStationMode(hmiModeReal);
-  if($("hmi-estacion-id")) $("hmi-estacion-id").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : " · DEMO");
-  if($("hmi-estacion-id-real")) $("hmi-estacion-id-real").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : "");
-  // P1/P2/P3 siempre visibles
+  applyHmiStationMode(hmiModeReal, HMI_ESTACION_ID);
+  if($("hmi-estacion-id")) $("hmi-estacion-id").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : " · DEMO 1511C");
+  if($("hmi-estacion-id-real")) $("hmi-estacion-id-real").textContent = HMI_ESTACION_ID + (hmiModeReal ? " · REAL 1214C" : " · DEMO sim");
   $("hmi-chip-p1")?.classList.remove("hidden");
   $("hmi-chip-p2")?.classList.remove("hidden");
   $("hmi-chip-p3")?.classList.remove("hidden");
+  $("hmi-real-io-block")?.classList.remove("hidden");
   syncHmiToggleUi();
   if(unsubHmiSesion){
     try{ unsubHmiSesion(); }catch(e){}
@@ -2230,35 +2261,41 @@ $("hmi-peso-apply").onclick = () => {
 };
 $("hmi-sim-plastico").onclick = async () => {
   await pushHmiCmd({
-    BasculaLista: true, SensorPieza: true, SensorPlastico: true, SensorAluminio: false,
-    PistonExtendido: false, PistonRetractado: true
+    BasculaLista: true, SensorPieza: true, SensorPlastico: true, SensorAluminio: false
   });
-  toast("Sim plástico → PLC");
+  toast("Sim plástico → PLC (P2)");
   setTimeout(() => pushHmiCmd({
     BasculaLista: false, SensorPieza: false, SensorPlastico: false, SensorAluminio: false
   }), 600);
 };
 $("hmi-sim-aluminio").onclick = async () => {
   await pushHmiCmd({
-    BasculaLista: true, SensorPieza: true, SensorPlastico: false, SensorAluminio: true,
-    PistonRetractado: true, PistonExtendido: false
+    BasculaLista: true, SensorPieza: true, SensorPlastico: false, SensorAluminio: true
   });
-  toast(hmiAutoPiston ? "Sim aluminio — pistón AUTO extenderá" : "Sim aluminio — pulsa Pistón 100%");
+  toast(hmiAutoPiston ? "Sim aluminio — P3 + FC AUTO" : "Sim aluminio — pulsa FC P3 100%");
 };
-$("hmi-sim-extendido").onclick = () => {
-  pushHmiCmd({ PistonExtendido: true, PistonRetractado: false });
-  toast("Final de carrera 100% → PLC");
-};
+$("hmi-sim-p1-ext")?.addEventListener("click", () => {
+  pushHmiCmd({ Piston1Extendido: true });
+  toast("FC P1 100% → PLC");
+});
+$("hmi-sim-p2-ext")?.addEventListener("click", () => {
+  pushHmiCmd({ Piston2Extendido: true });
+  toast("FC P2 100% → PLC");
+});
+$("hmi-sim-p3-ext")?.addEventListener("click", () => {
+  pushHmiCmd({ Piston3Extendido: true });
+  toast("FC P3 100% → PLC");
+});
 $("hmi-sim-clear").onclick = () => pushHmiCmd({
   BasculaLista: false, SensorPieza: false, SensorPlastico: false, SensorAluminio: false,
-  PistonExtendido: false, PistonRetractado: true
+  Piston1Extendido: false, Piston2Extendido: false, Piston3Extendido: false
 });
 $("hmi-auto-piston").onclick = () => {
   hmiAutoPiston = !hmiAutoPiston;
   $("hmi-auto-piston").classList.toggle("on", hmiAutoPiston);
   $("hmi-auto-piston").textContent = hmiAutoPiston ? "AUTO" : "MANUAL";
   if($("hmi-auto-piston-lbl")) $("hmi-auto-piston-lbl").textContent = hmiAutoPiston ? "AUTO" : "MANUAL";
-  toast(hmiAutoPiston ? "Feedback pistón AUTO" : "Feedback pistón MANUAL (usa botón 3)");
+  toast(hmiAutoPiston ? "Feedback FC AUTO (P1–P3)" : "Feedback FC MANUAL (botones FC 100%)");
 };
 function bindHold(btnId, flag){
   const el = $(btnId);
@@ -2271,6 +2308,7 @@ function bindHold(btnId, flag){
   el.addEventListener("touchstart", down, { passive: false });
   el.addEventListener("touchend", up);
 }
+// Hold legacy (si existen en DOM)
 bindHold("hmi-manual-banda", "ManualBanda");
 bindHold("hmi-manual-piston", "ManualPiston");
 
@@ -2385,16 +2423,23 @@ $("btn-real-listen")?.addEventListener("click", () => {
   toast("Escuchando " + HMI_ESTACION_REAL);
 });
 $("btn-real-hmi")?.addEventListener("click", () => {
-  applyHmiStationMode(true);
-  ensureRealListen();
-  showAppView("hmi");
-  toast("HMI en modo PLC real 1214C");
+  openHmiForStation(HMI_ESTACION_REAL);
 });
 
 $("hmi-mode-toggle")?.addEventListener("click", () => {
-  applyHmiStationMode(!hmiModeReal);
+  const nextReal = !hmiModeReal;
+  const nextId = nextReal ? HMI_ESTACION_REAL : HMI_ESTACION_DEMO;
+  applyHmiStationMode(nextReal, nextId);
   ensureHmiListen();
-  toast(hmiModeReal ? "HMI → estación REAL (3 pistones)" : "HMI → estación DEMO");
+  toast(hmiModeReal ? "HMI → estación REAL (3 pistones)" : "HMI → estación DEMO (3 pistones sim)");
+});
+
+$("btn-open-hmi")?.addEventListener("click", () => {
+  if(!sesion || !sesion.estacionId){
+    toast("Conecta una estación primero");
+    return;
+  }
+  openHmiForStation(sesion.estacionId);
 });
 
 /* -------------------------------------------------------------------------
@@ -2532,7 +2577,11 @@ function renderPlcPanel(plc){
   $("plc-sistema").textContent = p.sistemaOn ? "ON" : "OFF";
   $("plc-modo").textContent = p.modoAuto ? "Automático" : "Manual";
   $("plc-banda").textContent = p.banda ? "Marcha" : "Parada";
-  $("plc-piston").textContent = p.piston ? "Extendido" : "Retráctil";
+  const ps = resolvePistonStates(p);
+  if($("plc-piston1")) $("plc-piston1").textContent = pistonPosLabel(ps.p1);
+  if($("plc-piston2")) $("plc-piston2").textContent = pistonPosLabel(ps.p2);
+  if($("plc-piston3")) $("plc-piston3").textContent = pistonPosLabel(ps.p3);
+  updateTripleMachineStage("live", p);
   const ultimo = p.ultimoMaterial && MATERIALES[p.ultimoMaterial]
     ? `${MATERIALES[p.ultimoMaterial].emoji} ${MATERIALES[p.ultimoMaterial].nombre}`
     : "—";

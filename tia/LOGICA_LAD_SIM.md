@@ -1,6 +1,8 @@
-# Programa LAD — versión SIMULACIÓN (solo reemplazo de tags)
+# Programa LAD — versión SIMULACIÓN (legado · 1 pistón)
 
-Igual que antes, pero las entradas vienen de comandos HMI.
+> **Actual:** 3 pistones + HMI virtual → **`tia/NETWORKS_WEB_ONLY.md`** y **`tia/TABLA_TAGS_DESDE_CERO.md`**.
+
+Igual que antes, pero las entradas vienen de comandos HMI (esquema de **1 pistón**).
 
 **Preferido (CPU 1511C + HMI web):** usa `DB_HMI.Start`, `DB_HMI.Stop`, … (ver `tia/MAPA_DB_HMI.md`).  
 **Alternativa:** tags `M_HMI_*` si aún no creaste el DB.

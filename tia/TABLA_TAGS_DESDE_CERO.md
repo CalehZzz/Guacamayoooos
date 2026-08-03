@@ -1,112 +1,81 @@
-# Tabla maestra de tags — desde cero (CPU 1511C-1 PN)
+# Tabla maestra de tags — simulación HMI virtual (CPU 1511C · 3 pistones)
 
 > **Modo actual (sin AS):** sensores y comandos van por **`DB_HMI`**.  
-> Guía: `docs/11_SIN_AS_SOLO_WEB.md` · Networks: `tia/NETWORKS_WEB_ONLY.md`.
+> Guía: `docs/11_SIN_AS_SOLO_WEB.md` · Networks: `tia/NETWORKS_WEB_ONLY.md`.  
+> Mismo esquema de **3 pistones** que el PLC real (`plc_real/`), pero 100 % simulado.
 
 HMI web SIBU → **`DB_HMI`** (vía bridge).  
 Espejo a la web → **`DatosEstacion`**.
 
+```
+Página SIBU / HMI virtual (KTP700)
+        ↕ Firestore  (estación: parque-central u otra)
+   plc_bridge.py
+        ↕ snap7
+   PLC 1511C (PLCSIM) · M_Piston1/2/3 · DB_HMI sensores sim
+```
+
 ---
 
-## Grupos (modo web-only)
+## Grupos
 
 | Grupo | Área | Uso |
 |---|---|---|
-| **B. Lógica interna** | `%M` | `M_SistemaOn`, `M_Banda`, `M_Piston`, alarmas… |
-| **C. DB_HMI (DB3)** | DB | Comandos + **sensores simulados** desde la web |
+| **B. Lógica interna** | `%M` | Sistema, modos, **3 pistones**, clasif |
+| **C. DB_HMI (DB3)** | DB | Comandos + sensores simulados |
 | **D. DatosEstacion (DB1)** | DB | Contadores / estado → web |
-| **E. Timers** | TON IEC | Retardo y timeout pistón |
+| **E. Timers** | TON IEC | Retardo y timeout P2 / P3 |
 
-~~Grupo A (AS/KEP `%M2.x`)~~ — **no necesario** si no usas Automation Studio.
-
----
-
-## A) Tags de proceso — AS / KEPServer (`%M` Bool)
-
-Créalos en la **PLC tag table**. En KEPServer mapea **los mismos nombres / direcciones**.
-
-### Sensores (AS → PLC)
-
-| Nombre | Dirección | Tipo | En Automation Studio |
-|---|---|---|---|
-| `M_SensorPieza` | `%M2.0` | Bool | Pieza en estación |
-| `M_SensorPlastico` | `%M2.1` | Bool | Sensor / pulsador plástico |
-| `M_SensorAluminio` | `%M2.2` | Bool | Sensor / pulsador aluminio |
-| `M_BasculaLista` | `%M2.3` | Bool | Báscula lista |
-| `M_PistonRetractado` | `%M2.4` | Bool | Ref. sensor 0% |
-| `M_PistonExtendido` | `%M2.5` | Bool | Ref. sensor 100% |
-
-### Actuadores (PLC → AS)
-
-| Nombre | Dirección | Tipo | En Automation Studio |
-|---|---|---|---|
-| `M_Banda` | `%M3.0` | Bool | Motor / marcha banda |
-| `M_Piston` | `%M3.1` | Bool | Solenoide válvula 5/2 |
-| `M_LamparaRun` | `%M3.2` | Bool | Piloto run (opcional en AS) |
-| `M_LamparaAlarma` | `%M3.3` | Bool | Piloto alarma |
-| `M_LamparaEmergencia` | `%M3.4` | Bool | Piloto emergencia |
-
-> En el LAD, donde antes decía `Q_Banda` / `Q_Piston`, usa **`M_Banda` / `M_Piston`**.  
-> KEPServer lee esas M y las refleja en AS.
+~~Grupo A (AS/KEP)~~ — no necesario en web-only.
 
 ---
 
-## B) Lógica interna PLC (`%M` Bool) — no mapear a AS
+## B) Lógica interna PLC (`%M` Bool)
 
-| Nombre | Dirección | Tipo | Descripción |
-|---|---|---|---|
-| `M_SistemaOn` | `%M0.0` | Bool | Latch sistema ON |
-| `M_ModoAuto` | `%M0.1` | Bool | Modo auto (copia de DB_HMI o directo) |
-| `M_Alarma` | `%M0.2` | Bool | Alarma activa |
-| `M_Clasificando` | `%M0.3` | Bool | Secuencia aluminio |
-| `M_PulsePlastico` | `%M0.4` | Bool | Resultado flanco P |
-| `M_EdgePlastico` | `%M0.5` | Bool | Memoria flanco P (solo del TON/P) |
+| Nombre | Dirección ej. | Descripción |
+|---|---|---|
+| `M_SistemaOn` | `%M0.0` | Latch sistema ON |
+| `M_ModoAuto` | `%M0.1` | Copia de `DB_HMI.ModoAuto` |
+| `M_Alarma` | `%M0.2` | Alarma activa |
+| `M_ClasifPlastico` | `%M0.3` | Secuencia empuje P2 |
+| `M_ClasifAluminio` | `%M0.4` | Secuencia empuje P3 |
+| `M_Clasificando` | `%M0.7` | OR de clasif (para banda / P1) |
+| `M_Banda` | `%M3.0` | Actuador banda (sim) |
+| `M_Piston1` | `%M3.1` | Retenedor |
+| `M_Piston2` | `%M3.2` | Empuje plástico |
+| `M_Piston3` | `%M3.3` | Empuje aluminio |
+| `M_LamparaRun` | `%M3.4` | Piloto run (opc.) |
+| `M_LamparaAlarma` | `%M3.5` | Piloto alarma |
+| `M_LamparaEmergencia` | `%M3.6` | Piloto emergencia |
+
+> Cilindros **simple efecto**: energizar `M_PistonN` = extender; al apagar, el resorte retracta.  
+> Un sensor simulado por pistón: `DB_HMI.PistonNExtendido`.
 
 ---
 
-## C) `DB_HMI` — número **3** · Optimized **OFF**
+## C) `DB_HMI` — número **3** · Optimized **OFF** · ≥ **7 bytes**
 
-Solo HMI web (no KTP). Bridge: Firestore `hmi_comandos` → este DB.
-
-| Nombre | Tipo | Offset típico | Control web 🖥️ |
+| Nombre | Tipo | Offset | Control web |
 |---|---|---|---|
-| `Start` | Bool | 0.0 | START |
-| `Stop` | Bool | 0.1 | STOP |
-| `Emergencia` | Bool | 0.2 | EMERGENCIA |
-| `ResetAlarma` | Bool | 0.3 | Reset alarma |
-| `ModoAuto` | Bool | 0.4 | Switch Auto |
-| `FinSesion` | Bool | 0.5 | Fin sesión |
-| `ManualBanda` | Bool | 0.6 | Banda manual |
-| `ManualPiston` | Bool | 0.7 | Pistón manual |
-| `BasculaLista` | Bool | 1.0 | Sim báscula (demo sin AS) |
+| `Start` … `ManualPiston` | Bool | 0.0–0.7 | Operador (`ManualPiston` = P3) |
+| `BasculaLista` | Bool | 1.0 | Sim báscula |
 | `SensorPieza` | Bool | 1.1 | Sim pieza |
 | `SensorPlastico` | Bool | 1.2 | Sim plástico |
 | `SensorAluminio` | Bool | 1.3 | Sim aluminio |
-| `PistonRetractado` | Bool | 1.4 | Sim retractado |
-| `PistonExtendido` | Bool | 1.5 | Sim extendido |
-| `PesoActualKg` | Real | **2.0** (tu compile) | Peso actual kg |
+| `Piston1Extendido` | Bool | 1.4 | Sim FC P1 |
+| `Piston2Extendido` | Bool | 1.5 | Sim FC P2 |
+| `ManualPiston1` | Bool | 1.6 | Manual P1 |
+| `ManualPiston2` | Bool | 1.7 | Manual P2 |
+| `PesoActualKg` | Real | **2.0** | Peso |
+| `Piston3Extendido` | Bool | **6.0** | Sim FC P3 |
 
-### LAD: operador vs proceso
-
-| Función | Leer |
-|---|---|
-| START / STOP / Emergencia | `DB_HMI.Start` / `.Stop` / `.Emergencia` |
-| Modo | `DB_HMI.ModoAuto` |
-| Sensores con AS corriendo | `M_SensorPieza`, `M_SensorPlastico`, … |
-| Sensores solo demo web | `DB_HMI.SensorPieza` **o** OR con `M_Sensor…` |
-| Banda / pistón salida | bobina **`M_Banda`** / **`M_Piston`** |
-
-Ejemplo OR (AS o web):
-```
----| M_SensorPieza |----+----(
----| DB_HMI.SensorPieza |--+
-```
+Detalle completo: `tia/MAPA_DB_HMI.md`.
 
 ---
 
-## D) `DatosEstacion` — número **1** · Optimized **OFF**
+## D) `DatosEstacion` — número **1** · Optimized **OFF** · **22 bytes**
 
-| Nombre | Tipo | Offset típico | Descripción |
+| Nombre | Tipo | Offset | Descripción |
 |---|---|---|---|
 | `ContPlastico` | Int | 0.0 | Piezas plástico |
 | `ContAluminio` | Int | 2.0 | Piezas aluminio |
@@ -120,12 +89,12 @@ Ejemplo OR (AS o web):
 | `Emergencia` | Bool | 16.4 | espejo |
 | `Alarma` | Bool | 16.5 | espejo |
 | `BandaOn` | Bool | 16.6 | espejo `M_Banda` |
-| `PistonOn` | Bool | 16.7 | espejo `M_Piston` |
+| `PistonOn` | Bool | 16.7 | OR de P1/P2/P3 |
+| `Piston1On` | Bool | **17.0** | Retenedor |
+| `Piston2On` | Bool | **17.1** | Plástico |
+| `Piston3On` | Bool | **17.2** | Aluminio |
 | `EstadoMaquina` | Int | 18.0 | 0…4 |
 | `UltimoMaterial` | Int | 20.0 | 0/1/2 |
-
-En `FC_EspejoWeb`:  
-`DatosEstacion.BandaOn := M_Banda;` · `DatosEstacion.PistonOn := M_Piston;`
 
 ---
 
@@ -133,47 +102,32 @@ En `FC_EspejoWeb`:
 
 | Instancia | PT | Uso |
 |---|---|---|
-| `T_RetardoPiston` | `T#500ms` | Contar aluminio tras extendido |
-| `T_TimeoutPiston` | `T#3s` | Alarma timeout |
+| `T_RetardoPiston2` | `T#500ms` | Contar plástico tras P2 extendido |
+| `T_RetardoPiston3` | `T#500ms` | Contar aluminio tras P3 extendido |
+| `T_TimeoutPiston2` | `T#3s` | Alarma si P2 no llega a 100% |
+| `T_TimeoutPiston3` | `T#3s` | Alarma si P3 no llega a 100% |
 
 ---
 
 ## Mapa mental
 
 ```
-AS 10  ←—— M_Sensor* / M_Banda / M_Piston ——→  KEPServerEX 6  ←→  PLC 1511C
-                                                      ↑
-                                              DB_HMI (HMI web)
-                                              DatosEstacion (web estado)
+HMI virtual (3× Extender/Retractar + sim sensores)
+        ↓  hmi_comandos/{estación}
+   plc_bridge.py
+        ↓  DB_HMI
+   FC_Modos / FC_Secuencia / FC_Alarmas
+        ↓  M_Banda · M_Piston1 · M_Piston2 · M_Piston3
+   FC_EspejoWeb → DatosEstacion → sesiones_activas → web
 ```
 
 ---
 
-## Checklist creación
+## Checklist TIA (sim)
 
-1. [ ] Tag table: grupo **A** (AS/KEP) + grupo **B** (interna)  
-2. [ ] `DatosEstacion` DB1 Optimized OFF  
-3. [ ] `DB_HMI` DB3 Optimized OFF  
-4. [ ] En KEPServer: mismos `%M2.x` / `%M3.x`  
-5. [ ] LAD: salidas a `M_Banda` / `M_Piston` (no Q)  
-6. [ ] TONs + FCs + OB1  
-7. [ ] Bridge `--db 1 --db-hmi 3`
-
----
-
-## Reemplazo rápido en networks
-
-| Antes (guías viejas) | Ahora |
-|---|---|
-| `Q_Banda` | `M_Banda` |
-| `Q_Piston` | `M_Piston` |
-| `Q_LamparaRun` | `M_LamparaRun` |
-| `Q_LamparaAlarma` | `M_LamparaAlarma` |
-| `Q_LamparaEmergencia` | `M_LamparaEmergencia` |
-| `I_SensorPieza` | `M_SensorPieza` |
-| `I_SensorPlastico` | `M_SensorPlastico` |
-| `I_SensorAluminio` | `M_SensorAluminio` |
-| `I_BasculaLista` | `M_BasculaLista` |
-| `I_PistonRetractado` | `M_PistonRetractado` |
-| `I_PistonExtendido` | `M_PistonExtendido` |
-| `M_HMI_Start` / botones | `DB_HMI.Start` … |
+1. Crear `DB_HMI` (DB3) y `DatosEstacion` (DB1) con offsets de arriba · Optimized **OFF**
+2. Tags `%M` de los 3 pistones + latches
+3. Programar networks de `NETWORKS_WEB_ONLY.md`
+4. Download a PLCSIM Advanced · PUT/GET ON
+5. Bridge: `py plc_bridge.py parque-central --ip 192.168.0.1 --db 1 --db-hmi 3`
+6. En la app: conectar estación → **Abrir HMI**
