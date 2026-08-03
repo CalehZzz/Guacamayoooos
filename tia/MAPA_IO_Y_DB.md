@@ -77,11 +77,13 @@ Crea un **Data Block** global llamado `DatosEstacion` (número DB1).
 | 16.5 | `Alarma` | Bool | Espejo alarma |
 | 16.6 | `BandaOn` | Bool | Espejo `M_Banda` |
 | 16.7 | `PistonOn` | Bool | OR de P1/P2/P3 |
-| 17.0 | `Piston1On` | Bool | Retenedor |
-| 17.1 | `Piston2On` | Bool | Plástico |
-| 17.2 | `Piston3On` | Bool | Aluminio |
+| 17.0 | `Piston1On` | Bool | Plástico |
+| 17.1 | `Piston2On` | Bool | Latas |
+| 17.2 | `Piston3On` | Bool | Vidrio |
 | 18.0 | `EstadoMaquina` | **Int** | 0 idle, 1 running, 2 clasificando, 3 alarma, 4 emergencia |
-| 20.0 | `UltimoMaterial` | **Int** | 0 ninguno, 1 plástico, 2 aluminio |
+| 20.0 | `UltimoMaterial` | **Int** | 0 ninguno, 1 plástico, 2 aluminio, 3 vidrio |
+| 22.0 | `ContVidrio` | Int | Piezas vidrio |
+| 24.0 | `PesoVidrioKg` | Real | kg vidrio |
 
 ### Offsets que NO sirven para la web
 
@@ -149,6 +151,8 @@ Piston2On         = get_bool(db, 17, 1)
 Piston3On         = get_bool(db, 17, 2)
 EstadoMaquina     = get_int(db, 18)
 UltimoMaterial    = get_int(db, 20)
+ContVidrio        = get_int(db, 22)
+PesoVidrioKg      = get_real(db, 24)
 ```
 
-Tamaño mínimo a leer: **22 bytes**.
+Tamaño mínimo a leer: **28 bytes**.
