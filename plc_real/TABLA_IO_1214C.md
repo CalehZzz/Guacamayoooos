@@ -28,17 +28,20 @@ Operador **100 % web** (`DB_HMI`). En mesa: sensores + banda + 3 cilindros **sim
 | `%I0.6` | `I_Piston2Extendido` | P2 extendido |
 | `%I0.7` | `I_Piston3Extendido` | P3 extendido |
 
-## Salidas `%Q` (7)
+## Salidas `%Q` (7 usadas · `Q0.4` libre)
+
+En la 1214C Rly los comunes suelen ir por grupos: banda/pistones en un común (`Q0.0–Q0.3`) y lámparas en otro (`Q0.5–Q0.7`). **`%Q0.4` queda sin usar** a propósito.
 
 | Dir | Tag | Hardware |
 |---|---|---|
-| `%Q0.0` | `Q_Banda` | Banda |
-| `%Q0.1` | `Q_Piston1` | Solenoide 3/2 plástico |
-| `%Q0.2` | `Q_Piston2` | Solenoide 3/2 latas |
-| `%Q0.3` | `Q_Piston3` | Solenoide 3/2 vidrio |
-| `%Q0.4` | `Q_LamparaRun` | Verde |
-| `%Q0.5` | `Q_LamparaAlarma` | Rojo |
-| `%Q0.6` | `Q_LamparaEmergencia` | Amarillo |
+| `%Q0.0` | `Q_Banda` | Banda (común A) |
+| `%Q0.1` | `Q_Piston1` | Solenoide 3/2 plástico (común A) |
+| `%Q0.2` | `Q_Piston2` | Solenoide 3/2 latas (común A) |
+| `%Q0.3` | `Q_Piston3` | Solenoide 3/2 vidrio (común A) |
+| `%Q0.4` | — | **Libre** (no cablear) |
+| `%Q0.5` | `Q_LamparaRun` | Piloto verde (común B) |
+| `%Q0.6` | `Q_LamparaAlarma` | Piloto rojo (común B) |
+| `%Q0.7` | `Q_LamparaEmergencia` | Piloto amarillo (común B) |
 
 ## Memorias
 
