@@ -246,7 +246,18 @@ def main() -> None:
                 try:
                     snap = cmd_ref.get()
                     if snap.exists:
-                        escribir_db_hmi(plc, args.db_hmi, snap.to_dict() or {})
+                        cmd = snap.to_dict() or {}
+                        escribir_db_hmi(plc, args.db_hmi, cmd)
+                        # Diagnóstico pistones manuales (P1/P2/P3)
+                        mp1 = bool(cmd.get("ManualPiston1"))
+                        mp2 = bool(cmd.get("ManualPiston2"))
+                        mp3 = bool(cmd.get("ManualPiston"))
+                        if mp1 or mp2 or mp3 or not bool(cmd.get("ModoAuto", True)):
+                            print(
+                                f"   HMI→DB3 Manual P1={int(mp1)} P2={int(mp2)} P3={int(mp3)} "
+                                f"Auto={int(bool(cmd.get('ModoAuto')))} "
+                                f"BandaMan={int(bool(cmd.get('ManualBanda')))}"
+                            )
                 except Exception as e:
                     print(f"⚠️  escritura DB_HMI: {e}")
 

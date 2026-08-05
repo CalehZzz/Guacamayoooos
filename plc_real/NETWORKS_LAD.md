@@ -34,9 +34,25 @@ La versión sim (mismos roles, sensores en `DB_HMI`) está en `tia/NETWORKS_WEB_
 **Latch latas** (`I_SensorAluminio`) → `(S) M_ClasifAluminio`  
 **Latch vidrio** (`I_SensorVidrio`) → `(S) M_ClasifVidrio`
 
-**P1:** ClasifPlastico · `/I_Piston1Extendido` // ManualPiston1 → `Q_Piston1`  
-**P2:** ClasifAluminio · `/I_Piston2Extendido` // ManualPiston2 → `Q_Piston2`  
-**P3:** ClasifVidrio · `/I_Piston3Extendido` // ManualPiston → `Q_Piston3`
+**P1 / P2 / P3** — una bobina cada uno, dos ramas:
+
+```
+AUTO:   ClasifX · /I_PistonNExtendido ──┐
+                                        ├──( ) Q_PistonN
+MANUAL: M_SistemaOn · /M_ModoAuto · DB_HMI.Manual… ─┘
+```
+
+| Pistón | Auto | Manual (`DB_HMI`) |
+|---|---|---|
+| P1 | `M_ClasifPlastico` | `ManualPiston1` @ 1.6 |
+| P2 | `M_ClasifAluminio` | `ManualPiston2` @ 1.7 |
+| P3 | `M_ClasifVidrio` | `ManualPiston` @ 0.7 |
+
+**Importante (simple efecto):**  
+- **Extender** = bit Manual = 1 → `Q` ON  
+- **Retractar** = bit Manual = 0 → `Q` OFF (no enciende nada; el resorte mete el vástago)  
+- Sin **START** (`M_SistemaOn`) la rama MANUAL no activa la Q.  
+- Debe existir modo **MANUAL** (`DB_HMI.ModoAuto = 0`).
 
 **Contar:** TON retardo con `I_PistonNExtendido` → reset latch + incrementar `Cont*` / `Peso*`  
 `UltimoMaterial` = 1 / 2 / 3

@@ -11,6 +11,9 @@
 - [ ] Timers: `T_RetardoPiston2/3`, `T_TimeoutPiston2/3`
 - [ ] Download software + CPU RUN
 - [ ] Online: forzando `Q_Banda` / `Q_Piston1` / `Q_Piston2` / `Q_Piston3` se oye/ve cada actuador
+- [ ] `DB_HMI` tiene `ManualPiston1` @1.6 · `ManualPiston2` @1.7 · `ManualPiston` @0.7 (Optimized OFF)
+- [ ] LAD P1–P3: rama MANUAL = `M_SistemaOn` · `/M_ModoAuto` · `DB_HMI.Manual…`
+- [ ] Prueba HMI: START → AUTO off → **Extender** P1 (no solo Retractar: retractar = Q OFF)
 
 ## Mesa real (sin botonera)
 - [ ] **Sin** pulsadores Start/Stop/Emergencia/Manual — todo desde HMI web
