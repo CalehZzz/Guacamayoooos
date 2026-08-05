@@ -12,6 +12,7 @@ CPU objetivo: 1511C-1 PN en S7-PLCSIM Advanced V7 (snap7 a la IP de la instancia
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 import time
 
@@ -26,7 +27,10 @@ except ImportError:
     sys.exit(1)
 
 
-SERVICE_ACCOUNT_PATH = "serviceAccountKey.json"
+# Raíz del repo (= carpeta de este archivo). Así el .json se encuentra aunque
+# ejecutes desde plc_real/ u otra carpeta.
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+SERVICE_ACCOUNT_NAME = "serviceAccountKey.json"
 # DatosEstacion termina en ContVidrio@22 + PesoVidrioKg@24 → 28 bytes.
 DB_READ_SIZE = 28
 # DB_HMI: bools 0..1 + Real PesoActualKg @ 2.0 + Piston3Extendido@6.0 + SensorVidrio@6.1 → 7 bytes.
@@ -52,6 +56,53 @@ def _warn_once(key: str, msg: str, *, remind_s: float = _WARN_REMIND_S) -> None:
         return
     _warn_state[key] = now
     print(msg)
+
+
+def _is_file_not_found(err: BaseException) -> bool:
+    """WinError 2 / FileNotFoundError / mensaje en español de Windows."""
+    if isinstance(err, FileNotFoundError):
+        return True
+    if getattr(err, "winerror", None) == 2 or getattr(err, "errno", None) == 2:
+        return True
+    msg = str(err).lower()
+    return (
+        "no puede encontrar el archivo" in msg
+        or "cannot find the file" in msg
+        or "no such file" in msg
+    )
+
+
+def resolve_service_account() -> str:
+    """Busca serviceAccountKey.json en la raíz del repo y en el cwd."""
+    candidates = [
+        os.path.join(REPO_ROOT, SERVICE_ACCOUNT_NAME),
+        os.path.join(os.getcwd(), SERVICE_ACCOUNT_NAME),
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
+    print("❌ No encuentro serviceAccountKey.json")
+    print(f"   Busqué en: {candidates[0]}")
+    print(f"             {candidates[1]}")
+    print("   Aunque lo veas en el Explorador, Python usa OTRA carpeta si no")
+    print("   abriste la terminal en la raíz del repo (donde está plc_bridge.py).")
+    print("   Solución:")
+    print(f'     cd "{REPO_ROOT}"')
+    print("     dir serviceAccountKey.json")
+    print("     py plc_bridge.py …   ó   py plc_real\\plc_bridge_real.py")
+    print("   Guía: docs/12_ARCHIVO_NO_ENCONTRADO_WINDOWS.md")
+    sys.exit(1)
+
+
+def _hint_snap7_dll(err: BaseException) -> None:
+    print("❌ snap7 no pudo cargar la librería nativa (WinError 2 típico).")
+    print(f"   {err}")
+    print("   Suele ser snap7.dll (NO el .py ni el .json):")
+    print("     py -m pip install --upgrade python-snap7")
+    print("     py -c \"import snap7,os; print(os.path.dirname(snap7.__file__))\"")
+    print("   Copia snap7.dll de esa carpeta (o de /lib) al mismo sitio,")
+    print("   o agrégalo al PATH. Reinicia la terminal.")
+    print("   Guía: docs/12_ARCHIVO_NO_ENCONTRADO_WINDOWS.md")
 
 
 def _db_max_readable(client: snap7.client.Client, dbn: int, sizes: tuple[int, ...]) -> int:
@@ -104,12 +155,24 @@ def parse_args() -> argparse.Namespace:
 
 def conectar_plc(ip: str, rack: int, slot: int) -> snap7.client.Client:
     # Tipo OP (3) suele ir mejor con S7-1200/1500 + PUT/GET que el PG por defecto.
-    client = snap7.client.Client()
+    try:
+        client = snap7.client.Client()
+    except Exception as e:
+        if _is_file_not_found(e):
+            _hint_snap7_dll(e)
+            sys.exit(1)
+        raise
     try:
         client.set_connection_type(3)  # 1=PG, 2=OP, 3=Basic/OP
     except Exception:
         pass
-    client.connect(ip, rack, slot)
+    try:
+        client.connect(ip, rack, slot)
+    except Exception as e:
+        if _is_file_not_found(e):
+            _hint_snap7_dll(e)
+            sys.exit(1)
+        raise
     if not client.get_connected():
         raise RuntimeError(f"No conectó a {ip} r{rack}s{slot}")
     return client
@@ -275,13 +338,17 @@ def reset_sesion_en_plc(client: snap7.client.Client, db_number: int) -> None:
 
 def main() -> None:
     args = parse_args()
+    print(f"CWD={os.getcwd()}")
+    print(f"REPO={REPO_ROOT}")
     print(f"PLC {args.ip} r{args.rack}s{args.slot} | DatosEstacion=DB{args.db} | DB_HMI=DB{args.db_hmi}")
 
     try:
         plc = conectar_plc(args.ip, args.rack, args.slot)
     except Exception as e:
-        print("❌ snap7 no conectó. ¿PLCSIM Advanced RUN? ¿IP de la instancia correcta?")
+        print("❌ snap7 no conectó. ¿PLCSIM Advanced / PLC RUN? ¿IP correcta?")
         print(f"   {e}")
+        if _is_file_not_found(e):
+            _hint_snap7_dll(e)
         sys.exit(1)
     print("✅ PLC conectado.")
     diagnostico_dbs(plc, args.db, args.db_hmi)
@@ -295,8 +362,15 @@ def main() -> None:
     cmd_ref = None
     sesion_ref = None
     if not args.dry_run:
-        cred = credentials.Certificate(SERVICE_ACCOUNT_PATH)
-        firebase_admin.initialize_app(cred)
+        key_path = resolve_service_account()
+        print(f"🔑 Firebase key: {key_path}")
+        try:
+            cred = credentials.Certificate(key_path)
+            firebase_admin.initialize_app(cred)
+        except Exception as e:
+            print(f"❌ No pude cargar la service account: {e}")
+            print("   ¿El JSON está corrupto o es el de 'web app' en vez de 'cuenta de servicio'?")
+            sys.exit(1)
         fs = firestore.client()
         sesion_ref = fs.collection("sesiones_activas").document(args.estacion_id)
         cmd_ref = fs.collection("hmi_comandos").document(args.estacion_id)
@@ -305,6 +379,7 @@ def main() -> None:
                 "materiales": {
                     "plastico": {"piezas": 0, "pesoKg": 0.0},
                     "aluminio": {"piezas": 0, "pesoKg": 0.0},
+                    "vidrio": {"piezas": 0, "pesoKg": 0.0},
                 },
                 "finalizada": False,
                 "plc": {"conectado": False},
