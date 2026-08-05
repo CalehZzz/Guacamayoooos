@@ -25,17 +25,21 @@
 ## PC / red
 - [ ] PC en la misma subnet que el PLC
 - [ ] Firewall permite TCP **102**
-- [ ] `serviceAccountKey.json` en la carpeta del bridge
+- [ ] `serviceAccountKey.json` en la **raíz del repo** (junto a `plc_bridge.py`)
+- [ ] Si Windows dice “no puede encontrar el archivo” → `docs/12_ARCHIVO_NO_ENCONTRADO_WINDOWS.md` (casi siempre `snap7.dll` o cwd)
 - [ ] `py -m pip install firebase-admin python-snap7`
 
 ## Bridge
 ```powershell
-py plc_real/plc_bridge_real.py
-# o edita IP dentro del script / pásala así:
-py plc_real/plc_bridge_real.py --ip 192.168.0.10
+# Desde la raiz del repo (recomendado):
+.\run_bridge_real.bat 192.168.0.10
+
+# o:
+py plc_real\plc_bridge_real.py --ip 192.168.0.10
 ```
 
 Si ves `Invalid address (0x05)` o “DB_HMI demasiado pequeño”: **`FIX_DB_INVALID_ADDRESS.md`**  
+Si ves “El sistema no puede encontrar el archivo especificado”: **`docs/12_ARCHIVO_NO_ENCONTRADO_WINDOWS.md`**  
 Diagnóstico: `py plc_probe.py --ip 192.168.0.10`
 
 Estación Firestore: **`colegio-don-bosco-real`**

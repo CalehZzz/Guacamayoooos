@@ -20,6 +20,13 @@ except ImportError:
     sys.exit(1)
 
 
+def _hint_dll(err: BaseException) -> None:
+    msg = str(err).lower()
+    if getattr(err, "winerror", None) == 2 or "no puede encontrar el archivo" in msg or "cannot find the file" in msg:
+        print("   → Suele ser snap7.dll faltante. Ver docs/12_ARCHIVO_NO_ENCONTRADO_WINDOWS.md")
+        print("     py -m pip install --upgrade python-snap7")
+
+
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--ip", default="192.168.0.1")
@@ -27,7 +34,12 @@ def main() -> None:
     p.add_argument("--slot", type=int, default=1)
     args = p.parse_args()
 
-    client = snap7.client.Client()
+    try:
+        client = snap7.client.Client()
+    except Exception as e:
+        print(f"❌ No pude crear cliente snap7: {e}")
+        _hint_dll(e)
+        sys.exit(1)
     try:
         client.set_connection_type(3)
     except Exception:
@@ -37,6 +49,7 @@ def main() -> None:
         client.connect(args.ip, args.rack, args.slot)
     except Exception as e:
         print(f"❌ No conectó: {e}")
+        _hint_dll(e)
         sys.exit(1)
 
     if not client.get_connected():
