@@ -469,6 +469,51 @@
     outline: 2px solid #ffd43b;
     outline-offset: 1px;
   }
+  /* Feedback táctil HMI: respuesta inmediata, sin “tosquedad” */
+  .sp-lcd .sp-btn,
+  .sp-lcd .sp-toggle,
+  .sp-softkey,
+  .sp-fs-btn{
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition:
+      transform .08s ease-out,
+      filter .08s ease-out,
+      box-shadow .08s ease-out,
+      background-color .12s ease-out,
+      outline-color .12s ease-out;
+  }
+  .sp-lcd .sp-btn:active,
+  .sp-softkey:active,
+  .sp-fs-btn:active{
+    transform: scale(.96);
+    filter: brightness(1.06);
+  }
+  .sp-lcd .sp-btn.is-tap,
+  .sp-softkey.is-tap{
+    transform: scale(.96);
+    filter: brightness(1.08);
+  }
+  .sp-toggle{
+    transition: background .12s ease-out, color .12s ease-out, border-color .12s ease-out, transform .08s ease-out;
+  }
+  .sp-toggle:active{ transform: scale(.97); }
+  @media (prefers-reduced-motion: reduce){
+    .sp-lcd .sp-btn,
+    .sp-lcd .sp-toggle,
+    .sp-softkey,
+    .sp-fs-btn{
+      transition: none;
+    }
+    .sp-lcd .sp-btn:active,
+    .sp-softkey:active,
+    .sp-lcd .sp-btn.is-tap,
+    .sp-softkey.is-tap{
+      transform: none;
+      filter: brightness(.95);
+    }
+  }
   @media (prefers-reduced-motion: reduce){
     .machine-stage.running .belt-surface,
     .machine-stage.running .belt-roller,
@@ -756,8 +801,9 @@
       0 1px 0 rgba(0,0,0,.25);
   }
   .sp-btn:active{
-    transform: translateY(1px);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,.25);
+    box-shadow:
+      inset 0 1px 2px rgba(0,0,0,.18),
+      0 0 0 1px rgba(255,255,255,.08);
   }
   .sp-btn-start{
     background: linear-gradient(180deg, #51cf66, var(--sx-green-d));
@@ -858,8 +904,9 @@
     color: #006666;
   }
   .sp-softkey:active{
-    filter: brightness(.94);
-    box-shadow: inset 0 2px 4px rgba(0,0,0,.22);
+    box-shadow:
+      inset 0 1px 2px rgba(0,0,0,.14),
+      0 0 0 1px rgba(255,255,255,.35);
   }
   .ktp-foot{
     display: flex;
@@ -1105,10 +1152,18 @@
   .toast{
     position:fixed; bottom:26px; left:50%; transform:translateX(-50%);
     background:var(--forest); color:var(--cream); padding:12px 22px; border-radius:999px;
-    font-weight:700; font-size:14px; box-shadow:var(--shadow); z-index:50; opacity:0; transition:.25s;
+    font-weight:700; font-size:14px; box-shadow:var(--shadow); z-index:50; opacity:0;
+    transition: opacity .18s ease-out, transform .18s ease-out;
     pointer-events:none;
   }
   .toast.show{opacity:1; transform:translate(-50%,-6px);}
+  .toast.toast-soft{
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    background: rgba(31,59,45,.86);
+    box-shadow: 0 4px 14px rgba(0,0,0,.12);
+  }
 
   /* ---------- Modal ---------- */
   .modal-overlay{
@@ -1832,11 +1887,45 @@ async function toggleHmiFullscreen(){
   else await enterHmiFullscreen();
 }
 
-function toast(msg){
+let toastTimer = null;
+function toast(msg, opts){
   const t = $("toast");
+  if(!t) return;
+  const soft = !!(opts && opts.soft);
+  const ms = (opts && opts.ms) || (soft ? 900 : 1800);
   t.textContent = msg;
+  t.classList.toggle("toast-soft", soft);
   t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2200);
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), ms);
+}
+
+function flashHmiTap(el){
+  if(!el || !el.classList) return;
+  el.classList.add("is-tap");
+  setTimeout(() => el.classList.remove("is-tap"), 90);
+}
+
+/** Escribe HMI sin bloquear el UI; agrupa parches del mismo tick. */
+let hmiFlushTimer = null;
+function pushHmiCmd(patch){
+  hmiCmd = { ...hmiCmd, ...patch };
+  if(hmiFlushTimer != null) clearTimeout(hmiFlushTimer);
+  hmiFlushTimer = setTimeout(() => {
+    hmiFlushTimer = null;
+    setDoc(hmiCmdRef(), {
+      ...hmiCmd,
+      actualizado: serverTimestamp()
+    }, { merge: true }).catch((e) => {
+      console.error(e);
+      toast("⚠️ No se pudo enviar comando HMI (Firestore).");
+    });
+  }, 0);
+}
+
+function pulseHmi(flag, ms = 220){
+  pushHmiCmd({ [flag]: true });
+  setTimeout(() => { pushHmiCmd({ [flag]: false }); }, ms);
 }
 
 function money(n){
@@ -1992,24 +2081,6 @@ function hmiSesionRef(){
   return doc(db, "sesiones_activas", HMI_ESTACION_ID);
 }
 
-async function pushHmiCmd(patch){
-  hmiCmd = { ...hmiCmd, ...patch };
-  try{
-    await setDoc(hmiCmdRef(), {
-      ...hmiCmd,
-      actualizado: serverTimestamp()
-    }, { merge: true });
-  }catch(e){
-    console.error(e);
-    toast("⚠️ No se pudo enviar comando HMI (Firestore).");
-  }
-}
-
-async function pulseHmi(flag, ms = 350){
-  await pushHmiCmd({ [flag]: true });
-  setTimeout(() => { pushHmiCmd({ [flag]: false }); }, ms);
-}
-
 function syncHmiToggleUi(){
   const btn = $("hmi-modo-auto");
   if(!btn) return;
@@ -2090,21 +2161,14 @@ function syncRealPistonCmdUi(plc){
   $("hmi-banda-off")?.classList.toggle("active-cmd", !plc.banda);
 }
 
-async function setManualModeForActuators(){
-  if(hmiCmd.ModoAuto){
-    await pushHmiCmd({ ModoAuto: false });
-    syncHmiToggleUi();
-  }
-}
-
-async function setPistonExtend(which, extend){
-  await setManualModeForActuators();
+function setPistonExtend(which, extend){
   const patch = { ModoAuto: false };
   if(which === 1) patch.ManualPiston1 = !!extend;
   else if(which === 2) patch.ManualPiston2 = !!extend;
   else patch.ManualPiston = !!extend; // P3 vidrio
-  await pushHmiCmd(patch);
-  // UI inmediata desde el comando (no esperar al PLC)
+  pushHmiCmd(patch);
+  syncHmiToggleUi();
+  // UI inmediata (no esperar Firestore ni PLC)
   syncRealPistonCmdUi({
     banda: !!hmiCmd.ManualBanda,
     piston1: !!hmiCmd.ManualPiston1,
@@ -2114,30 +2178,24 @@ async function setPistonExtend(which, extend){
   if($("hmi-p" + which)) $("hmi-p" + which).textContent = pistonPosLabel(!!extend);
   $("hmi-chip-p" + which)?.classList.toggle("ok", !!extend);
 
-  // Simple efecto: Retractar = Q en 0 (no enciende salida)
-  if(!extend){
-    toast("P" + which + " retractar → salida OFF");
-    return;
-  }
-  // En LAD real el manual suele exigir SistemaOn; avisar si está OFF
-  const sist = ($("hmi-sistema")?.textContent || "").toUpperCase();
-  if(sist === "OFF" || sist === "—"){
-    toast("P" + which + " extender enviado · dale START si el PLC no mueve");
-  }else{
-    toast("P" + which + " extender → ManualPiston" + (which === 3 ? "" : which) + "=1");
+  // Solo aviso suave si hace falta START (manual suele exigir SistemaOn)
+  if(extend){
+    const sist = ($("hmi-sistema")?.textContent || "").toUpperCase();
+    if(sist === "OFF" || sist === "—"){
+      toast("Dale START si no se mueve", { soft: true });
+    }
   }
 }
 
-async function setBandaManual(on){
-  await setManualModeForActuators();
-  await pushHmiCmd({ ModoAuto: false, ManualBanda: !!on });
+function setBandaManual(on){
+  pushHmiCmd({ ModoAuto: false, ManualBanda: !!on });
+  syncHmiToggleUi();
   syncRealPistonCmdUi({
     banda: !!on,
     piston1: !!hmiCmd.ManualPiston1,
     piston2: !!hmiCmd.ManualPiston2,
     piston3: !!hmiCmd.ManualPiston
   });
-  toast(on ? "Banda marcha" : "Banda parada");
 }
 
 function renderHmiFromPlc(data){
@@ -2242,50 +2300,48 @@ $("hmi-reset-alarma").onclick = () => pulseHmi("ResetAlarma");
 $("hmi-fin-sesion").onclick = () => pulseHmi("FinSesion", 800);
 $("hmi-modo-auto").onclick = () => {
   const next = !hmiCmd.ModoAuto;
-  pushHmiCmd({ ModoAuto: next }).then(syncHmiToggleUi);
+  pushHmiCmd({ ModoAuto: next });
+  syncHmiToggleUi();
 };
 $("hmi-peso-apply").onclick = () => {
   const v = parseFloat($("hmi-peso-actual").value);
   if(Number.isNaN(v) || v < 0){ toast("Peso inválido"); return; }
   pushHmiCmd({ PesoActualKg: v });
-  toast("Peso actual → PLC");
+  toast("Peso → PLC", { soft: true });
 };
-$("hmi-sim-plastico").onclick = async () => {
-  await pushHmiCmd({
+$("hmi-sim-plastico").onclick = () => {
+  pushHmiCmd({
     BasculaLista: true, SensorPieza: true,
     SensorPlastico: true, SensorAluminio: false, SensorVidrio: false
   });
-  toast("Sim plástico → P1");
+  toast("Sim plástico → P1", { soft: true });
   setTimeout(() => pushHmiCmd({
     BasculaLista: false, SensorPieza: false,
     SensorPlastico: false, SensorAluminio: false, SensorVidrio: false
   }), 600);
 };
-$("hmi-sim-aluminio").onclick = async () => {
-  await pushHmiCmd({
+$("hmi-sim-aluminio").onclick = () => {
+  pushHmiCmd({
     BasculaLista: true, SensorPieza: true,
     SensorPlastico: false, SensorAluminio: true, SensorVidrio: false
   });
-  toast(hmiAutoPiston ? "Sim latas → P2 + FC AUTO" : "Sim latas → FC P2");
+  toast(hmiAutoPiston ? "Sim latas → P2" : "Sim latas → FC P2", { soft: true });
 };
-$("hmi-sim-vidrio")?.addEventListener("click", async () => {
-  await pushHmiCmd({
+$("hmi-sim-vidrio")?.addEventListener("click", () => {
+  pushHmiCmd({
     BasculaLista: true, SensorPieza: true,
     SensorPlastico: false, SensorAluminio: false, SensorVidrio: true
   });
-  toast(hmiAutoPiston ? "Sim vidrio → P3 + FC AUTO" : "Sim vidrio → FC P3");
+  toast(hmiAutoPiston ? "Sim vidrio → P3" : "Sim vidrio → FC P3", { soft: true });
 });
 $("hmi-sim-p1-ext")?.addEventListener("click", () => {
   pushHmiCmd({ Piston1Extendido: true });
-  toast("FC P1");
 });
 $("hmi-sim-p2-ext")?.addEventListener("click", () => {
   pushHmiCmd({ Piston2Extendido: true });
-  toast("FC P2");
 });
 $("hmi-sim-p3-ext")?.addEventListener("click", () => {
   pushHmiCmd({ Piston3Extendido: true });
-  toast("FC P3");
 });
 $("hmi-sim-clear").onclick = () => pushHmiCmd({
   BasculaLista: false, SensorPieza: false,
@@ -2301,8 +2357,8 @@ $("hmi-auto-piston").onclick = () => {
 function bindHold(btnId, flag){
   const el = $(btnId);
   if(!el) return;
-  const down = async (e) => { e.preventDefault(); await pushHmiCmd({ [flag]: true }); };
-  const up = async (e) => { e.preventDefault(); await pushHmiCmd({ [flag]: false }); };
+  const down = (e) => { e.preventDefault(); flashHmiTap(el); pushHmiCmd({ [flag]: true }); };
+  const up = (e) => { e.preventDefault(); pushHmiCmd({ [flag]: false }); };
   el.addEventListener("mousedown", down);
   el.addEventListener("mouseup", up);
   el.addEventListener("mouseleave", up);
@@ -2321,6 +2377,12 @@ $("hmi-p2-extend")?.addEventListener("click", () => setPistonExtend(2, true));
 $("hmi-p2-retract")?.addEventListener("click", () => setPistonExtend(2, false));
 $("hmi-p3-extend")?.addEventListener("click", () => setPistonExtend(3, true));
 $("hmi-p3-retract")?.addEventListener("click", () => setPistonExtend(3, false));
+
+/* Feedback táctil inmediato en todo el panel HMI */
+document.querySelector(".siemens-panel")?.addEventListener("pointerdown", (e) => {
+  const btn = e.target.closest?.(".sp-btn, .sp-softkey, .sp-toggle, .sp-fs-btn");
+  if(btn) flashHmiTap(btn);
+}, { passive: true });
 
 /* Softkeys F1–F8 (mismo efecto que botones de pantalla / fullscreen) */
 function wireSoftkey(skId, targetId){
