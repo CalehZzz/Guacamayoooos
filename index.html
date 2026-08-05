@@ -1908,24 +1908,47 @@ function flashHmiTap(el){
 
 /** Escribe HMI sin bloquear el UI; agrupa parches del mismo tick. */
 let hmiFlushTimer = null;
-function pushHmiCmd(patch){
+let hmiPulseTimers = {};
+function flushHmiCmd(){
+  if(hmiFlushTimer != null){
+    clearTimeout(hmiFlushTimer);
+    hmiFlushTimer = null;
+  }
+  return setDoc(hmiCmdRef(), {
+    ...hmiCmd,
+    actualizado: serverTimestamp()
+  }, { merge: true }).catch((e) => {
+    console.error(e);
+    toast("⚠️ No se pudo enviar comando HMI (Firestore).");
+  });
+}
+function pushHmiCmd(patch, opts){
   hmiCmd = { ...hmiCmd, ...patch };
+  const immediate = !!(opts && opts.immediate);
+  if(immediate){
+    return flushHmiCmd();
+  }
   if(hmiFlushTimer != null) clearTimeout(hmiFlushTimer);
   hmiFlushTimer = setTimeout(() => {
     hmiFlushTimer = null;
-    setDoc(hmiCmdRef(), {
-      ...hmiCmd,
-      actualizado: serverTimestamp()
-    }, { merge: true }).catch((e) => {
-      console.error(e);
-      toast("⚠️ No se pudo enviar comando HMI (Firestore).");
-    });
+    flushHmiCmd();
   }, 0);
 }
 
-function pulseHmi(flag, ms = 220){
-  pushHmiCmd({ [flag]: true });
-  setTimeout(() => { pushHmiCmd({ [flag]: false }); }, ms);
+/**
+ * Pulsos Start/Stop/Reset: deben vivir > intervalo del bridge (~0.35s)
+ * + latencia Firestore. Si no, el PLC a veces nunca ve el flanco.
+ */
+function pulseHmi(flag, ms = 1000){
+  if(hmiPulseTimers[flag]) clearTimeout(hmiPulseTimers[flag]);
+  // Mutuamente excluyentes: Start y Stop no pueden quedar 1 a la vez
+  if(flag === "Start") hmiCmd.Stop = false;
+  if(flag === "Stop") hmiCmd.Start = false;
+  pushHmiCmd({ [flag]: true }, { immediate: true });
+  hmiPulseTimers[flag] = setTimeout(() => {
+    pushHmiCmd({ [flag]: false }, { immediate: true });
+    delete hmiPulseTimers[flag];
+  }, ms);
 }
 
 function money(n){
@@ -2292,12 +2315,18 @@ function ensureHmiListen(){
   pushHmiCmd({});
 }
 
-$("hmi-start").onclick = () => pulseHmi("Start");
-$("hmi-stop").onclick = () => pulseHmi("Stop");
-$("hmi-emergencia").onclick = () => pushHmiCmd({ Emergencia: true });
-$("hmi-clear-e").onclick = () => pushHmiCmd({ Emergencia: false });
-$("hmi-reset-alarma").onclick = () => pulseHmi("ResetAlarma");
-$("hmi-fin-sesion").onclick = () => pulseHmi("FinSesion", 800);
+$("hmi-start").onclick = () => {
+  pulseHmi("Start", 1000);
+  toast("START", { soft: true });
+};
+$("hmi-stop").onclick = () => {
+  pulseHmi("Stop", 1000);
+  toast("STOP", { soft: true });
+};
+$("hmi-emergencia").onclick = () => pushHmiCmd({ Emergencia: true }, { immediate: true });
+$("hmi-clear-e").onclick = () => pushHmiCmd({ Emergencia: false }, { immediate: true });
+$("hmi-reset-alarma").onclick = () => pulseHmi("ResetAlarma", 1000);
+$("hmi-fin-sesion").onclick = () => pulseHmi("FinSesion", 1200);
 $("hmi-modo-auto").onclick = () => {
   const next = !hmiCmd.ModoAuto;
   pushHmiCmd({ ModoAuto: next });
