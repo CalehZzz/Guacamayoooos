@@ -98,7 +98,7 @@ Detalle completo: `tia/MAPA_DB_HMI.md`.
 | `ContVidrio` | Int | **22.0** | Piezas vidrio |
 | `PesoVidrioKg` | Real | **24.0** | kg vidrio |
 
-Si el probe dice DB1 &lt; 28 B o DB3 &lt; 7 B → `plc_real/FIX_DB_INVALID_ADDRESS.md`.
+Si el probe dice DB1 < 28 B o DB3 < 7 B → `plc_real/FIX_DB_INVALID_ADDRESS.md`.
 
 ## E) Timers
 
