@@ -73,14 +73,14 @@ Detalle completo: `tia/MAPA_DB_HMI.md`.
 
 ---
 
-## D) `DatosEstacion` — número **1** · Optimized **OFF** · **22 bytes**
+## D) `DatosEstacion` — número **1** · Optimized **OFF** · **28 bytes**
 
 | Nombre | Tipo | Offset | Descripción |
 |---|---|---|---|
 | `ContPlastico` | Int | 0.0 | Piezas plástico |
-| `ContAluminio` | Int | 2.0 | Piezas aluminio |
+| `ContAluminio` | Int | 2.0 | Piezas aluminio (latas) |
 | `PesoPlasticoKg` | Real | 4.0 | kg plástico |
-| `PesoAluminioKg` | Real | 8.0 | kg aluminio |
+| `PesoAluminioKg` | Real | 8.0 | kg latas |
 | `PesoActualKg` | Real | 12.0 | último peso |
 | `SesionActiva` | Bool | 16.0 | sesión abierta |
 | `FinSesion` | Bool | 16.1 | fin → web |
@@ -88,15 +88,17 @@ Detalle completo: `tia/MAPA_DB_HMI.md`.
 | `ModoAuto` | Bool | 16.3 | espejo |
 | `Emergencia` | Bool | 16.4 | espejo |
 | `Alarma` | Bool | 16.5 | espejo |
-| `BandaOn` | Bool | 16.6 | espejo `M_Banda` |
+| `BandaOn` | Bool | 16.6 | espejo banda |
 | `PistonOn` | Bool | 16.7 | OR de P1/P2/P3 |
-| `Piston1On` | Bool | **17.0** | Retenedor |
-| `Piston2On` | Bool | **17.1** | Plástico |
-| `Piston3On` | Bool | **17.2** | Aluminio |
+| `Piston1On` | Bool | **17.0** | Plástico |
+| `Piston2On` | Bool | **17.1** | Latas |
+| `Piston3On` | Bool | **17.2** | Vidrio |
 | `EstadoMaquina` | Int | 18.0 | 0…4 |
-| `UltimoMaterial` | Int | 20.0 | 0/1/2 |
+| `UltimoMaterial` | Int | 20.0 | 0/1/2/**3=vidrio** |
+| `ContVidrio` | Int | **22.0** | Piezas vidrio |
+| `PesoVidrioKg` | Real | **24.0** | kg vidrio |
 
----
+Si el probe dice DB1 &lt; 28 B o DB3 &lt; 7 B → `plc_real/FIX_DB_INVALID_ADDRESS.md`.
 
 ## E) Timers
 

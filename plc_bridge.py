@@ -33,8 +33,36 @@ DB_READ_SIZE = 28
 DB_HMI_SIZE = 7
 PESO_OFFSET = 2  # si tu DB_HMI muestra otro offset al compilar, cámbialo aquí
 
+# Tamaños de fallback si el DB en el PLC aún no está ampliado (TIA Download pendiente).
+DB_READ_FALLBACKS = (28, 24, 22, 20, 18)
+DB_HMI_WRITE_FALLBACKS = (7, 6, 2)
+
 ESTADO_TXT = {0: "idle", 1: "running", 2: "clasificando", 3: "alarma", 4: "emergencia"}
 MATERIAL_TXT = {0: None, 1: "plastico", 2: "aluminio", 3: "vidrio"}
+
+# Avisos repetidos (Invalid address / DB chico) → una vez + recordatorio cada N s
+_warn_state: dict[str, float] = {}
+_WARN_REMIND_S = 30.0
+
+
+def _warn_once(key: str, msg: str, *, remind_s: float = _WARN_REMIND_S) -> None:
+    now = time.monotonic()
+    last = _warn_state.get(key)
+    if last is not None and (now - last) < remind_s:
+        return
+    _warn_state[key] = now
+    print(msg)
+
+
+def _db_max_readable(client: snap7.client.Client, dbn: int, sizes: tuple[int, ...]) -> int:
+    max_ok = 0
+    for sz in sizes:
+        try:
+            client.db_read(dbn, 0, sz)
+            max_ok = sz
+        except Exception:
+            break
+    return max_ok
 
 BOOL_MAP = [
     # (firestore_key, byte, bit)
@@ -97,101 +125,150 @@ def diagnostico_dbs(client: snap7.client.Client, db_datos: int, db_hmi: int) -> 
         print(f"  Merker MB0: FAIL ({e})")
         print("  → Download HARDWARE de la CPU con PUT/GET a esta instancia PLCSIM.")
 
+    probe_sizes = (2, 4, 6, 7, 8, 16, 20, 22, 24, 28, 32)
     for dbn, label, need in ((db_datos, "DatosEstacion", DB_READ_SIZE), (db_hmi, "DB_HMI", DB_HMI_SIZE)):
-        ok = False
-        max_ok = 0
-        for sz in (2, 4, 6, 7, 8, 16, 20, 22, 24, 28, 32):
-            try:
-                client.db_read(dbn, 0, sz)
-                max_ok = sz
-                ok = True
-            except Exception:
-                break
-        if ok and max_ok >= need:
+        max_ok = _db_max_readable(client, dbn, probe_sizes)
+        if max_ok >= need:
             print(f"  DB{dbn} ({label}): OK (legible ≥{max_ok} bytes, necesitas {need})")
-        elif ok:
+        elif max_ok > 0:
             print(f"  DB{dbn} ({label}): parcial — solo {max_ok} bytes (necesitas {need})")
             print("  → El DB es demasiado pequeño: agrega todos los campos y vuelve a descargar.")
+            if label == "DB_HMI":
+                print("  → Campos: PesoActualKg Real @2.0 + Piston3Extendido @6.0 + SensorVidrio @6.1")
+            else:
+                print("  → Campos: ContVidrio Int @22 + PesoVidrioKg Real @24 (total 28 B)")
         else:
-            print(f"  DB{dbn} ({label}): NO legible (Invalid address típico)")
+            print(f"  DB{dbn} ({label}): NO legible (Invalid address 0x05 típico)")
             print("  → Causas: DB no descargado en ESTA IP, número distinto, o Optimized ON.")
-    print("  Tip: py plc_probe.py --ip <misma_IP>  → lista todos los DB visibles\n")
+    print("  Tip: py plc_probe.py --ip <misma_IP>  → lista todos los DB visibles")
+    print("  Guía: plc_real/FIX_DB_INVALID_ADDRESS.md\n")
 
 
 def leer_datos_estacion(client: snap7.client.Client, db_number: int) -> dict:
-    raw = client.db_read(db_number, 0, DB_READ_SIZE)
-    estado = get_int(raw, 18)
-    ultimo = get_int(raw, 20)
+    raw = None
+    used = 0
+    last_err: Exception | None = None
+    for sz in DB_READ_FALLBACKS:
+        try:
+            raw = client.db_read(db_number, 0, sz)
+            used = sz
+            break
+        except Exception as e:
+            last_err = e
+    if raw is None:
+        raise RuntimeError(
+            f"Read DatosEstacion DB{db_number} falló (Invalid address 0x05). "
+            "En TIA: DB1 Optimized OFF, ≥28 bytes (ContVidrio@22 + PesoVidrioKg@24), "
+            "Download software a ESTA IP. Ver plc_real/FIX_DB_INVALID_ADDRESS.md"
+        ) from last_err
+
+    if used < DB_READ_SIZE:
+        _warn_once(
+            "datos_parcial",
+            f"⚠️  DatosEstacion DB{db_number}: solo {used} B legibles (ideal {DB_READ_SIZE}). "
+            "Agrega ContVidrio@22 + PesoVidrioKg@24 → Download. "
+            "Mientras tanto el bridge lee lo que haya.",
+        )
+
+    estado = get_int(raw, 18) if used >= 20 else 0
+    ultimo = get_int(raw, 20) if used >= 22 else 0
+    cont_v = int(get_int(raw, 22)) if used >= 24 else 0
+    peso_v = round(float(get_real(raw, 24)), 4) if used >= 28 else 0.0
     return {
         "materiales": {
             "plastico": {"piezas": int(get_int(raw, 0)), "pesoKg": round(float(get_real(raw, 4)), 4)},
             "aluminio": {"piezas": int(get_int(raw, 2)), "pesoKg": round(float(get_real(raw, 8)), 4)},
-            "vidrio": {"piezas": int(get_int(raw, 22)), "pesoKg": round(float(get_real(raw, 24)), 4)},
+            "vidrio": {"piezas": cont_v, "pesoKg": peso_v},
         },
-        "finalizada": bool(get_bool(raw, 16, 1)),
+        "finalizada": bool(get_bool(raw, 16, 1)) if used >= 17 else False,
         "plc": {
             "conectado": True,
-            "sistemaOn": bool(get_bool(raw, 16, 2)),
-            "modoAuto": bool(get_bool(raw, 16, 3)),
-            "emergencia": bool(get_bool(raw, 16, 4)),
-            "alarma": bool(get_bool(raw, 16, 5)),
-            "banda": bool(get_bool(raw, 16, 6)),
-            "piston": bool(get_bool(raw, 16, 7)),
+            "sistemaOn": bool(get_bool(raw, 16, 2)) if used >= 17 else False,
+            "modoAuto": bool(get_bool(raw, 16, 3)) if used >= 17 else False,
+            "emergencia": bool(get_bool(raw, 16, 4)) if used >= 17 else False,
+            "alarma": bool(get_bool(raw, 16, 5)) if used >= 17 else False,
+            "banda": bool(get_bool(raw, 16, 6)) if used >= 17 else False,
+            "piston": bool(get_bool(raw, 16, 7)) if used >= 17 else False,
             # P1 plástico · P2 latas · P3 vidrio
-            "piston1": bool(get_bool(raw, 17, 0)),
-            "piston2": bool(get_bool(raw, 17, 1)),
-            "piston3": bool(get_bool(raw, 17, 2)),
+            "piston1": bool(get_bool(raw, 17, 0)) if used >= 18 else False,
+            "piston2": bool(get_bool(raw, 17, 1)) if used >= 18 else False,
+            "piston3": bool(get_bool(raw, 17, 2)) if used >= 18 else False,
             "estado": ESTADO_TXT.get(estado, "idle"),
             "ultimoMaterial": MATERIAL_TXT.get(ultimo),
-            "pesoActualKg": round(float(get_real(raw, 12)), 4),
-            "sesionActiva": bool(get_bool(raw, 16, 0)),
+            "pesoActualKg": round(float(get_real(raw, 12)), 4) if used >= 16 else 0.0,
+            "sesionActiva": bool(get_bool(raw, 16, 0)) if used >= 17 else False,
         },
     }
 
 
 def escribir_db_hmi(client: snap7.client.Client, db_hmi: int, cmd: dict) -> None:
-    raw = bytearray(DB_HMI_SIZE)
-    for key, byte, bit in BOOL_MAP:
-        if byte >= DB_HMI_SIZE:
-            continue
-        set_bool(raw, byte, bit, bool(cmd.get(key, False)))
     peso = cmd.get("PesoActualKg", 0.0)
     try:
         peso = float(peso)
     except (TypeError, ValueError):
         peso = 0.0
-    if PESO_OFFSET + 4 <= DB_HMI_SIZE:
-        set_real(raw, PESO_OFFSET, peso)
-    try:
-        client.db_write(db_hmi, 0, raw)
-    except Exception:
-        # DB demasiado pequeño (ej. solo 4 bytes): escribe al menos los bools de comando
-        raw2 = bytearray(2)
+
+    last_err: Exception | None = None
+    for sz in DB_HMI_WRITE_FALLBACKS:
+        raw = bytearray(sz)
         for key, byte, bit in BOOL_MAP:
-            if byte > 1:
+            if byte >= sz:
                 continue
-            set_bool(raw2, byte, bit, bool(cmd.get(key, False)))
-        client.db_write(db_hmi, 0, raw2)
-        raise RuntimeError(
-            f"DB_HMI (DB{db_hmi}) es demasiado pequeño para peso. "
-            "Se escribieron solo bools (2 bytes). "
-            "En TIA agrega PesoActualKg Real + Piston3Extendido @6.0 → Download "
-            "(probe debe decir ≥7 bytes)."
-        ) from None
+            set_bool(raw, byte, bit, bool(cmd.get(key, False)))
+        if PESO_OFFSET + 4 <= sz:
+            set_real(raw, PESO_OFFSET, peso)
+        try:
+            client.db_write(db_hmi, 0, raw)
+            if sz < DB_HMI_SIZE:
+                _warn_once(
+                    "hmi_parcial",
+                    f"⚠️  DB_HMI (DB{db_hmi}) solo admite escritura de {sz} B "
+                    f"(ideal {DB_HMI_SIZE}). En TIA agrega PesoActualKg Real @2.0 + "
+                    "Piston3Extendido @6.0 + SensorVidrio @6.1 → Download. "
+                    f"Mientras tanto se escriben {sz} bytes. "
+                    "Ver plc_real/FIX_DB_INVALID_ADDRESS.md",
+                )
+            return
+        except Exception as e:
+            last_err = e
+            continue
+    raise RuntimeError(
+        f"No se pudo escribir DB_HMI (DB{db_hmi}). "
+        "Invalid address / Optimized ON / DB inexistente en esta IP. "
+        "Ver plc_real/FIX_DB_INVALID_ADDRESS.md"
+    ) from last_err
 
 
 def reset_sesion_en_plc(client: snap7.client.Client, db_number: int) -> None:
     from snap7.util import set_int
 
-    raw = bytearray(client.db_read(db_number, 0, DB_READ_SIZE))
+    raw = None
+    for sz in DB_READ_FALLBACKS:
+        try:
+            raw = bytearray(client.db_read(db_number, 0, sz))
+            break
+        except Exception:
+            continue
+    if raw is None:
+        raise RuntimeError(f"No se pudo leer DatosEstacion DB{db_number} para reset")
+
     set_int(raw, 0, 0)
     set_int(raw, 2, 0)
-    set_real(raw, 4, 0.0)
-    set_real(raw, 8, 0.0)
-    set_real(raw, 12, 0.0)
-    set_bool(raw, 16, 0, True)
-    set_bool(raw, 16, 1, False)
-    set_int(raw, 20, 0)
+    if len(raw) >= 8:
+        set_real(raw, 4, 0.0)
+    if len(raw) >= 12:
+        set_real(raw, 8, 0.0)
+    if len(raw) >= 16:
+        set_real(raw, 12, 0.0)
+    if len(raw) >= 17:
+        set_bool(raw, 16, 0, True)
+        set_bool(raw, 16, 1, False)
+    if len(raw) >= 22:
+        set_int(raw, 20, 0)
+    if len(raw) >= 24:
+        set_int(raw, 22, 0)
+    if len(raw) >= 28:
+        set_real(raw, 24, 0.0)
     client.db_write(db_number, 0, raw)
     print("↺ DatosEstacion reiniciado.")
 
@@ -259,13 +336,17 @@ def main() -> None:
                                 f"BandaMan={int(bool(cmd.get('ManualBanda')))}"
                             )
                 except Exception as e:
-                    print(f"⚠️  escritura DB_HMI: {e}")
+                    _warn_once("write_hmi_err", f"⚠️  escritura DB_HMI: {e}")
 
             # 2) PLC → web
             try:
                 payload = leer_datos_estacion(plc, args.db)
             except Exception as e:
-                print(f"⚠️  lectura DatosEstacion: {e}")
+                _warn_once(
+                    "read_datos_err",
+                    f"⚠️  lectura DatosEstacion: {e}\n"
+                    "   Tip: py plc_probe.py --ip <misma_IP>  |  plc_real/FIX_DB_INVALID_ADDRESS.md",
+                )
                 time.sleep(1.0)
                 continue
 
