@@ -2024,10 +2024,10 @@ function pistonPosLabel(on){
 }
 
 function resolvePistonStates(plc){
-  // Feedback PLC, o comando HMI local (para ver movimiento al instante)
-  const p1 = !!(plc.piston1 || hmiCmd.ManualPiston1);
-  const p2 = !!(plc.piston2 || hmiCmd.ManualPiston2);
-  const p3 = !!(plc.piston3 || hmiCmd.ManualPiston || (plc.piston && !plc.piston1 && !plc.piston2 && !plc.piston3));
+  // Prioriza comando HMI local (Extender/Retractar) sobre feedback PLC
+  const p1 = !!(hmiCmd.ManualPiston1 || plc.piston1);
+  const p2 = !!(hmiCmd.ManualPiston2 || plc.piston2);
+  const p3 = !!(hmiCmd.ManualPiston || plc.piston3 || (plc.piston && !plc.piston1 && !plc.piston2 && !plc.piston3));
   return { p1, p2, p3, any: p1 || p2 || p3 || !!plc.piston };
 }
 
@@ -2102,15 +2102,30 @@ async function setPistonExtend(which, extend){
   const patch = { ModoAuto: false };
   if(which === 1) patch.ManualPiston1 = !!extend;
   else if(which === 2) patch.ManualPiston2 = !!extend;
-  else patch.ManualPiston = !!extend; // P3
+  else patch.ManualPiston = !!extend; // P3 vidrio
   await pushHmiCmd(patch);
+  // UI inmediata desde el comando (no esperar al PLC)
   syncRealPistonCmdUi({
     banda: !!hmiCmd.ManualBanda,
     piston1: !!hmiCmd.ManualPiston1,
     piston2: !!hmiCmd.ManualPiston2,
     piston3: !!hmiCmd.ManualPiston
   });
-  toast((extend ? "Extender" : "Retractar") + " P" + which);
+  if($("hmi-p" + which)) $("hmi-p" + which).textContent = pistonPosLabel(!!extend);
+  $("hmi-chip-p" + which)?.classList.toggle("ok", !!extend);
+
+  // Simple efecto: Retractar = Q en 0 (no enciende salida)
+  if(!extend){
+    toast("P" + which + " retractar → salida OFF");
+    return;
+  }
+  // En LAD real el manual suele exigir SistemaOn; avisar si está OFF
+  const sist = ($("hmi-sistema")?.textContent || "").toUpperCase();
+  if(sist === "OFF" || sist === "—"){
+    toast("P" + which + " extender enviado · dale START si el PLC no mueve");
+  }else{
+    toast("P" + which + " extender → ManualPiston" + (which === 3 ? "" : which) + "=1");
+  }
 }
 
 async function setBandaManual(on){
