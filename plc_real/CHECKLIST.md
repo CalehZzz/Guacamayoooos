@@ -4,8 +4,8 @@
 - [ ] Proyecto **nuevo** con CPU 1214C (no el de 1511C)
 - [ ] IP estática anotada (ej. `192.168.0.10`)
 - [ ] PUT/GET habilitado + download hardware
-- [ ] `DatosEstacion` DB1 Optimized OFF (con `Piston1On`/`2`/`3` @ 17.0–17.2)
-- [ ] `DB_HMI` DB3 Optimized OFF (mín. 6 bytes, `PesoActualKg` Real @ 2.0)
+- [ ] `DatosEstacion` DB1 Optimized OFF · **≥ 28 bytes** (`ContVidrio` @22 · `PesoVidrioKg` @24 · `Piston1/2/3On` @17.0–17.2)
+- [ ] `DB_HMI` DB3 Optimized OFF · **≥ 7 bytes** (`PesoActualKg` Real @2.0 · `Piston3Extendido` @6.0 · `SensorVidrio` @6.1)
 - [ ] Tag table según `TABLA_IO_1214C.md` (**Q_Piston1..3** + 6 sensores de posición)
 - [ ] FCs según `NETWORKS_LAD.md`
 - [ ] Timers: `T_RetardoPiston2/3`, `T_TimeoutPiston2/3`
@@ -34,6 +34,9 @@ py plc_real/plc_bridge_real.py
 # o edita IP dentro del script / pásala así:
 py plc_real/plc_bridge_real.py --ip 192.168.0.10
 ```
+
+Si ves `Invalid address (0x05)` o “DB_HMI demasiado pequeño”: **`FIX_DB_INVALID_ADDRESS.md`**  
+Diagnóstico: `py plc_probe.py --ip 192.168.0.10`
 
 Estación Firestore: **`colegio-don-bosco-real`**
 

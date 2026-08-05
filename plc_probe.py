@@ -53,7 +53,7 @@ def main() -> None:
         print(f"  FAIL: {e}")
         print("  → Revisa PUT/GET descargado + instancia PLCSIM correcta.\n")
 
-    sizes = [2, 4, 6, 8, 12, 16, 20, 22, 24, 32]
+    sizes = [2, 4, 6, 7, 8, 12, 16, 20, 22, 24, 28, 32]
     print("\n--- Data Blocks DB1..DB10 ---")
     found = []
     for dbn in range(1, 11):
@@ -70,7 +70,7 @@ def main() -> None:
         if ok_sizes:
             mx = max(ok_sizes)
             found.append((dbn, mx))
-            print(f"  DB{dbn}: OK hasta {mx} bytes  (DatosEstacion≥22, DB_HMI≥6)")
+            print(f"  DB{dbn}: OK hasta {mx} bytes  (DatosEstacion≥28, DB_HMI≥7)")
         else:
             print(f"  DB{dbn}: no legible  ({last_err})")
 
@@ -82,21 +82,25 @@ def main() -> None:
         print("  2) Los DB son Optimized ON (hay que OFF + download de nuevo).")
         print("  3) PUT/GET no quedó en la CPU de esa instancia (download hardware).")
         print("  4) Estás conectado a otra instancia / IP distinta a la del TIA online.")
+        print("  Guía: plc_real/FIX_DB_INVALID_ADDRESS.md")
     else:
         print("DBs legibles:", ", ".join(f"DB{n}(≤{s}B)" for n, s in found))
         print()
         for n, s in found:
-            if s >= 22:
-                print(f"  candidato DatosEstacion: --db {n}  (tamaño OK)")
-            elif s >= 6:
-                print(f"  DB{n}: {s}B — si es DatosEstacion, falta ampliar (necesita ≥22)")
-            if s >= 6:
-                print(f"  candidato DB_HMI: --db-hmi {n}  (tamaño OK para bools+peso)")
+            if s >= 28:
+                print(f"  candidato DatosEstacion: --db {n}  (tamaño OK ≥28)")
+            elif s >= 22:
+                print(f"  DB{n}: {s}B — candidato DatosEstacion PARCIAL (falta ContVidrio/PesoVidrio → ≥28)")
+            elif s >= 7:
+                print(f"  DB{n}: {s}B — si es DatosEstacion, falta ampliar (necesita ≥28)")
+            if s >= 7:
+                print(f"  candidato DB_HMI: --db-hmi {n}  (tamaño OK ≥7)")
             elif s > 0:
-                print(f"  DB{n}: {s}B — si es DB_HMI, agrega PesoActualKg Real (necesita ≥6)")
+                print(f"  DB{n}: {s}B — si es DB_HMI, agrega PesoActualKg Real + byte 6 (necesita ≥7)")
         print()
         print("Si DB1 no aparece pero otro sí: en TIA el número del DB no es 1,")
         print("o DatosEstacion no se descargó. Mira en TIA el [DBx] al lado del nombre.")
+        print("Guía: plc_real/FIX_DB_INVALID_ADDRESS.md")
 
     try:
         client.disconnect()
