@@ -95,12 +95,60 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--slot", type=int, default=1)
     p.add_argument("--db", type=int, default=1, help="DB DatosEstacion")
     p.add_argument("--db-hmi", type=int, default=3, help="DB_HMI comandos")
-    p.add_argument("--interval", type=float, default=0.35)
+    p.add_argument("--interval", type=float, default=0.25)
     p.add_argument("--reset-on-start", action="store_true")
     p.add_argument("--dry-run", action="store_true")
     p.add_argument("--no-hmi-write", action="store_true", help="Solo lee PLC, no escribe DB_HMI")
+    p.add_argument(
+        "--pulse-hold",
+        type=float,
+        default=1.0,
+        help="Segundos que Start/Stop/Reset/FinSesion se mantienen en 1 en el PLC",
+    )
     return p.parse_args()
 
+
+# Flancos cortos desde Firestore: el bridge los alarga para que el LAD los vea.
+PULSE_KEYS = ("Start", "Stop", "ResetAlarma", "FinSesion")
+_pulse_hold_until: dict[str, float] = {}
+_pulse_prev: dict[str, bool] = {k: False for k in PULSE_KEYS}
+
+
+def aplicar_retencion_pulsos(cmd: dict, hold_s: float) -> dict:
+    """Si Start/Stop aparece en 1 (o flanco), lo mantiene hold_s en el DB del PLC."""
+    out = dict(cmd)
+    now = time.monotonic()
+
+    for key in PULSE_KEYS:
+        on = bool(cmd.get(key))
+        rising = on and not _pulse_prev.get(key, False)
+        _pulse_prev[key] = on
+        if rising or on:
+            _pulse_hold_until[key] = now + max(0.2, hold_s)
+
+    # Start y Stop no a la vez (LAD: Start con NC Stop)
+    if _pulse_hold_until.get("Stop", 0) > now:
+        _pulse_hold_until["Start"] = 0
+    if _pulse_hold_until.get("Start", 0) > now and not (
+        _pulse_hold_until.get("Stop", 0) > now
+    ):
+        pass
+
+    for key in PULSE_KEYS:
+        until = _pulse_hold_until.get(key, 0)
+        if until > now:
+            out[key] = True
+        else:
+            out[key] = bool(cmd.get(key))
+            _pulse_hold_until.pop(key, None)
+
+    if out.get("Start") and out.get("Stop"):
+        # Preferir el más reciente
+        if _pulse_hold_until.get("Stop", 0) >= _pulse_hold_until.get("Start", 0):
+            out["Start"] = False
+        else:
+            out["Stop"] = False
+    return out
 
 def conectar_plc(ip: str, rack: int, slot: int) -> snap7.client.Client:
     # Tipo OP (3) suele ir mejor con S7-1200/1500 + PUT/GET que el PG por defecto.
@@ -324,7 +372,17 @@ def main() -> None:
                     snap = cmd_ref.get()
                     if snap.exists:
                         cmd = snap.to_dict() or {}
-                        escribir_db_hmi(plc, args.db_hmi, cmd)
+                        cmd_plc = aplicar_retencion_pulsos(cmd, args.pulse_hold)
+                        escribir_db_hmi(plc, args.db_hmi, cmd_plc)
+                        # Diagnóstico pulsos Start/Stop
+                        if any(cmd_plc.get(k) for k in ("Start", "Stop", "ResetAlarma", "FinSesion")):
+                            print(
+                                f"   HMI→DB3 pulse "
+                                f"Start={int(bool(cmd_plc.get('Start')))} "
+                                f"Stop={int(bool(cmd_plc.get('Stop')))} "
+                                f"Reset={int(bool(cmd_plc.get('ResetAlarma')))} "
+                                f"Fin={int(bool(cmd_plc.get('FinSesion')))}"
+                            )
                         # Diagnóstico pistones manuales (P1/P2/P3)
                         mp1 = bool(cmd.get("ManualPiston1"))
                         mp2 = bool(cmd.get("ManualPiston2"))
